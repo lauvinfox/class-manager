@@ -6,6 +6,7 @@ import {
   createAccount,
   loginUser,
   refreshUserAccessToken,
+  verifyUserEmail,
 } from "@services/auth.service";
 import { CREATED, OK, UNAUTHORIZED } from "@constants/statusCodes";
 import {
@@ -45,6 +46,8 @@ const SignInSchema = z.object({
   password: z.string().min(6).max(255),
   userAgent: z.string().optional(),
 });
+
+const VerificationCodeSchema = z.string().min(1).max(24); // Menyesuaikan object Id
 
 export const signUp: RequestHandler = catchError(async (req, res) => {
   // validate request
@@ -113,4 +116,12 @@ export const refresh = catchError(async (req, res) => {
     .cookie("accessToken", accessToken, getAccessTokenCookieOptions())
     .cookie("refreshToken", newRefreshToken, getRefreshTokenCookieOptions())
     .json({ message: "Access token refreshed" });
+});
+
+export const verifyEmail = catchError(async (req, res) => {
+  const verificationCode = VerificationCodeSchema.parse(req.params.code);
+
+  await verifyUserEmail(verificationCode);
+
+  return res.status(OK).json({ message: "Email was successfully verified" });
 });

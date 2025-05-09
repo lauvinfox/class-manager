@@ -16,6 +16,9 @@ router.get("/signout", AuthController.signOut);
 // Refresh
 router.get("/refresh", AuthController.refresh);
 
+// Verify email
+router.get("/email/verify/:code", AuthController.verifyEmail);
+
 router.get("/", (_req: Request, res: Response) => {
   res.send({ data: [] });
 });

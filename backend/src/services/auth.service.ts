@@ -7,13 +7,20 @@ import { ONE_DAY_MS, oneYearFromNow, thirtyDaysFromNow } from "@utils/date";
 import { VerificationCodeType } from "@constants/verificationCodeType";
 import env from "@utils/env";
 import appAssert from "@utils/appAssert";
-import { CONFLICT, UNAUTHORIZED } from "@constants/statusCodes";
+import {
+  CONFLICT,
+  INTERNAL_SERVER_ERROR,
+  NOT_FOUND,
+  UNAUTHORIZED,
+} from "@constants/statusCodes";
 import {
   RefreshTokenPayload,
   refreshTokenSignOptions,
   signToken,
   verifyToken,
 } from "@utils/jwt";
+import { sendMail } from "@utils/sendMail";
+import { getVerifyEmailTemplate } from "@utils/emailTemplates";
 
 export type CreateAccountParams = {
   name: string;
@@ -53,6 +60,16 @@ export const createAccount = async (data: CreateAccountParams) => {
     type: VerificationCodeType.EMAIL_VERIFICATION,
     expiresAt: oneYearFromNow(),
   });
+
+  // send verification code
+  const url = `${env.APP_ORIGIN}/email/verify/${verificationCode._id}`;
+
+  const { error } = await sendMail({
+    to: user.email,
+    ...getVerifyEmailTemplate(url),
+  });
+
+  if (error) console.log(error);
 
   // create session
   const session = await SessionModel.create({
@@ -143,4 +160,31 @@ export const refreshUserAccessToken = async (refreshToken: string) => {
   });
 
   return { accessToken, newRefreshToken };
+};
+
+export const verifyUserEmail = async (code: string) => {
+  // get verification code
+  const validCode = await VerificationModel.findOne({
+    _id: code,
+    type: VerificationCodeType.EMAIL_VERIFICATION,
+    expiresAt: { $gt: new Date() },
+  });
+
+  appAssert(validCode, NOT_FOUND, "Invalid or expired verification code");
+
+  // update user to verified true
+  const updatedUser = await UserModel.findByIdAndUpdate(
+    validCode.userId,
+    { verified: true },
+    { new: true }
+  );
+  appAssert(updatedUser, INTERNAL_SERVER_ERROR, "Failed to verify email");
+
+  // Delete the old verification code
+  await validCode.deleteOne();
+
+  // return user
+  return {
+    user: updatedUser.omitPassword(),
+  };
 };
