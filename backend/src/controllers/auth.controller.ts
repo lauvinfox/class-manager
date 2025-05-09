@@ -4,8 +4,10 @@ import { z } from "zod";
 import catchError from "@utils/error";
 import {
   createAccount,
+  createNewPassword,
   loginUser,
   refreshUserAccessToken,
+  sendPasswordReset,
   verifyUserEmail,
 } from "@services/auth.service";
 import { CREATED, OK, UNAUTHORIZED } from "@constants/statusCodes";
@@ -48,6 +50,11 @@ const SignInSchema = z.object({
 });
 
 const VerificationCodeSchema = z.string().min(1).max(24); // Menyesuaikan object Id
+
+const ResetPasswordSchema = z.object({
+  password: z.string().min(6).max(255),
+  verificationCode: VerificationCodeSchema,
+});
 
 export const signUp: RequestHandler = catchError(async (req, res) => {
   // validate request
@@ -124,4 +131,23 @@ export const verifyEmail = catchError(async (req, res) => {
   await verifyUserEmail(verificationCode);
 
   return res.status(OK).json({ message: "Email was successfully verified" });
+});
+
+export const forgotPassword = catchError(async (req, res) => {
+  const email = z.string().email().min(1).max(255).parse(req.body.email);
+  await sendPasswordReset(email);
+
+  return res.status(OK).json({
+    message: "Password reset email sent",
+  });
+});
+
+export const resetPassword = catchError(async (req, res) => {
+  const request = ResetPasswordSchema.parse(req.body);
+
+  await createNewPassword(request);
+
+  return clearAuthCookies(res)
+    .status(OK)
+    .json({ message: "Password reset successful" });
 });

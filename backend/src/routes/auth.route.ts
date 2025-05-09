@@ -19,8 +19,10 @@ router.get("/refresh", AuthController.refresh);
 // Verify email
 router.get("/email/verify/:code", AuthController.verifyEmail);
 
-router.get("/", (_req: Request, res: Response) => {
-  res.send({ data: [] });
-});
+// Forgot password
+router.post("/password/forgot", AuthController.forgotPassword);
+
+// Reset password
+router.post("/password/reset", AuthController.resetPassword);
 
 export default router;
