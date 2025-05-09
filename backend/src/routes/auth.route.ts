@@ -13,6 +13,9 @@ router.post("/signin", AuthController.signIn);
 // Logout
 router.get("/signout", AuthController.signOut);
 
+// Refresh
+router.get("/refresh", AuthController.refresh);
+
 router.get("/", (_req: Request, res: Response) => {
   res.send({ data: [] });
 });

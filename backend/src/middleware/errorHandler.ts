@@ -1,4 +1,5 @@
 import AppError from "@utils/appError";
+import { clearAuthCookies } from "@utils/cookies";
 import { BAD_REQUEST } from "constants/statusCodes";
 import { ErrorRequestHandler, Response } from "express";
 import { ZodError } from "zod";
@@ -24,6 +25,9 @@ const handleAppError = (res: Response, error: AppError) => {
 const errorHandler: ErrorRequestHandler = (error, req, res, next) => {
   console.log(`PATH: ${req.path}`, error);
 
+  if (req.path === "/auth/refresh") {
+    clearAuthCookies(res);
+  }
   if (error instanceof ZodError) {
     handleZodError(res, error);
     return;

@@ -16,3 +16,5 @@ export const dateJoined = () => {
     month: "long",
   }).format(new Date());
 };
+
+export const ONE_DAY_MS = 24 * 60 * 60 * 1000;
