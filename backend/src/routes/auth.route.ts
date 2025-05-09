@@ -10,6 +10,9 @@ router.post("/signup", AuthController.signUp);
 // Login
 router.post("/signin", AuthController.signIn);
 
+// Logout
+router.get("/signout", AuthController.signOut);
+
 router.get("/", (_req: Request, res: Response) => {
   res.send({ data: [] });
 });

@@ -1,6 +1,6 @@
 import { RequestHandler } from "express";
 
-import UserModel from "@models/user";
+import UserModel from "@models/user.model";
 
 export const getUsers: RequestHandler = async (_req, res) => {
   const users = await UserModel.find().exec();

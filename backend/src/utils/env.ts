@@ -5,4 +5,5 @@ export default cleanEnv(process.env, {
   PORT: port(),
   ACCESS_TOKEN_SECRET: str(),
   REFRESH_TOKEN_SECRET: str(),
+  NODE_ENV: str(),
 });

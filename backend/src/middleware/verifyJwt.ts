@@ -1,5 +1,5 @@
 import jwt, { decode } from "jsonwebtoken";
-import env from "@utils/validateEnv";
+import env from "@utils/env";
 import { NextFunction, Request, Response } from "express";
 
 interface CustomRequest extends Request {

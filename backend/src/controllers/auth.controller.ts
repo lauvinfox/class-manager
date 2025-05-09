@@ -1,111 +1,91 @@
 import { RequestHandler } from "express";
-import bcrypt from "bcryptjs";
-import * as jwt from "jsonwebtoken";
+import { z } from "zod";
 
-import UserModel from "@models/user";
-import env from "@utils/validateEnv";
+import catchError from "@utils/error";
+import { createAccount, loginUser } from "@services/auth.service";
+import { CREATED, OK } from "@constants/statusCodes";
+import { clearAuthCookies, setAuthCookies } from "@utils/cookies";
+import { AccessTokenPayload, verifyToken } from "@utils/jwt";
+import sessionModel from "@models/session.model";
 
-const genSalt = 10;
+const SignUpSchema = z
+  .object({
+    name: z.string().min(1).max(255),
+    email: z.string().email().min(1).max(255),
+    username: z.string().min(1),
+    password: z.string().min(6).max(255),
+    confirmPassword: z.string().min(6).max(255),
+    dateOfBirth: z.string().refine(
+      (value) => {
+        return !isNaN(new Date(value).getTime());
+      },
+      {
+        message: 'Invalid date format, expected "YYYY-MM-DD"',
+      }
+    ),
+    userAgent: z.string().optional(),
+  })
+  .refine(
+    (data) => data.password === data.confirmPassword, // Pastikan ini mengembalikan true atau false
+    { message: "Password do not match", path: ["confirmPassword"] }
+  );
 
-export const signUp: RequestHandler = async (req, res) => {
-  const { name, email, username, password, dateOfBirth, dateJoined } = req.body;
-  try {
-    if (!username || !email || !password) {
-      res.status(400).json({ message: "Parameters missing!" });
-    }
+const SignInSchema = z.object({
+  email: z.string().email().min(1).max(255),
+  password: z.string().min(6).max(255),
+  userAgent: z.string().optional(),
+});
 
-    // Mengecek username
-    const existingUsername = await UserModel.findOne({
-      username: username,
-    }).exec();
+export const signUp: RequestHandler = catchError(async (req, res) => {
+  // validate request
+  const request = SignUpSchema.parse({
+    ...req.body,
+    userAgent: req.headers["user-agent"],
+  });
+  // call Service
+  const result = await createAccount(request);
 
-    if (existingUsername) {
-      res.status(409).json({ message: "Username is already taken!" });
-    }
+  if (result instanceof Error) {
+    throw new Error(result.message);
+  }
 
-    // Mengecek email
-    const existingEmail = await UserModel.findOne({ email: email }).exec();
+  const { user, accessToken, refreshToken } = result;
 
-    if (existingEmail) {
-      res.status(409).json({ message: "Email is already taken!" });
-    }
-
-    // Password Hashing
-    const hashedPassword = await bcrypt.hash(password, genSalt);
-
-    const newUser = new UserModel({
-      name: name,
-      email: email,
-      username: username,
-      password: hashedPassword,
-      dateOfBirth: dateOfBirth,
-      dateJoined: dateJoined,
-    });
-
-    await newUser.save();
-
-    res.status(201).json({
+  // return response
+  return setAuthCookies({ res, accessToken, refreshToken })
+    .status(CREATED)
+    .json({
       message: "User data successfully saved",
-      data: newUser,
+      data: user,
     });
-  } catch (error) {
-    if (error instanceof Error) {
-      res.status(400).json({ message: error.message });
-    }
+});
+
+export const signIn: RequestHandler = catchError(async (req, res) => {
+  // validate
+  const request = SignInSchema.parse({
+    ...req.body,
+    userAgent: req.headers["user-agent"],
+  });
+
+  // call service
+  const { accessToken, refreshToken } = await loginUser(request);
+
+  // return
+  return setAuthCookies({ res, accessToken, refreshToken })
+    .status(OK)
+    .json({ message: "Login successfull" });
+});
+
+export const signOut: RequestHandler = catchError(async (req, res) => {
+  const accessToken = req.cookies.accessToken;
+
+  const { payload } = verifyToken<AccessTokenPayload>(accessToken);
+
+  if (payload) {
+    await sessionModel.findByIdAndDelete(payload.sessionId);
   }
-};
 
-export const signIn: RequestHandler = async (req, res) => {
-  const { email, password } = req.body;
-  try {
-    if (!email || !password) {
-      res.status(400).json({ message: "Parameters missing!" });
-    }
-
-    const foundUser = await UserModel.findOne({ email: email });
-
-    if (!foundUser) {
-      res.status(404).json({ success: false, message: "User not found!" });
-      return;
-    }
-
-    const isPasswordMatch = bcrypt.compareSync(password, foundUser.password);
-    if (isPasswordMatch) {
-    } else {
-      res.status(404).json({ success: false, message: "Wrong password!" });
-    }
-
-    // JWT Token
-    const accessToken = jwt.sign(
-      { username: foundUser.username },
-      env.ACCESS_TOKEN_SECRET,
-      {
-        expiresIn: "60s",
-      }
-    );
-
-    const refreshToken = jwt.sign(
-      { username: foundUser.username },
-      env.REFRESH_TOKEN_SECRET,
-      {
-        expiresIn: "1d",
-      }
-    );
-
-    res.cookie("jwt", refreshToken, {
-      httpOnly: true,
-      maxAge: 86400000, // Satu hari
-    });
-
-    res.status(200).json({
-      success: true,
-      message: "Login success!",
-      data: foundUser,
-      accessToken: accessToken,
-    });
-  } catch (error) {
-    if (error instanceof Error) {
-      res.status(400).json({ message: error.message });
-    }
-  }
-};
+  return clearAuthCookies(res)
+    .status(OK)
+    .json({ message: "Logout successful" });
+});

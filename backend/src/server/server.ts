@@ -1,5 +1,5 @@
 import app from "app";
-import env from "@utils/validateEnv";
+import env from "@utils/env";
 
 import mongoose from "mongoose";
 

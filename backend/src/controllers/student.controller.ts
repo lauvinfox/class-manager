@@ -1,4 +1,4 @@
-import StudentModel from "@models/student";
+import StudentModel from "@models/student.model";
 import { RequestHandler } from "express";
 
 export const getStudents: RequestHandler = async (_req, res) => {
