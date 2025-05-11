@@ -1,7 +1,6 @@
 import { Router } from "express";
 
 import * as StudentsController from "@controllers/student.controller";
-import { verifyJwt } from "@middleware/verifyJwt";
 
 const router = Router();
 
@@ -9,7 +8,7 @@ const router = Router();
 router.post("/", StudentsController.createStudent);
 
 // GET ALL
-router.get("/", verifyJwt, StudentsController.getStudents);
+router.get("/", StudentsController.getStudents);
 
 // GET BY STUDENTID
 router.get("/:id", StudentsController.getStudent);

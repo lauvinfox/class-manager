@@ -4,6 +4,7 @@ import * as UsersController from "@controllers/user.controller";
 
 const router = Router();
 
+// Protected routes
 // GET ALL
 router.get("/", UsersController.getUsers);
 

@@ -8,6 +8,7 @@ import StudentRouter from "@routes/student.route";
 import UserRouter from "@routes/user.route";
 import AuthRouter from "@routes/auth.route";
 import errorHandler from "@middleware/errorHandler";
+import authenticate from "@middleware/authenticate";
 
 const app: Application = express();
 

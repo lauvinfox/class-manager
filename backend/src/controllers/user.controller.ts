@@ -1,12 +1,13 @@
 import { RequestHandler } from "express";
 
 import UserModel from "@models/user.model";
+import catchError from "@utils/error";
 
-export const getUsers: RequestHandler = async (_req, res) => {
+export const getUsers: RequestHandler = catchError(async (_req, res) => {
   const users = await UserModel.find().exec();
 
   res.status(200).json({ data: users });
-};
+});
 
 export const getUser: RequestHandler = async (req, res) => {
   const { id } = req.params;

@@ -62,6 +62,7 @@ export const signUp: RequestHandler = catchError(async (req, res) => {
     ...req.body,
     userAgent: req.headers["user-agent"],
   });
+
   // call Service
   const result = await createAccount(request);
 

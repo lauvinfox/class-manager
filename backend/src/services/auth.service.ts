@@ -112,6 +112,7 @@ export const loginUser = async ({
   appAssert(user, UNAUTHORIZED, "Invalid email or password");
 
   const userId = user._id;
+
   // create session
   const session = await SessionModel.create({
     userId,
@@ -149,6 +150,7 @@ export const refreshUserAccessToken = async (refreshToken: string) => {
   // refresh session if expires in 24 hours
   session.expiresAt = thirtyDaysFromNow();
   await session.save();
+
   //   const sessionNeedRefresh =
   //     session.expiresAt.getTime() - Date.now() <= ONE_DAY_MS;
 

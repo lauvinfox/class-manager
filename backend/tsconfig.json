@@ -13,10 +13,12 @@
       "@server/*": ["server/*"],
       "@config/*": ["config/*"],
       "@utils/*": ["utils/*"],
+      "@types/*": ["types/*"],
       "@constants/*": ["constants/*"]
     } /* Specify a set of entries that re-map imports to additional lookup locations. */,
 
     "outDir": "./dist" /* Specify an output folder for all emitted files. */,
+    "typeRoots": ["./src/types", "./node_modules/@types"],
 
     "esModuleInterop": true /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */,
     "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
@@ -24,7 +26,7 @@
     "skipLibCheck": true /* Skip type checking all .d.ts files. */
   },
 
-  "include": ["src"],
+  "include": ["src/**/*.ts", "src/types/**/*.d.ts"],
   "exclude": ["node_modules"],
   "ts-node": {
     "require": ["tsconfig-paths/register"]
