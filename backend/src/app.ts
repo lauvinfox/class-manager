@@ -28,7 +28,7 @@ app.use(cookieParser());
 app.use("/api/v1/students", StudentRouter);
 
 // User API
-app.use("/api/v1/users", UserRouter);
+app.use("/api/v1/users", authenticate, UserRouter);
 
 // Auth API
 app.use("/auth", AuthRouter);
