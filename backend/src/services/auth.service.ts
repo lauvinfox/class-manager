@@ -3,7 +3,6 @@ import VerificationModel from "@models/verificationCode.model";
 import SessionModel from "@models/session.model";
 import {
   fiveMinutesAgo,
-  ONE_DAY_MS,
   oneHourFromNow,
   oneYearFromNow,
   thirtyDaysFromNow,

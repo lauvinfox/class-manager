@@ -1,5 +1,12 @@
+import fs from "fs";
+import * as csv from "csv-parse";
+
 import StudentModel from "@models/student.model";
 import { RequestHandler } from "express";
+import appAssert from "@utils/appAssert";
+import { BAD_REQUEST } from "@constants/statusCodes";
+import catchError from "@utils/error";
+import { processCSVAndSaveToDB } from "@services/student.service";
 
 export const getStudents: RequestHandler = async (_req, res) => {
   const students = await StudentModel.find().exec();
@@ -86,3 +93,15 @@ export const deleteStudent: RequestHandler = async (req, res) => {
     }
   }
 };
+
+export const uploadStudent: RequestHandler = catchError(async (req, res) => {
+  appAssert(req.file, BAD_REQUEST, "File not uploaded!");
+
+  const result = await processCSVAndSaveToDB(req.file.buffer);
+
+  // Mengirimkan respons setelah data diproses dan disimpan
+  res.json({
+    message: "File uploaded and data saved to database successfully",
+    data: result,
+  });
+});

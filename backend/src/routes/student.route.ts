@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import * as StudentsController from "@controllers/student.controller";
+import { upload } from "@config/multer";
 
 const router = Router();
 
@@ -18,5 +19,8 @@ router.put("/:id", StudentsController.updateStudent);
 
 // DELETE
 router.delete("/:id", StudentsController.deleteStudent);
+
+// Upload
+router.post("/upload", upload.single("file"), StudentsController.uploadStudent);
 
 export default router;
