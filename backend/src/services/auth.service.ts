@@ -30,23 +30,24 @@ import {
   getVerifyEmailTemplate,
 } from "@utils/emailTemplates";
 import { hashValue } from "@utils/hash";
+import { SignUpParams, SignInParams } from "@schemas/auth.schema";
 
-export type CreateAccountParams = {
-  name: string;
-  email: string;
-  username: string;
-  password: string;
-  dateOfBirth: string;
-  userAgent?: string;
-};
+// export type CreateAccountParams = {
+//   name: string;
+//   email: string;
+//   username: string;
+//   password: string;
+//   dateOfBirth: string;
+//   userAgent?: string;
+// };
 
-export type LoginUserParams = {
-  email: string;
-  password: string;
-  userAgent?: string;
-};
+// export type LoginUserParams = {
+//   email: string;
+//   password: string;
+//   userAgent?: string;
+// };
 
-export const createAccount = async (data: CreateAccountParams) => {
+export const createAccount = async (data: SignUpParams) => {
   // verify existing user doesnt exist
   const existingUser = await UserModel.exists({ email: data.email });
 
@@ -102,7 +103,7 @@ export const loginUser = async ({
   email,
   password,
   userAgent,
-}: LoginUserParams) => {
+}: SignInParams) => {
   // get the user
   const user = await UserModel.findOne({ email });
   appAssert(user, UNAUTHORIZED, "Invalid email or password");
