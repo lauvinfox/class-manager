@@ -3,7 +3,6 @@ import VerificationModel from "@models/verificationCode.model";
 import SessionModel from "@models/session.model";
 import {
   fiveMinutesAgo,
-  ONE_DAY_MS,
   oneHourFromNow,
   oneYearFromNow,
   thirtyDaysFromNow,
@@ -109,8 +108,8 @@ export const loginUser = async ({
   appAssert(user, UNAUTHORIZED, "Invalid email or password");
 
   // validate password
-  const isValid = await user.comparePassword(password);
-  appAssert(user, UNAUTHORIZED, "Invalid email or password");
+  const isValid = await user.isPasswordMatch(password);
+  appAssert(isValid, UNAUTHORIZED, "Invalid email or password");
 
   const userId = user._id;
 

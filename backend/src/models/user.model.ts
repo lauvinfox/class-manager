@@ -1,5 +1,6 @@
 import { dateJoined } from "@utils/date";
 import { compareValue, hashValue } from "@utils/hash";
+import { toJSONPlugin } from "@utils/toJSONPlugin";
 import { Document, model, Schema } from "mongoose";
 
 export interface IUser extends Document {
@@ -12,7 +13,8 @@ export interface IUser extends Document {
   verified: boolean;
   createdAt: Date;
   updatedAt: Date;
-  comparePassword(val: string): Promise<boolean>;
+
+  isPasswordMatch(val: string): Promise<boolean>;
   omitPassword(): Pick<
     IUser,
     "_id" | "email" | "verified" | "createdAt" | "updatedAt"
@@ -40,10 +42,15 @@ const UserSchema: Schema = new Schema<IUser>(
       type: String,
       required: [true, "Password is required"],
       minlength: [6, "Password must be at least 6 characters"],
-      // match: [
-      //   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+={}\[\]:;"'<>,.?/-]).{8,}$/,
-      //   "Password harus mengandung huruf kapital, huruf kecil, angka, dan karakter khusus.",
-      // ],
+      // validate: {
+      //   validator: function (value: string) {
+      //     return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+={}\[\]:;"'<>,.?/-]).$/.test(
+      //       value
+      //     );
+      //   },
+      //   message:
+      //     "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.",
+      // },
     },
     dateOfBirth: { type: Date, required: true },
     dateJoined: {
@@ -54,6 +61,7 @@ const UserSchema: Schema = new Schema<IUser>(
   },
   { timestamps: true }
 );
+toJSONPlugin(UserSchema);
 
 UserSchema.pre<IUser>("save", async function (next) {
   if (!this.isModified("password")) {

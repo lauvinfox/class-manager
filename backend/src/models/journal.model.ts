@@ -1,6 +1,5 @@
+import { toJSONPlugin } from "@utils/toJSONPlugin";
 import { Document, model, Schema, Types } from "mongoose";
-import { IUser } from "./user.model";
-import { IStudent } from "./student.model";
 
 export enum AttendanceStatus {
   PRESENT = "present",
@@ -18,9 +17,9 @@ export interface IAttendanceRecord {
 
 export interface IJournal extends Document {
   date: Date;
-  className: string;
+  classroom: Types.ObjectId;
+  teacher: Types.ObjectId;
   subject: string;
-  teacherId: Types.ObjectId;
   attendanceRecords: IAttendanceRecord[];
   classNotes: string;
   createdAt: Date;
@@ -51,22 +50,22 @@ const JournalSchema = new Schema<IJournal>(
       required: [true, "Class date is required"],
       index: true,
     },
-    className: {
-      type: String,
+    teacher: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "Teacher ID is required"],
+      index: true,
+    },
+    classroom: {
+      type: Schema.Types.ObjectId,
+      ref: "Class",
       required: [true, "Class name is required"],
-      trim: true,
       index: true,
     },
     subject: {
       type: String,
       required: [true, "Subject is required"],
       trim: true,
-    },
-    teacherId: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: [true, "Teacher ID is required"],
-      index: true,
     },
     attendanceRecords: {
       type: [AttendanceRecordSchema],
@@ -80,8 +79,9 @@ const JournalSchema = new Schema<IJournal>(
   },
   { timestamps: true }
 );
+toJSONPlugin(JournalSchema);
 
-// Compound index for efficient querying by class and date
-JournalSchema.index({ className: 1, date: 1 });
+// // Compound index for efficient querying by class and date
+// JournalSchema.index({ className: 1, date: 1 });
 
 export default model<IJournal>("Journal", JournalSchema);
