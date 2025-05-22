@@ -1,20 +1,36 @@
 import UserModel, { IUser } from "@models/user.model";
+import { Types } from "mongoose";
+import appAssert from "@utils/appAssert";
+import { BAD_REQUEST, NOT_FOUND } from "@constants/statusCodes";
 
-export const getAllUsers = async (): Promise<IUser[]> => {
-  return UserModel.find().select("-password").exec();
+export const createUser = async (userData: Partial<IUser>) => {
+  const user = new UserModel(userData);
+  return await user.save();
 };
 
-export const getUserById = async (id: string): Promise<IUser | null> => {
-  return UserModel.findById(id).select("-password").exec();
+export const getAllUsers = async () => {
+  return await UserModel.find();
 };
 
-export const updateUserById = async (
-  id: string,
-  updatedData: Partial<IUser>
-): Promise<IUser | null> => {
-  return UserModel.findByIdAndUpdate(id, updatedData, { new: true }).exec();
+export const getUserById = async (id: string) => {
+  appAssert(Types.ObjectId.isValid(id), BAD_REQUEST, "Invalid ID");
+  const user = await UserModel.findById(id);
+  appAssert(user, NOT_FOUND, "User not found");
+  return user;
 };
 
-export const deleteUserById = async (id: string): Promise<void> => {
-  await UserModel.findByIdAndDelete(id).exec();
+export const updateUser = async (id: string, updateData: Partial<IUser>) => {
+  appAssert(Types.ObjectId.isValid(id), BAD_REQUEST, "Invalid ID");
+  const updated = await UserModel.findByIdAndUpdate(id, updateData, {
+    new: true,
+  });
+  appAssert(updated, NOT_FOUND, "User not found");
+  return updated;
+};
+
+export const deleteUser = async (id: string) => {
+  appAssert(Types.ObjectId.isValid(id), BAD_REQUEST, "Invalid ID");
+  const deleted = await UserModel.findByIdAndDelete(id);
+  appAssert(deleted, NOT_FOUND, "User not found");
+  return deleted;
 };

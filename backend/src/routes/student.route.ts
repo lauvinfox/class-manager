@@ -1,27 +1,29 @@
 import { Router } from "express";
-
-import * as StudentsController from "@controllers/student.controller";
 import authenticate from "@middleware/authenticate";
+import * as StudentsController from "@controllers/student.controller";
 import { upload } from "@config/multer";
 
 const router = Router();
 
-// CREATE
+// All student routes are protected
+router.use(authenticate);
+
+// Add new student
 router.post("/", StudentsController.createStudent);
 
-// GET ALL
-router.get("/", authenticate, StudentsController.getStudents);
+// Get all students
+router.get("/", StudentsController.getAllStudents);
 
-// GET BY STUDENTID
-router.get("/:id", StudentsController.getStudent);
+// Get student by ID
+router.get("/:id", StudentsController.getStudentById);
 
-// UPDATE
+// Get students by class ID
 router.put("/:id", StudentsController.updateStudent);
 
-// DELETE
+// Update student by ID
 router.delete("/:id", StudentsController.deleteStudent);
 
-// Upload
+// Upload student data
 router.post("/upload", upload.single("file"), StudentsController.uploadStudent);
 
 export default router;

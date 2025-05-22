@@ -1,41 +1,43 @@
 import { RequestHandler } from "express";
 import * as UserService from "@services/user.services";
 import catchError from "@utils/error";
+import { OK, CREATED } from "@constants/statusCodes";
 
-export const getUsers: RequestHandler = catchError(async (_req, res) => {
-  const users = await UserService.getAllUsers();
-  res.status(200).json({ data: users });
+export const createUser: RequestHandler = catchError(async (req, res) => {
+  const user = await UserService.createUser(req.body);
+  res.status(CREATED).json({
+    message: "User data successfully saved",
+    data: user,
+  });
 });
 
-export const getUser: RequestHandler = catchError(async (req, res) => {
-  const { id } = req.params;
-  const user = await UserService.getUserById(id);
+export const getAllUsers: RequestHandler = catchError(async (req, res) => {
+  const users = await UserService.getAllUsers();
+  res.status(OK).json({
+    message: "User data successfully fetch",
+    data: users,
+  });
+});
 
-  if (!user) {
-    return res.status(404).json({ message: "User not found" });
-  }
-
-  res.status(200).json({ data: user });
+export const getUserById: RequestHandler = catchError(async (req, res) => {
+  const user = await UserService.getUserById(req.params.id);
+  res.status(OK).json({
+    message: "User data successfully fetch",
+    data: user,
+  });
 });
 
 export const updateUser: RequestHandler = catchError(async (req, res) => {
-  const { id } = req.params;
-  const updatedData = req.body;
-
-  const updatedUser = await UserService.updateUserById(id, updatedData);
-
-  if (!updatedUser) {
-    return res.status(404).json({ message: "User not found" });
-  }
-
-  res
-    .status(200)
-    .json({ data: updatedUser, message: "User updated successfully" });
+  const user = await UserService.updateUser(req.params.id, req.body);
+  res.status(CREATED).json({
+    message: "User data successfully updated",
+    data: user,
+  });
 });
 
 export const deleteUser: RequestHandler = catchError(async (req, res) => {
-  const { id } = req.params;
-
-  await UserService.deleteUserById(id);
-  res.status(200).json({ message: "User deleted successfully" });
+  await UserService.deleteUser(req.params.id);
+  res.status(OK).json({
+    message: "User data successfully deleted",
+  });
 });

@@ -3,7 +3,7 @@ import { Document, model, Schema, Types } from "mongoose";
 
 export interface IStudent extends Document {
   name: string;
-  birthOfDate: Date;
+  dateOfBirth: Date;
   studentId: number;
   classroom: Types.ObjectId;
   createdAt: Date;
@@ -19,7 +19,7 @@ const StudentSchema: Schema = new Schema<IStudent>({
     minlength: [2, "Name must be at least 2 characters long"],
     maxlength: [50, "Name cannot exceed 50 characters"],
   },
-  birthOfDate: {
+  dateOfBirth: {
     type: Date,
     required: [true, "Date of Birth is required"],
     validate: {

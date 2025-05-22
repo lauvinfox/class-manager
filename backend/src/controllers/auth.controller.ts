@@ -95,16 +95,19 @@ export const verifyEmail: RequestHandler = catchError(async (req, res) => {
   return res.status(OK).json({ message: "Email was successfully verified" });
 });
 
-export const forgotPassword: RequestHandler = catchError(async (req, res) => {
+export const forgotPassword = catchError(async (req, res) => {
   const email = z.string().email().min(1).max(255).parse(req.body.email);
   await sendPasswordReset(email);
 
-  return res.status(OK).json({ message: "Password reset email sent" });
+  return res.status(OK).json({
+    message: "Password reset email sent",
+  });
 });
 
-export const resetPassword: RequestHandler = catchError(async (req, res) => {
-  const parsed = ResetPasswordSchema.parse(req.body);
-  await createNewPassword(parsed);
+export const resetPassword = catchError(async (req, res) => {
+  const request = ResetPasswordSchema.parse(req.body);
+
+  await createNewPassword(request);
 
   return clearAuthCookies(res)
     .status(OK)

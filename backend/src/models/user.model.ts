@@ -71,7 +71,7 @@ UserSchema.pre<IUser>("save", async function (next) {
   next();
 });
 
-UserSchema.methods.comparePassword = async function (val: string) {
+UserSchema.methods.isPasswordMatch = async function (val: string) {
   return compareValue(val, this.password);
 };
 

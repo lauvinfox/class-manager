@@ -1,8 +1,44 @@
-import StudentModel from "@models/student.model";
-import { IStudent } from "@models/student.model";
-
+import StudentModel, { IStudent } from "@models/student.model";
+import { Types } from "mongoose";
+import appAssert from "@utils/appAssert";
 import * as csv from "csv-parse";
+import { BAD_REQUEST, NOT_FOUND } from "@constants/statusCodes";
 
+export const createStudent = async (data: Partial<IStudent>) => {
+  const student = new StudentModel(data);
+  return await student.save();
+};
+
+export const getAllStudents = async () => {
+  return await StudentModel.find().populate("classroom");
+};
+
+export const getStudentById = async (id: string) => {
+  appAssert(Types.ObjectId.isValid(id), BAD_REQUEST, "Invalid student ID");
+  const student = await StudentModel.findById(id).populate("classroom");
+  appAssert(student, NOT_FOUND, "Student not found");
+  return student;
+};
+
+export const updateStudent = async (id: string, update: Partial<IStudent>) => {
+  appAssert(Types.ObjectId.isValid(id), BAD_REQUEST, "Invalid student ID");
+  const updated = await StudentModel.findByIdAndUpdate(id, update, {
+    new: true,
+  });
+  appAssert(updated, NOT_FOUND, "Student not found");
+  return updated;
+};
+
+export const deleteStudent = async (id: string) => {
+  appAssert(Types.ObjectId.isValid(id), BAD_REQUEST, "Invalid student ID");
+  const deleted = await StudentModel.findByIdAndDelete(id);
+  appAssert(deleted, NOT_FOUND, "Student not found");
+  return deleted;
+};
+
+/*
+  Upload CSV file and save to database
+*/
 export type CreateStudentParams = {
   name: string;
   birthOfDate: Date;
@@ -41,28 +77,4 @@ export const processCSVAndSaveToDB = async (fileBuffer: Buffer) => {
       }
     );
   });
-};
-
-export const findAllStudents = async () => {
-  return await StudentModel.find();
-};
-
-export const findStudentById = async (id: string) => {
-  return await StudentModel.findById(id);
-};
-
-export const createStudent = async (data: IStudent) => {
-  const newStudent = new StudentModel(data);
-  return await newStudent.save();
-};
-
-export const updateStudentById = async (
-  id: string,
-  data: Partial<IStudent>
-) => {
-  return await StudentModel.findByIdAndUpdate(id, data, { new: true });
-};
-
-export const deleteStudentById = async (id: string) => {
-  return await StudentModel.findByIdAndDelete(id);
 };
