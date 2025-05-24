@@ -4,9 +4,10 @@ export interface IStudent {
   name: string;
   birthOfDate: Date;
   studentId: number;
+  classId: Schema.Types.ObjectId;
 }
 
-const StudentSchema: Schema = new Schema<IStudent>(
+export const StudentSchema: Schema = new Schema<IStudent>(
   {
     name: {
       type: String,
@@ -23,6 +24,7 @@ const StudentSchema: Schema = new Schema<IStudent>(
       required: [true, "Student ID is required"],
       unique: [true, "Student Id has been taken."],
     },
+    classId: { type: Schema.Types.ObjectId, ref: "Class", required: true },
   },
   { timestamps: true }
 );

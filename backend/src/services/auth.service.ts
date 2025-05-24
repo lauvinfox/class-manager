@@ -30,7 +30,7 @@ import {
 } from "@utils/emailTemplates";
 import { hashValue } from "@utils/hash";
 
-export type CreateAccountParams = {
+type CreateAccountParams = {
   name: string;
   email: string;
   username: string;
@@ -39,7 +39,7 @@ export type CreateAccountParams = {
   userAgent?: string;
 };
 
-export type LoginUserParams = {
+type LoginUserParams = {
   email: string;
   password: string;
   userAgent?: string;
@@ -108,7 +108,7 @@ export const loginUser = async ({
 
   // validate password
   const isValid = await user.comparePassword(password);
-  appAssert(user, UNAUTHORIZED, "Invalid email or password");
+  appAssert(isValid, UNAUTHORIZED, "Invalid email or password");
 
   const userId = user._id;
 

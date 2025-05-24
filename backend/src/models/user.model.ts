@@ -10,6 +10,7 @@ export interface IUser extends Document {
   dateOfBirth: Date;
   dateJoined: string;
   verified: boolean;
+  classes?: Schema.Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
   comparePassword(val: string): Promise<boolean>;

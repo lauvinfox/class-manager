@@ -3,5 +3,14 @@
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
-  ]
+  ],
+  "compilerOptions": {
+    "paths": {
+      "@assets/*": ["./assets/*"],
+      "@components/*": ["./components/*"],
+      "@config/*": ["./config/*"],
+      "@pages/*": ["./pages/*"],
+      "@theme/*": ["./theme/*"]
+    } /* Specify a set of entries that re-map imports to additional lookup locations. */
+  }
 }

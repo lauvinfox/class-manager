@@ -18,7 +18,12 @@ app.use(express.json());
 // Debugging
 app.use(morgan("dev"));
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5000",
+    credentials: true,
+  })
+);
 
 // Middleware for cookies
 app.use(cookieParser());

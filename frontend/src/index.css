@@ -1,1 +1,19 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap");
+
 @import "tailwindcss";
+
+@theme {
+  --color-primary: #fcfcfc;
+  --color-font-primary: #16151c;
+
+  --color-form-font: #c3c3c3;
+  --color-form-font-focus: #606267;
+  --color-form-border-focus: #8294c2;
+  --color-form-bg: #f6f6f6;
+  --color-form-bg-focus: #ffffff;
+
+  --color-button-primary: #4c7ede;
+  --color-button-primary-hover: #3a5ac9;
+
+  --font-roboto: "Roboto", "sans-serif";
+}
