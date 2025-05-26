@@ -1,6 +1,7 @@
-import * as csv from "csv-parse";
-
 import StudentModel from "@models/student.model";
+import { IStudent } from "@models/student.model";
+
+import * as csv from "csv-parse";
 
 export type CreateStudentParams = {
   name: string;
@@ -40,4 +41,28 @@ export const processCSVAndSaveToDB = async (fileBuffer: Buffer) => {
       }
     );
   });
+};
+
+export const findAllStudents = async () => {
+  return await StudentModel.find();
+};
+
+export const findStudentById = async (id: string) => {
+  return await StudentModel.findById(id);
+};
+
+export const createStudent = async (data: IStudent) => {
+  const newStudent = new StudentModel(data);
+  return await newStudent.save();
+};
+
+export const updateStudentById = async (
+  id: string,
+  data: Partial<IStudent>
+) => {
+  return await StudentModel.findByIdAndUpdate(id, data, { new: true });
+};
+
+export const deleteStudentById = async (id: string) => {
+  return await StudentModel.findByIdAndDelete(id);
 };

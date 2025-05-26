@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import * as StudentsController from "@controllers/student.controller";
+import authenticate from "@middleware/authenticate";
 import { upload } from "@config/multer";
 
 const router = Router();
@@ -9,7 +10,7 @@ const router = Router();
 router.post("/", StudentsController.createStudent);
 
 // GET ALL
-router.get("/", StudentsController.getStudents);
+router.get("/", authenticate, StudentsController.getStudents);
 
 // GET BY STUDENTID
 router.get("/:id", StudentsController.getStudent);

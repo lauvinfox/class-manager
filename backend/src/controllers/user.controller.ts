@@ -1,48 +1,41 @@
 import { RequestHandler } from "express";
-
-import UserModel from "@models/user.model";
+import * as UserService from "@services/user.services";
 import catchError from "@utils/error";
 
 export const getUsers: RequestHandler = catchError(async (_req, res) => {
-  const users = await UserModel.find().exec();
-
+  const users = await UserService.getAllUsers();
   res.status(200).json({ data: users });
 });
 
-export const getUser: RequestHandler = async (req, res) => {
+export const getUser: RequestHandler = catchError(async (req, res) => {
   const { id } = req.params;
+  const user = await UserService.getUserById(id);
 
-  try {
-    const user = await UserModel.findOne({ _id: id }).exec();
-
-    if (!user) {
-      res.status(404).json({ message: "User not found" });
-    }
-
-    res.send({ status: 200, data: user });
-  } catch (error) {
-    res.status(500).send({ message: error });
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
   }
-};
 
-export const updateUser: RequestHandler = async (req, res) => {
+  res.status(200).json({ data: user });
+});
+
+export const updateUser: RequestHandler = catchError(async (req, res) => {
   const { id } = req.params;
-  const updatedUser = req.body;
+  const updatedData = req.body;
 
-  try {
-    await UserModel.updateOne({ _id: id }, updatedUser);
-    res
-      .status(200)
-      .json({ data: updatedUser, msg: "Data updated successfully" });
-  } catch (error) {
-    res.status(500).json({ msg: "Unable to update the contact" });
+  const updatedUser = await UserService.updateUserById(id, updatedData);
+
+  if (!updatedUser) {
+    return res.status(404).json({ message: "User not found" });
   }
-};
 
-export const deleteUser: RequestHandler = async (req, res) => {
+  res
+    .status(200)
+    .json({ data: updatedUser, message: "User updated successfully" });
+});
+
+export const deleteUser: RequestHandler = catchError(async (req, res) => {
   const { id } = req.params;
 
-  await UserModel.deleteOne({ _id: id });
-
-  res.status(200).json({ msg: "Data has been deleted" });
-};
+  await UserService.deleteUserById(id);
+  res.status(200).json({ message: "User deleted successfully" });
+});

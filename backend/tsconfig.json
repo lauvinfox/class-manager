@@ -12,6 +12,7 @@
       "@models/*": ["models/*"],
       "@server/*": ["server/*"],
       "@config/*": ["config/*"],
+      "@schemas/*": ["schemas/*"],
       "@utils/*": ["utils/*"],
       "@types/*": ["types/*"],
       "@constants/*": ["constants/*"]

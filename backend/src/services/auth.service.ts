@@ -107,7 +107,7 @@ export const loginUser = async ({
   appAssert(user, UNAUTHORIZED, "Invalid email or password");
 
   // validate password
-  const isValid = await user.comparePassword(password);
+  const isValid = await user.isPasswordMatch(password);
   appAssert(isValid, UNAUTHORIZED, "Invalid email or password");
 
   const userId = user._id;
