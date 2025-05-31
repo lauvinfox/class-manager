@@ -5,6 +5,10 @@ import * as UsersController from "@controllers/user.controller";
 const router = Router();
 
 // Protected routes
+// preventing Express from treating "me" as a user ID and avoiding the CastError.
+router.get("/me", UsersController.getMe);
+
+// Public routes
 router.get("/", UsersController.getUsers);
 router.get("/:id", UsersController.getUser);
 router.put("/:id", UsersController.updateUser);

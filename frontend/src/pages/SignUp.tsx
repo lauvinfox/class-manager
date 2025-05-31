@@ -22,22 +22,18 @@ const RegistrationPage: React.FC = () => {
 
   const [isChecked, setIsChecked] = useState(false);
 
-  const name = `${firstName} ${lastName}`;
-
-  const {
-    mutate: signUp,
-    isPending,
-    isError,
-  } = useMutation({
+  const { mutate: signUp, isPending } = useMutation({
     mutationFn: ({
-      name,
+      firstName,
+      lastName,
       email,
       username,
       password,
       confirmPassword,
       dateOfBirth,
     }: {
-      name: string;
+      firstName: string;
+      lastName: string;
       email: string;
       username: string;
       password: string;
@@ -45,7 +41,8 @@ const RegistrationPage: React.FC = () => {
       dateOfBirth: string;
     }) =>
       registerUser(
-        name,
+        firstName,
+        lastName,
         email,
         username,
         password,
@@ -53,13 +50,9 @@ const RegistrationPage: React.FC = () => {
         dateOfBirth
       ),
     onSuccess: (data) => {
-      console.log("Login successful", data);
-      navigate("/", { replace: true });
+      console.log("Register successful", data);
+      navigate("/email/verify", { replace: true });
     },
-    onError: (error) => {
-      console.error("Login error", error);
-    },
-    retry: false, // Tambahkan ini agar tidak auto-retry
   });
 
   const handleCheckboxChange = () => {
@@ -75,10 +68,27 @@ const RegistrationPage: React.FC = () => {
   };
   const handleSignUpSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    signUp({ name, email, username, password, confirmPassword, dateOfBirth });
-    navigate("/email/verification");
+    signUp({
+      firstName,
+      lastName,
+      email,
+      username,
+      password,
+      confirmPassword,
+      dateOfBirth,
+    });
   };
+
+  // Validasi semua field harus terisi dan isChecked true
+  const isFormValid =
+    firstName.trim() &&
+    lastName.trim() &&
+    email.trim() &&
+    username.trim() &&
+    password.trim() &&
+    confirmPassword.trim() &&
+    dateOfBirth.trim() &&
+    isChecked;
 
   return (
     <div className="flex min-h-screen bg-primary items-center justify-center">
@@ -205,11 +215,24 @@ const RegistrationPage: React.FC = () => {
         <button
           type="submit"
           className={`w-full sm:w-2/3 py-2 px-4 bg-button-primary text-white font-semibold rounded-md hover:bg-button-primary-hover focus:outline-none focus:ring-2  ${
-            isChecked ? "" : "opacity-50 cursor-not-allowed"
-          }`}
-          disabled={!isChecked}
+            isChecked && isFormValid && !isPending
+              ? ""
+              : "opacity-50 cursor-not-allowed"
+          } ${isPending ? "opacity-50 cursor-not-allowed" : ""}`}
+          disabled={!isFormValid || isPending}
         >
-          Sign up
+          {isPending ? (
+            <div
+              className="inline-block h-5 w-5 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"
+              role="status"
+            >
+              <span className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">
+                Loading...
+              </span>
+            </div>
+          ) : (
+            "Sign up"
+          )}
         </button>
       </form>
     </div>

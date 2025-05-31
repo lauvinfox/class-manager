@@ -1,4 +1,6 @@
+import { NOT_FOUND } from "@constants/statusCodes";
 import UserModel, { IUser } from "@models/user.model";
+import appAssert from "@utils/appAssert";
 
 export const getAllUsers = async (): Promise<IUser[]> => {
   return UserModel.find().select("-password").exec();
@@ -17,4 +19,13 @@ export const updateUserById = async (
 
 export const deleteUserById = async (id: string): Promise<void> => {
   await UserModel.findByIdAndDelete(id).exec();
+};
+
+export const checkGetMe = async (userId: string) => {
+  // get the user
+  const user = await UserModel.findById(userId);
+  appAssert(user, NOT_FOUND, "User not found");
+
+  // return user without password
+  return user.omitPassword();
 };

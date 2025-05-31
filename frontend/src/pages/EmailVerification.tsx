@@ -1,53 +1,80 @@
-import React, { useState } from "react";
+import { useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useNavigate, useParams } from "react-router-dom";
+import { verifyEmail } from "../lib/api";
 
 const EmailVerificationPage: React.FC = () => {
-  const [code, setCode] = useState<string>("");
-  const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Simulasi pengiriman kode
-    setIsSubmitted(true);
-  };
+  const navigate = useNavigate();
+  const { code } = useParams();
+  const hasCalled = useRef(false);
+  const { isSuccess, isError } = useQuery({
+    queryKey: ["verifyEmail", code],
+    queryFn: async () => {
+      if (!code) throw new Error("Verification code is required");
+      if (hasCalled.current) return null; // return null agar tidak undefined
+      hasCalled.current = true;
+      await verifyEmail(code);
+      return true; // return true agar tidak undefined
+    },
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-md">
-        <h2 className="text-2xl font-semibold text-center text-gray-800 mb-6">
-          Email Confirmation
-        </h2>
-        {!isSubmitted ? (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label
-                htmlFor="code"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Enter the Confirmation Code
-              </label>
-              <input
-                type="text"
-                id="code"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder="Enter code"
-                className="mt-2 block w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
-            </div>
+    <div className="flex min-h-screen bg-primary items-start justify-center pt-42">
+      {code ? (
+        isSuccess ? (
+          <div className="flex flex-col items-center space-y-4">
+            <h2 className="text-2xl font-roboto font-bold text-center text-green-600">
+              Verified successfully
+            </h2>
             <button
-              type="submit"
-              className="w-full bg-blue-500 text-white p-3 rounded-md hover:bg-blue-600 focus:outline-none"
+              className="py-2 px-4 bg-button-primary text-white font-semibold rounded-md hover:bg-button-primary-hover focus:outline-none focus:ring-2"
+              onClick={() => navigate("/")}
             >
-              Confirm Email
+              Back to Home
             </button>
-          </form>
-        ) : (
-          <div className="text-center text-green-500">
-            <p>Your email has been successfully confirmed!</p>
           </div>
-        )}
-      </div>
+        ) : isError ? (
+          <div className="flex flex-col items-center space-y-4">
+            <h2 className="text-2xl font-roboto font-bold text-center text-red-500">
+              Invalid or expired code
+            </h2>
+            <p className="text-sm text-font-primary text-center">
+              The link is either invalid or expired.
+            </p>
+            <button
+              className="py-2 px-4 bg-button-primary text-white font-semibold rounded-md hover:bg-button-primary-hover focus:outline-none focus:ring-2"
+              onClick={() => navigate("/")}
+            >
+              Get a new link
+            </button>
+            <button
+              className="py-2 px-4 bg-gray-200 text-gray-700 font-semibold rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2"
+              onClick={() => navigate("/")}
+            >
+              Back to Home
+            </button>
+          </div>
+        ) : null
+      ) : (
+        <div className="space-y-4 flex flex-col items-center justify-center w-full max-w-lg mx-auto gap-y-1">
+          <h2 className="text-2xl font-roboto font-bold text-center text-font-primary">
+            We've already sent the code for you
+          </h2>
+          <p className="text-sm text-font-primary text-center">
+            We have already sent the code for you. Check the confirmation code
+            in your email. If you need to request a new code, go back and select
+            confirm again.
+          </p>
+          <button
+            className="py-2 px-4 bg-button-primary text-white font-semibold rounded-md hover:bg-button-primary-hover focus:outline-none focus:ring-2"
+            onClick={() => navigate("/password/forget")}
+          >
+            Request new verification link
+          </button>
+        </div>
+      )}
     </div>
   );
 };

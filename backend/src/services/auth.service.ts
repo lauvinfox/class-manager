@@ -31,7 +31,8 @@ import {
 import { hashValue } from "@utils/hash";
 
 type CreateAccountParams = {
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   username: string;
   password: string;
@@ -51,9 +52,11 @@ export const createAccount = async (data: CreateAccountParams) => {
 
   appAssert(!existingUser, CONFLICT, "Email already in use");
 
+  const name = `${data.firstName} ${data.lastName}`;
+
   // create user
   const user = await UserModel.create({
-    name: data.name,
+    name,
     email: data.email,
     username: data.username,
     password: data.password,
@@ -107,7 +110,7 @@ export const loginUser = async ({
   appAssert(user, UNAUTHORIZED, "Invalid email or password");
 
   // validate password
-  const isValid = await user.isPasswordMatch(password);
+  const isValid = await user.comparePassword(password);
   appAssert(isValid, UNAUTHORIZED, "Invalid email or password");
 
   const userId = user._id;

@@ -1,15 +1,17 @@
 import { useMutation } from "@tanstack/react-query";
 import React, { useState, useEffect } from "react";
 import { FaEye, FaEyeSlash, FaGoogle } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
-import { loginUser } from "../lib/api";
+import { useLocation, useNavigate } from "react-router-dom";
+import { getMe, loginUser } from "../lib/api";
 
 const LoginPage: React.FC = () => {
+  const location = useLocation();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const redirectUrl = location.state?.redirectUrl || "/";
 
   const {
     mutate: signin,
@@ -19,22 +21,23 @@ const LoginPage: React.FC = () => {
     mutationFn: ({ email, password }: { email: string; password: string }) =>
       loginUser(email, password),
     onSuccess: () => {
-      navigate("/", { replace: true });
+      navigate(redirectUrl, {
+        replace: true,
+      });
     },
-    onError: (error) => {
-      console.error("Login error", error);
-    },
-    retry: false, // Tambahkan ini agar tidak auto-retry
   });
 
   useEffect(() => {
-    // Cek token login, misal dari localStorage/cookie
-    const token = localStorage.getItem("accessToken");
-    console.log("Token:", token);
-    if (token) {
-      navigate("/", { replace: true });
-    }
-  }, [navigate]);
+    // Cek status login dengan cookie (bukan localStorage)
+    getMe()
+      .then(() => {
+        // Jika berhasil, user sudah login, redirect ke halaman utama
+        navigate(redirectUrl, { replace: true });
+      })
+      .catch(() => {
+        // Jika gagal (401), biarkan user di halaman login
+      });
+  }, [redirectUrl, navigate]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,11 +49,11 @@ const LoginPage: React.FC = () => {
   };
 
   const handleSignUpClick = () => {
-    navigate("/auth/signup");
+    navigate("/signup");
   };
 
   const handleGoogleSignIn = () => {
-    navigate("/auth/google/signup");
+    navigate("/google/signup");
   };
 
   return (
@@ -107,7 +110,6 @@ const LoginPage: React.FC = () => {
             className={`w-full sm:w-2/3 py-2 px-4 bg-button-primary text-white font-semibold rounded-md hover:bg-button-primary-hover focus:outline-none focus:ring-2 ${
               isPending ? "opacity-50 cursor-not-allowed" : ""
             }`}
-            onClick={handleSubmit}
             disabled={isPending} // Menonaktifkan tombol ketika isPending true
           >
             {isPending ? (

@@ -1,6 +1,9 @@
 import { RequestHandler } from "express";
-import * as UserService from "@services/user.services";
+import * as UserService from "@services/user.service";
 import catchError from "@utils/error";
+import userModel from "@models/user.model";
+import appAssert from "@utils/appAssert";
+import { BAD_REQUEST, UNAUTHORIZED } from "@constants/statusCodes";
 
 export const getUsers: RequestHandler = catchError(async (_req, res) => {
   const users = await UserService.getAllUsers();
@@ -38,4 +41,17 @@ export const deleteUser: RequestHandler = catchError(async (req, res) => {
 
   await UserService.deleteUserById(id);
   res.status(200).json({ message: "User deleted successfully" });
+});
+
+export const getMe: RequestHandler = catchError(async (req, res) => {
+  const userId = req.userId as string;
+  appAssert(userId, UNAUTHORIZED, "User not authenticated");
+
+  const user = await UserService.checkGetMe(userId);
+
+  // req.user sudah diisi oleh middleware
+  return res.json({
+    message: "User data retrieved successfully",
+    data: user,
+  });
 });

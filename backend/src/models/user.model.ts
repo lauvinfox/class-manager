@@ -15,7 +15,7 @@ export interface IUser extends Document {
   createdAt: Date;
   updatedAt: Date;
 
-  isPasswordMatch(val: string): Promise<boolean>;
+  comparePassword(val: string): Promise<boolean>;
   omitPassword(): Pick<
     IUser,
     "_id" | "email" | "verified" | "createdAt" | "updatedAt"
