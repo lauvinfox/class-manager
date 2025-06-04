@@ -10,6 +10,19 @@ export const getUserById = async (id: string): Promise<IUser | null> => {
   return UserModel.findById(id).select("-password").exec();
 };
 
+export const getUserInfo = async (
+  userId: string
+): Promise<Pick<
+  IUser,
+  "name" | "username" | "email" | "firstName" | "lastName"
+> | null> => {
+  const user = await UserModel.findById(userId)
+    .select("name username email firstName lastName")
+    .exec();
+  appAssert(user, NOT_FOUND, "User not found");
+  return user;
+};
+
 export const updateUserById = async (
   id: string,
   updatedData: Partial<IUser>

@@ -5,6 +5,8 @@ import { Document, model, Schema } from "mongoose";
 
 export interface IUser extends Document {
   name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   username: string;
   password: string;
@@ -28,6 +30,14 @@ const UserSchema: Schema = new Schema<IUser>(
       type: String,
       required: true,
       minlength: [3, "Name must be at least 3 characters"],
+    },
+    firstName: {
+      type: String,
+      required: true,
+    },
+    lastName: {
+      type: String,
+      required: true,
     },
     email: {
       type: String,

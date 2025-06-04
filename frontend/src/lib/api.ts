@@ -30,6 +30,11 @@ export const getMe = async () => {
   return await API.get("/api/v1/users/me");
 };
 
+export const getUserInfo = async () => {
+  const response = await API.get(`/api/v1/users/info`);
+  return response;
+};
+
 export const signOut = async () => {
   return await API.get("/auth/signout");
 };

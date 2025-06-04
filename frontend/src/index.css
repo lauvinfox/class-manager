@@ -17,3 +17,5 @@
 
   --font-roboto: "Roboto", "sans-serif";
 }
+
+@custom-variant dark (&:where(.dark, .dark *));

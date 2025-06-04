@@ -40,7 +40,25 @@ export const deleteUser: RequestHandler = catchError(async (req, res) => {
   const { id } = req.params;
 
   await UserService.deleteUserById(id);
-  res.status(200).json({ message: "User deleted successfully" });
+  return res.status(200).json({ message: "User deleted successfully" });
+});
+
+export const getUserInfo: RequestHandler = catchError(async (req, res) => {
+  const userId = req.userId as string;
+
+  const user = await UserService.getUserInfo(userId);
+  appAssert(user, UNAUTHORIZED, "User not found");
+
+  return res.status(200).json({
+    message: "User info retrieved successfully",
+    data: {
+      username: user.username,
+      email: user.email,
+      name: user.name,
+      firstName: user.firstName,
+      lastName: user.lastName,
+    },
+  });
 });
 
 export const getMe: RequestHandler = catchError(async (req, res) => {

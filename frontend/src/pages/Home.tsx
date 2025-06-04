@@ -1,16 +1,13 @@
 import { useEffect } from "react";
-import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { signOut, getMe } from "../lib/api";
+import { getMe } from "../lib/api";
+// import Header from "../components/Header";
+import { Sidebar } from "../components/Sidebar";
+import { useTheme } from "../contexts/ThemeContext";
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const { mutate: signOutMutate, isPending } = useMutation({
-    mutationFn: signOut,
-    onSuccess: () => {
-      navigate("/signin", { replace: true });
-    },
-  });
+  const { darkMode, toggleDarkMode } = useTheme();
 
   useEffect(() => {
     getMe().catch(() => {
@@ -19,15 +16,12 @@ const HomePage = () => {
   }, [navigate]);
 
   return (
-    <div>
-      <h2>Home</h2>
-      <button
-        onClick={() => signOutMutate()}
-        disabled={isPending}
-        className="py-2 px-4 bg-button-primary text-white font-semibold rounded-md hover:bg-button-primary-hover focus:outline-none focus:ring-2"
-      >
-        {isPending ? "Signing out..." : "Sign Out"}
-      </button>
+    <div
+      className={`${
+        darkMode && "dark"
+      } min-h-screen bg-primary text-font-primary`}
+    >
+      <Sidebar />
     </div>
   );
 };
