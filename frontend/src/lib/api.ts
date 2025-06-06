@@ -35,6 +35,11 @@ export const getUserInfo = async () => {
   return response;
 };
 
+export const getFullUserInfo = async () => {
+  const response = await API.get(`/api/v1/users/full-information`);
+  return response;
+};
+
 export const signOut = async () => {
   return await API.get("/auth/signout");
 };

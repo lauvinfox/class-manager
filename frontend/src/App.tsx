@@ -5,10 +5,11 @@ import SignUpPage from "./pages/SignUp";
 import EmailVerificationPage from "./pages/EmailVerification";
 import ForgetPasswordPage from "./pages/ForgetPassword";
 import ChangePasswordPage from "./pages/ResetPassword";
-
-export const Home = () => {
-  return <h1 className="text-3xl font-bold underline">Hello world!</h1>;
-};
+import Settings from "./pages/Settings";
+import Classes from "./pages/Classes";
+import Notifications from "./pages/Notifications";
+import Help from "./pages/Help";
+import ProfilePage from "./pages/Profile";
 
 function App() {
   return (
@@ -20,6 +21,11 @@ function App() {
       <Route path="/email/verify/:code" element={<EmailVerificationPage />} />
       <Route path="/password/forget" element={<ForgetPasswordPage />} />
       <Route path="/password/reset" element={<ChangePasswordPage />} />
+      <Route path="/profile" element={<ProfilePage />} />
+      <Route path="/classes" element={<Classes />} />
+      <Route path="/notifications" element={<Notifications />} />
+      <Route path="/settings" element={<Settings />} />
+      <Route path="/help" element={<Help />} />
     </Routes>
   );
 }
