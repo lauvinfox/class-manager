@@ -35,8 +35,13 @@ export const getUserInfo = async () => {
   return response;
 };
 
-export const getFullUserInfo = async () => {
-  const response = await API.get(`/api/v1/users/full-information`);
+export const getUsername = async () => {
+  const response = await API.get(`/api/v1/users/username`);
+  return response;
+};
+
+export const getFullUserInfo = async (username: string) => {
+  const response = await API.get(`/api/v1/users/info-by-username/${username}`);
   return response;
 };
 

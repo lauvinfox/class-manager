@@ -14,9 +14,9 @@ const Notifications = () => {
       >
         <div className="flex">
           <Sidebar />
-          <div className="flex-1 min-h-screen">
+          <div className="flex-1">
             <Header title="Class Manager" fontSize="text-xl" />
-            <div className="flex flex-col items-center justify-center h-screen">
+            <div className="flex flex-col h-[76.5%] items-center justify-center">
               <h1 className="text-2xl font-bold mb-4">Notifications</h1>
               <p className="text-gray-600">This page is under construction.</p>
             </div>

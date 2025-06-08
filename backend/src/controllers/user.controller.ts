@@ -21,6 +21,19 @@ export const getUser: RequestHandler = catchError(async (req, res) => {
   res.status(200).json({ data: user });
 });
 
+export const getUserByUsername: RequestHandler = catchError(
+  async (req, res) => {
+    const username = req.params.username;
+    const user = await UserService.getUserByUsername(username);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({ data: user });
+  }
+);
+
 export const updateUser: RequestHandler = catchError(async (req, res) => {
   const { id } = req.params;
   const updatedData = req.body;

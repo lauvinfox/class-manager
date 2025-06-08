@@ -10,6 +10,18 @@ export const getUserById = async (id: string): Promise<IUser | null> => {
   return UserModel.findById(id).select("-password").exec();
 };
 
+export const getUserByUsername = async (
+  username: string
+): Promise<IUser | null> => {
+  const user = await UserModel.findOne({ username: username })
+    .select(
+      "name firstName lastName username email dateOfBirth dateJoined verified"
+    )
+    .exec();
+
+  return user;
+};
+
 export const getUserInfo = async (
   userId: string
 ): Promise<Pick<

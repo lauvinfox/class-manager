@@ -15,10 +15,10 @@ export const SettingSidebar = ({
 }: SettingSidebarProps) => {
   return (
     <nav
-      className="sticky top-0 h-screen shrink-0 border-r border-slate-300 bg-primary p-2 dark:bg-gray-900 dark:border-gray-700"
+      className="sticky top-0 h-full shrink-0 border-r border-slate-300 bg-primary p-2 dark:bg-gray-900 dark:border-gray-700"
       style={{ width: "225px" }}
     >
-      <div className="space-y-1">
+      <div className="space-y-1 ">
         {options.map((opt) => (
           <button
             key={opt.title}

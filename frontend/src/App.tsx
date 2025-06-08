@@ -22,6 +22,7 @@ function App() {
       <Route path="/password/forget" element={<ForgetPasswordPage />} />
       <Route path="/password/reset" element={<ChangePasswordPage />} />
       <Route path="/profile" element={<ProfilePage />} />
+      <Route path="/profile/:username" element={<ProfilePage />} />
       <Route path="/classes" element={<Classes />} />
       <Route path="/notifications" element={<Notifications />} />
       <Route path="/settings" element={<Settings />} />

@@ -38,26 +38,25 @@ const Settings = () => {
 
   return (
     <AuthProvider>
-      (
       <div
         className={`${
-          darkMode && "dark"
-        } min-h-screen bg-primary dark:bg-gray-900 text-font-primary`}
+          darkMode ? "dark" : ""
+        } h-screen bg-primary dark:bg-gray-900 text-font-primary`}
       >
-        <div className="flex">
+        <div className="flex h-full">
           <Sidebar />
-          <div className="flex-1 min-h-screen">
+          <div className="flex-1 h-full">
             <Header title="Class Manager" fontSize="text-xl" />
             <SettingHeader tab={selectedTab} />
-            <div className="flex">
+            <div className="flex h-[83.18%] border-b overflow-hidden">
               <SettingSidebar
                 selected={selectedTab}
                 setSelected={setSelectedTab}
               />
-              <div className="flex-1">
+              <div className="flex-1 h-full">
                 {/* Konten tab aktif bisa diatur di sini */}
                 {selectedTab === "Account" && (
-                  <div className="flex flex-col gap-2 dark:bg-gray-900 dark:text-slate-200 dark:border-slate-200 p-6">
+                  <div className="flex flex-col gap-2 dark:bg-gray-900 dark:text-slate-200 dark:border-slate-200 p-6 h-full">
                     <div className="flex flex-row justify-between">
                       <div className="flex flex-col">
                         <span className="font-medium mb-2">Username</span>
@@ -86,7 +85,7 @@ const Settings = () => {
                   </div>
                 )}
                 {selectedTab === "Preferences" && (
-                  <div className="flex flex-col dark:bg-gray-900 dark:text-slate-200 dark:border-slate-200 p-6">
+                  <div className="flex flex-col dark:bg-gray-900 dark:text-slate-200 dark:border-slate-200 p-6 h-full">
                     <div className="flex flex-row justify-between">
                       <span className="font-medium mb-2">Change mode</span>
                       <label className="inline-flex items-center cursor-pointer">
@@ -109,13 +108,14 @@ const Settings = () => {
                     </div>
                   </div>
                 )}
-                {selectedTab === "General" && <div>General Content</div>}
+                {selectedTab === "General" && (
+                  <div className="h-full">General Content</div>
+                )}
               </div>
             </div>
           </div>
         </div>
       </div>
-      );
     </AuthProvider>
   );
 };

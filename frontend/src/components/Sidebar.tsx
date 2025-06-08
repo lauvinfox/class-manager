@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
+import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
@@ -14,6 +15,7 @@ import {
 import { MdOutlineNotifications } from "react-icons/md";
 
 import { getUserInfo, signOut } from "../lib/api";
+import { ProfilePic } from "./ProfilePic";
 
 const TitleSection = React.memo(() => {
   const navigate = useNavigate();
@@ -25,7 +27,8 @@ const TitleSection = React.memo(() => {
   } | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showSignOutModal, setShowSignOutModal] = useState(false);
-  const dropdownRef = React.useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const isMounted = useRef(false);
 
   const { mutate: signOutMutate } = useMutation({
     mutationFn: signOut,
@@ -34,7 +37,26 @@ const TitleSection = React.memo(() => {
     },
   });
 
-  // Close dropdown on click outside
+  const fetchUserInfo = async () => {
+    try {
+      const res = await getUserInfo();
+      return res?.data;
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  };
+
+  const fetchData = async () => {
+    if (isMounted.current) return; // Prevents fetching if already mounted
+    const userData = await fetchUserInfo();
+    setUser(userData);
+  };
+
+  useState(() => {
+    fetchData();
+  });
+
   useEffect(() => {
     if (!dropdownOpen) return;
     function handleClick(e: MouseEvent) {
@@ -48,29 +70,6 @@ const TitleSection = React.memo(() => {
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, [dropdownOpen]);
-
-  useEffect(() => {
-    let isMounted = true;
-    getUserInfo()
-      .then((res) => {
-        if (isMounted) {
-          if (res?.data?.username && res?.data?.email) {
-            setUser({
-              username: res.data.username,
-              email: res.data.email,
-              firstName: res.data.firstName,
-              lastName: res.data.lastName,
-            });
-          }
-        }
-      })
-      .catch(() => {
-        // error handling removed
-      });
-    return () => {
-      isMounted = false;
-    };
-  }, []);
 
   // Memoize username/email block so it only re-renders if username/email changes
   const userInfoBlock = useMemo(
@@ -118,7 +117,7 @@ const TitleSection = React.memo(() => {
           >
             <button
               className="w-full px-4 py-2 text-left text-sm hover:bg-slate-100 dark:hover:bg-gray-800"
-              onClick={() => navigate("/profile")}
+              onClick={() => navigate(`/profile/${user?.username}`)}
             >
               Profile
             </button>
@@ -132,81 +131,83 @@ const TitleSection = React.memo(() => {
         )}
       </div>
       {/* Sign Out Modal */}
-      {showSignOutModal && (
-        <div
-          className="relative z-50"
-          aria-labelledby="modal-title"
-          role="dialog"
-          aria-modal="true"
-        >
-          {/* Backdrop */}
+      {showSignOutModal &&
+        createPortal(
           <div
-            className="fixed inset-0 bg-gray-500/75 transition-opacity"
-            aria-hidden="true"
-          ></div>
+            className="relative z-50"
+            aria-labelledby="modal-title"
+            role="dialog"
+            aria-modal="true"
+          >
+            {/* Backdrop */}
+            <div
+              className="fixed inset-0 bg-gray-500/75 transition-opacity"
+              aria-hidden="true"
+            ></div>
 
-          <div className="fixed inset-0 z-50 w-screen overflow-y-auto">
-            <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-              <div className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
-                <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                  <div className="sm:flex sm:items-start">
-                    <div className="mx-auto flex size-12 shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:size-10">
-                      <svg
-                        className="size-6 text-red-600"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        aria-hidden="true"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
-                        />
-                      </svg>
-                    </div>
-                    <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                      <h3
-                        className="text-base font-semibold text-gray-900"
-                        id="modal-title"
-                      >
-                        Sign out
-                      </h3>
-                      <div className="mt-2">
-                        <p className="text-sm text-gray-500">
-                          Are you sure you want to sign out? You will need to
-                          log in again to access your account.
-                        </p>
+            <div className="fixed inset-0 z-50 w-screen overflow-y-auto translate-y-[-25px]">
+              <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                <div className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                  <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div className="sm:flex sm:items-start">
+                      <div className="mx-auto flex size-12 shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:size-10">
+                        <svg
+                          className="size-6 text-red-600"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={1.5}
+                          stroke="currentColor"
+                          aria-hidden="true"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
+                          />
+                        </svg>
+                      </div>
+                      <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                        <h3
+                          className="text-base font-semibold text-gray-900"
+                          id="modal-title"
+                        >
+                          Sign out
+                        </h3>
+                        <div className="mt-2">
+                          <p className="text-sm text-gray-500">
+                            Are you sure you want to sign out? You will need to
+                            log in again to access your account.
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-                <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                  <button
-                    type="button"
-                    className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-red-500 sm:ml-3 sm:w-auto"
-                    onClick={() => {
-                      setShowSignOutModal(false);
-                      setDropdownOpen(false);
-                      signOutMutate();
-                    }}
-                  >
-                    Sign out
-                  </button>
-                  <button
-                    type="button"
-                    className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50 sm:mt-0 sm:w-auto"
-                    onClick={() => setShowSignOutModal(false)}
-                  >
-                    Cancel
-                  </button>
+                  <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                    <button
+                      type="button"
+                      className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-red-500 sm:ml-3 sm:w-auto"
+                      onClick={() => {
+                        setShowSignOutModal(false);
+                        setDropdownOpen(false);
+                        signOutMutate();
+                      }}
+                    >
+                      Sign out
+                    </button>
+                    <button
+                      type="button"
+                      className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                      onClick={() => setShowSignOutModal(false)}
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
       <hr className="w-[225px] translate-x-[-8px] translate-y-3 text-slate-300 dark:text-gray-800" />
     </div>
   );
@@ -220,7 +221,7 @@ export const Sidebar = () => {
       return "Notification";
     if (window.location.pathname.startsWith("/classes")) return "Classes";
     if (window.location.pathname.startsWith("/help")) return "Help";
-    return "Dashboard";
+    return "Home";
   });
 
   return (
@@ -316,21 +317,7 @@ const Option = ({
   );
 };
 
-interface ProfilePicProps {
+export interface ProfilePicProps {
   firstName?: string;
   lastName?: string;
 }
-
-const ProfilePic = React.memo(({ firstName, lastName }: ProfilePicProps) => {
-  // Memoize the avatar URL so it doesn't change on every render
-  const avatarUrl = useMemo(() => {
-    return `https://ui-avatars.com/api/?name=${firstName || ""}+${
-      lastName || ""
-    }&background=4D46D3&color=fff&`;
-  }, [firstName, lastName]);
-  return (
-    <div className="grid size-10 shrink-0 place-content-center rounded-md bg-indigo-600">
-      <img src={avatarUrl} alt="" className="w-10 h-10 rounded-md" />
-    </div>
-  );
-});
