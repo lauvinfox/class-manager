@@ -10,6 +10,19 @@ export const getUserById = async (id: string): Promise<IUser | null> => {
   return UserModel.findById(id).select("-password").exec();
 };
 
+export const getUsersByUsername = async (
+  username: string
+): Promise<IUser[] | null> => {
+  // Cari username yang mengandung string 'username' (case-insensitive)
+  const users = await UserModel.find({
+    username: { $regex: username, $options: "i" },
+  })
+    .select("username")
+    .exec();
+
+  return users;
+};
+
 export const getUserByUsername = async (
   username: string
 ): Promise<IUser | null> => {

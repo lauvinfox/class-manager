@@ -35,8 +35,8 @@ export const getUserInfo = async () => {
   return response;
 };
 
-export const getUsername = async () => {
-  const response = await API.get(`/api/v1/users/username`);
+export const getUsersByUsername = async (username: string) => {
+  const response = await API.post(`/api/v1/users/username`, { username });
   return response;
 };
 

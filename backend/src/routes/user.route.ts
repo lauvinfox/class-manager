@@ -7,6 +7,7 @@ const router = Router();
 // Protected routes
 // preventing Express from treating "me" as a user ID and avoiding the CastError.
 router.get("/me", UsersController.getMe);
+router.post("/username", UsersController.searchUserByUsername);
 router.get("/info", UsersController.getUserInfo);
 router.get("/info-by-username/:username", UsersController.getUserByUsername);
 

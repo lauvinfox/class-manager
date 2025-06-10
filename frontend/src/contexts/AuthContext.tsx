@@ -16,6 +16,7 @@ interface AuthProviderProps {
 interface AuthContextType {
   user: {
     userId: string;
+    username: string;
   } | null;
 }
 

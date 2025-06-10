@@ -86,3 +86,14 @@ export const getMe: RequestHandler = catchError(async (req, res) => {
     data: user,
   });
 });
+
+export const searchUserByUsername = catchError(async (req, res) => {
+  const { username } = req.body;
+
+  const users = await UserService.getUsersByUsername(username);
+
+  return res.json({
+    message: "User data retrieved successfully",
+    data: users,
+  });
+});

@@ -20,7 +20,7 @@ export interface IUser extends Document {
   comparePassword(val: string): Promise<boolean>;
   omitPassword(): Pick<
     IUser,
-    "_id" | "email" | "verified" | "createdAt" | "updatedAt"
+    "_id" | "email" | "username" | "verified" | "createdAt" | "updatedAt"
   >;
 }
 
