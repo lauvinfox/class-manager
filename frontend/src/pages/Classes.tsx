@@ -1,13 +1,13 @@
 import { MdGroupAdd } from "react-icons/md";
 import { useEffect, useRef, useState } from "react";
 import { FaThLarge, FaList } from "react-icons/fa";
+import { FiTrash2 } from "react-icons/fi";
 
 import Header from "../components/Header";
 import { Sidebar } from "../components/Sidebar";
 import { AuthProvider } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { getUserInfo, getUsersByUsername } from "../lib/api";
-import { FiTrash2 } from "react-icons/fi";
 import Spinner from "../components/Spinner";
 
 interface Instructor {
@@ -391,7 +391,7 @@ const Classes = () => {
                               )
                             }
                           >
-                            Remove
+                            <FiTrash2 />
                           </button>
                         </li>
                       ))}

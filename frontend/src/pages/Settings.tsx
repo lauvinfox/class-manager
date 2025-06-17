@@ -4,7 +4,7 @@ import { Sidebar } from "../components/Sidebar";
 import { useTheme } from "../contexts/ThemeContext";
 import SettingSidebar from "../components/SettingSidebar";
 import { FaMoon, FaSun } from "react-icons/fa";
-import { getUserInfo } from "../lib/api";
+import { changeUsername, getUserInfo } from "../lib/api";
 import { AuthProvider } from "../contexts/AuthContext";
 
 const Settings = () => {
@@ -14,6 +14,12 @@ const Settings = () => {
     email: string;
   } | null>(null);
   const [selectedTab, setSelectedTab] = useState("Preferences");
+
+  const [showChangeUsername, setShowChangeUsername] = useState(false);
+  const [newUsername, setNewUsername] = useState("");
+  const [passwordInput, setPasswordInput] = useState("");
+  const [changeLoading, setChangeLoading] = useState(false);
+  const [changeError, setChangeError] = useState("");
 
   useEffect(() => {
     let isMounted = true;
@@ -66,6 +72,7 @@ const Settings = () => {
                         <button
                           type="button"
                           className="text-sm dark:text-slate-50 border dark:border-slate-50 font-bold rounded-md h-8 w-16 min-w-0 min-h-0"
+                          onClick={() => setShowChangeUsername(true)}
                         >
                           Edit
                         </button>
@@ -110,6 +117,91 @@ const Settings = () => {
                 )}
                 {selectedTab === "General" && (
                   <div className="h-full">General Content</div>
+                )}
+                {showChangeUsername && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 w-full max-w-sm relative">
+                      <button
+                        className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 dark:hover:text-white text-xl"
+                        onClick={() => setShowChangeUsername(false)}
+                        aria-label="Close"
+                      >
+                        &times;
+                      </button>
+                      <h2 className="text-lg font-bold mb-4 text-font-primary dark:text-white">
+                        Change Username
+                      </h2>
+                      <form
+                        className="flex flex-col gap-4"
+                        onSubmit={async (e) => {
+                          e.preventDefault();
+                          setChangeLoading(true);
+                          setChangeError("");
+                          try {
+                            await changeUsername({
+                              password: passwordInput,
+                              newUsername,
+                            });
+                            setUser(
+                              (prev) =>
+                                prev && { ...prev, username: newUsername }
+                            );
+                            setShowChangeUsername(false);
+                            setPasswordInput("");
+                            setNewUsername("");
+                          } finally {
+                            setChangeLoading(false);
+                          }
+                        }}
+                      >
+                        <div>
+                          <label className="block text-sm font-medium mb-1 text-slate-50">
+                            New Username
+                          </label>
+                          <input
+                            type="text"
+                            className="w-full rounded border border-slate-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-font-primary dark:text-white"
+                            value={newUsername}
+                            onChange={(e) => setNewUsername(e.target.value)}
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1 text-slate-50">
+                            Password
+                          </label>
+                          <input
+                            type="password"
+                            className="w-full rounded border border-slate-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-font-primary dark:text-white"
+                            value={passwordInput}
+                            onChange={(e) => setPasswordInput(e.target.value)}
+                            required
+                          />
+                        </div>
+                        {changeError && (
+                          <div className="text-red-500 text-xs">
+                            {changeError}
+                          </div>
+                        )}
+                        <div className="flex justify-end gap-2 mt-2">
+                          <button
+                            type="button"
+                            className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600"
+                            onClick={() => setShowChangeUsername(false)}
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="submit"
+                            className="px-4 py-2 rounded bg-indigo-600 text-white font-semibold hover:bg-indigo-700"
+                            disabled={changeLoading}
+                          >
+                            {changeLoading ? "Saving..." : "Save"}
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>

@@ -130,7 +130,10 @@ export const loginUser = async ({
   // sign access token & refresh token
   const refreshToken = signToken(sessionInfo, refreshTokenSignOptions);
 
-  const accessToken = signToken({ ...sessionInfo, userId: user._id });
+  const accessToken = signToken(
+    { ...sessionInfo, userId: user._id },
+    { expiresIn: "30d", secret: env.ACCESS_TOKEN_SECRET }
+  );
 
   // return user tokens
   return { user: user.omitPassword(), accessToken, refreshToken };
@@ -151,7 +154,6 @@ export const refreshUserAccessToken = async (refreshToken: string) => {
     "Session expired"
   );
 
-  // refresh session if expires in 24 hours
   session.expiresAt = thirtyDaysFromNow();
   await session.save();
 
@@ -169,10 +171,13 @@ export const refreshUserAccessToken = async (refreshToken: string) => {
     refreshTokenSignOptions
   );
 
-  const accessToken = signToken({
-    userId: session.userId,
-    sessionId: session._id,
-  });
+  const accessToken = signToken(
+    {
+      userId: session.userId,
+      sessionId: session._id,
+    },
+    { expiresIn: "30d", secret: env.ACCESS_TOKEN_SECRET }
+  );
 
   return { accessToken, newRefreshToken };
 };

@@ -97,3 +97,19 @@ export const searchUserByUsername = catchError(async (req, res) => {
     data: users,
   });
 });
+
+export const changeUsername = catchError(async (req, res) => {
+  const { password, newUsername } = req.body;
+  const userId = req.userId as string;
+
+  const result = await UserService.updateUsername({
+    userId,
+    password,
+    newUsername,
+  });
+
+  return res.json({
+    message: "Username changed successfully",
+    data: result,
+  });
+});

@@ -1,4 +1,5 @@
-import { NOT_FOUND } from "@constants/statusCodes";
+import { CONFLICT, NOT_FOUND, UNAUTHORIZED } from "@constants/statusCodes";
+import userModel from "@models/user.model";
 import UserModel, { IUser } from "@models/user.model";
 import appAssert from "@utils/appAssert";
 
@@ -65,5 +66,29 @@ export const checkGetMe = async (userId: string) => {
   appAssert(user, NOT_FOUND, "User not found");
 
   // return user without password
+  return user.omitPassword();
+};
+
+export const updateUsername = async ({
+  userId,
+  password,
+  newUsername,
+}: {
+  userId: string;
+  password: string;
+  newUsername: string;
+}) => {
+  const user = await UserModel.findById(userId);
+  appAssert(user, NOT_FOUND, "User not found");
+
+  const isValid = await user.comparePassword(password);
+  appAssert(isValid, UNAUTHORIZED, "Invalid password");
+
+  const exists = await UserModel.exists({ username: newUsername });
+  appAssert(!exists, CONFLICT, "Username already taken");
+
+  user.username = newUsername;
+  await user.save();
+
   return user.omitPassword();
 };

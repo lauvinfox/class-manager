@@ -4,9 +4,10 @@ import { Document, model, Schema, Types } from "mongoose";
 export interface IClass extends Document {
   name: string;
   description?: string;
-  homeroomTeacher: Types.ObjectId;
-  teachers: Types.ObjectId[];
-  students: Types.ObjectId[];
+  classOwner: Types.ObjectId;
+  instructors: Types.ObjectId[];
+  roles: string[];
+  students?: Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -24,11 +25,17 @@ const ClassSchema: Schema = new Schema<IClass>(
       trim: true,
       maxlength: [500, "Description cannot exceed 500 characters"],
     },
-    homeroomTeacher: {
+    classOwner: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: [true, "Instructor is required"],
     },
+    instructors: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
     students: [
       {
         type: Schema.Types.ObjectId,

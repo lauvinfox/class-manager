@@ -40,6 +40,20 @@ export const getUsersByUsername = async (username: string) => {
   return response;
 };
 
+export const changeUsername = async ({
+  password,
+  newUsername,
+}: {
+  password: string;
+  newUsername: string;
+}) => {
+  const response = await API.put(`/api/v1/users/username/change`, {
+    password,
+    newUsername,
+  });
+  return response;
+};
+
 export const getFullUserInfo = async (username: string) => {
   const response = await API.get(`/api/v1/users/info-by-username/${username}`);
   return response;
