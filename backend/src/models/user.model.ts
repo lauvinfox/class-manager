@@ -1,6 +1,7 @@
 import { dateJoined } from "@utils/date";
 import { compareValue, hashValue } from "@utils/hash";
 import { toJSONPlugin } from "@utils/toJSONPlugin";
+import { bool } from "envalid";
 import { Document, model, Schema } from "mongoose";
 
 export interface IUser extends Document {
@@ -13,7 +14,24 @@ export interface IUser extends Document {
   dateOfBirth: Date;
   dateJoined: string;
   verified: boolean;
-  classes?: Schema.Types.ObjectId[];
+  classes?: string[];
+  classOwned?: string[];
+  invitations?: [
+    {
+      classId: { type: Schema.Types.ObjectId; ref: "Class" };
+      status: {
+        type: String;
+        enum: ["pending", "accepted", "rejected"];
+        default: "pending";
+      };
+    },
+  ];
+  notifications?: {
+    message: string;
+    type: "invite" | "other";
+    date: Date;
+    read: boolean;
+  }[];
   createdAt: Date;
   updatedAt: Date;
 
@@ -69,6 +87,26 @@ const UserSchema: Schema = new Schema<IUser>(
       default: dateJoined,
     },
     verified: { type: Boolean, required: true, default: false },
+    classes: [{ type: String }],
+    classOwned: [{ type: String }],
+    invitations: [
+      {
+        classId: { type: Schema.Types.ObjectId, ref: "Class" },
+        status: {
+          type: String,
+          enum: ["pending", "accepted", "rejected"],
+          default: "pending",
+        },
+      },
+    ],
+    notifications: [
+      {
+        message: { type: String, required: true },
+        type: { type: String, enum: ["invite", "other"], required: true },
+        date: { type: Date, default: Date.now },
+        read: { type: Boolean, default: false },
+      },
+    ],
   },
   { timestamps: true }
 );

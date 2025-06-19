@@ -40,13 +40,23 @@ export const getUserInfo = async (
   userId: string
 ): Promise<Pick<
   IUser,
-  "name" | "username" | "email" | "firstName" | "lastName"
+  "name" | "username" | "email" | "firstName" | "lastName" | "_id"
 > | null> => {
   const user = await UserModel.findById(userId)
-    .select("name username email firstName lastName")
+    .select("name username email firstName lastName _id")
     .exec();
   appAssert(user, NOT_FOUND, "User not found");
   return user;
+};
+
+export const getNotificationsById = async (userId: string) => {
+  const userNotifs = await UserModel.findById(userId)
+    .select("notifications")
+    .exec();
+
+  appAssert(userNotifs, NOT_FOUND, "User not found");
+
+  return userNotifs.notifications;
 };
 
 export const updateUserById = async (
@@ -65,8 +75,20 @@ export const checkGetMe = async (userId: string) => {
   const user = await UserModel.findById(userId);
   appAssert(user, NOT_FOUND, "User not found");
 
-  // return user without password
   return user.omitPassword();
+};
+
+// Classes
+export const getAllClassesId = async (userId: string) => {
+  const user = await UserModel.findById(userId).select("classes").exec();
+
+  return user;
+};
+
+export const getClassesOwnedByIds = async (userId: string) => {
+  const user = await UserModel.findById(userId).select("classOwned").exec();
+
+  return user;
 };
 
 export const updateUsername = async ({

@@ -1,8 +1,8 @@
-import React, { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useMemo, useRef, memo, ElementType } from "react";
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 import {
   FiChevronDown,
@@ -14,47 +14,160 @@ import {
 
 import { MdOutlineNotifications } from "react-icons/md";
 
-import { getUserInfo, signOut } from "../lib/api";
+import {
+  getUserInfo,
+  getUserNotifications,
+  markAllNotificationsAsRead,
+  signOut,
+} from "../lib/api";
 import { ProfilePic } from "./ProfilePic";
+import io from "socket.io-client";
 
-const TitleSection = React.memo(() => {
+// Ambil token dari localStorage
+const token = localStorage.getItem("accessToken");
+const socket = io("http://localhost:3000", {
+  auth: { token },
+});
+
+export const Sidebar = () => {
+  const [selected, setSelected] = useState(() => {
+    // Set default tab sesuai path
+    if (window.location.pathname.startsWith("/settings")) return "Settings";
+    if (window.location.pathname.startsWith("/notifications"))
+      return "Notification";
+    if (window.location.pathname.startsWith("/classes")) return "Classes";
+    if (window.location.pathname.startsWith("/help")) return "Help";
+    return "Home";
+  });
+
+  const [hasUnread, setHasUnread] = useState(false);
+
+  // Query user info
+  const { data: user } = useQuery({
+    queryKey: ["userInfo"],
+    queryFn: getUserInfo,
+    select: (res) => res?.data,
+  });
+
+  // Query notifikasi user
+  const { data: notifs = [], refetch: refetchNotifs } = useQuery({
+    queryKey: ["userNotifications", user?.id],
+    queryFn: () =>
+      user?.id ? getUserNotifications().then((res) => res.data) : [],
+    enabled: !!user?.id,
+  });
+
+  // Integrasi socket.io untuk real-time notification
+  useEffect(() => {
+    if (!user?.id) return;
+
+    // Fetch notifikasi awal (jika ingin, bisa pakai refetchNotifs())
+    refetchNotifs();
+
+    // Join ke room userId (opsional, jika backend pakai room)
+    socket.emit("register", user.id);
+
+    // Listen event notification
+    socket.on("notification", () => {
+      // Bisa refetch dari server, atau update state notifs secara manual
+      refetchNotifs();
+      setHasUnread(true); // Tanda unread muncul saat ada notifikasi baru
+      // Atau jika ingin langsung push ke notifs:
+      // setNotifs((prev) => [notification, ...prev]);
+    });
+
+    // Cleanup listener saat unmount
+    return () => {
+      socket.off("notification");
+    };
+  }, [user?.id, refetchNotifs]);
+
+  useEffect(() => {
+    if (
+      Array.isArray(notifs) &&
+      notifs.some((n: { isRead: boolean }) => n.isRead === false)
+    ) {
+      setHasUnread(true);
+    }
+  }, [notifs]);
+
+  const handleOptionClick = async (title: string) => {
+    setSelected(title);
+    if (title === "Notification") {
+      setHasUnread(false);
+      await markAllNotificationsAsRead();
+      refetchNotifs();
+    }
+  };
+
+  return (
+    <nav
+      className="sticky top-0 h-screen shrink-0 border-r border-slate-300 bg-primary p-2 dark:bg-gray-900 dark:border-gray-700"
+      style={{ width: "225px" }}
+    >
+      <TitleSection user={user} />
+      <div className="space-y-1">
+        <Option
+          Icon={FiHome}
+          href="/"
+          title="Home"
+          selected={selected}
+          setSelected={setSelected}
+        />
+        <Option
+          Icon={MdOutlineNotifications}
+          href="/notifications"
+          title="Notification"
+          selected={selected}
+          setSelected={handleOptionClick}
+          notifs={hasUnread}
+        />
+        <Option
+          Icon={FiUsers}
+          href="/classes"
+          title="Classes"
+          selected={selected}
+          setSelected={setSelected}
+        />
+        <Option
+          Icon={FiSettings}
+          href="/settings"
+          title="Settings"
+          selected={selected}
+          setSelected={setSelected}
+        />
+        <Option
+          Icon={FiHelpCircle}
+          href="/help"
+          title="Help"
+          selected={selected}
+          setSelected={setSelected}
+        />
+      </div>
+    </nav>
+  );
+};
+
+interface User {
+  id: string;
+  username: string;
+  email: string;
+  name?: string;
+  firstName?: string;
+  lastName?: string;
+}
+
+const TitleSection = memo(({ user }: { user: User | undefined }) => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<{
-    username: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-  } | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showSignOutModal, setShowSignOutModal] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const isMounted = useRef(false);
 
   const { mutate: signOutMutate } = useMutation({
     mutationFn: signOut,
     onSuccess: () => {
       navigate("/signin", { replace: true });
     },
-  });
-
-  const fetchUserInfo = async () => {
-    try {
-      const res = await getUserInfo();
-      return res?.data;
-    } catch (error) {
-      console.log(error);
-      return null;
-    }
-  };
-
-  const fetchData = async () => {
-    if (isMounted.current) return; // Prevents fetching if already mounted
-    const userData = await fetchUserInfo();
-    setUser(userData);
-  };
-
-  useState(() => {
-    fetchData();
   });
 
   useEffect(() => {
@@ -213,67 +326,8 @@ const TitleSection = React.memo(() => {
   );
 });
 
-export const Sidebar = () => {
-  const [selected, setSelected] = useState(() => {
-    // Set default tab sesuai path
-    if (window.location.pathname.startsWith("/settings")) return "Settings";
-    if (window.location.pathname.startsWith("/notifications"))
-      return "Notification";
-    if (window.location.pathname.startsWith("/classes")) return "Classes";
-    if (window.location.pathname.startsWith("/help")) return "Help";
-    return "Home";
-  });
-
-  return (
-    <nav
-      className="sticky top-0 h-screen shrink-0 border-r border-slate-300 bg-primary p-2 dark:bg-gray-900 dark:border-gray-700"
-      style={{ width: "225px" }}
-    >
-      <TitleSection />
-      <div className="space-y-1">
-        <Option
-          Icon={FiHome}
-          href="/"
-          title="Home"
-          selected={selected}
-          setSelected={setSelected}
-        />
-        <Option
-          Icon={MdOutlineNotifications}
-          href="/notifications"
-          title="Notification"
-          selected={selected}
-          setSelected={setSelected}
-          notifs={true}
-        />
-        <Option
-          Icon={FiUsers}
-          href="/classes"
-          title="Classes"
-          selected={selected}
-          setSelected={setSelected}
-        />
-        <Option
-          Icon={FiSettings}
-          href="/settings"
-          title="Settings"
-          selected={selected}
-          setSelected={setSelected}
-        />
-        <Option
-          Icon={FiHelpCircle}
-          href="/help"
-          title="Help"
-          selected={selected}
-          setSelected={setSelected}
-        />
-      </div>
-    </nav>
-  );
-};
-
 interface OptionProps {
-  Icon: React.ElementType;
+  Icon: ElementType;
   href: string;
   title: string;
   selected: string;
@@ -316,8 +370,3 @@ const Option = ({
     </button>
   );
 };
-
-export interface ProfilePicProps {
-  firstName?: string;
-  lastName?: string;
-}

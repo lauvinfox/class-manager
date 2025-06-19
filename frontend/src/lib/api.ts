@@ -54,6 +54,15 @@ export const changeUsername = async ({
   return response;
 };
 
+export const getUserNotifications = async () => {
+  const response = await API.get(`/api/v1/notifications/`);
+  return response;
+};
+
+export const markAllNotificationsAsRead = async () => {
+  return await API.patch("/api/v1/notifications/markallread");
+};
+
 export const getFullUserInfo = async (username: string) => {
   const response = await API.get(`/api/v1/users/info-by-username/${username}`);
   return response;
@@ -81,5 +90,21 @@ export const resetPassword = async (
     password,
     verificationCode,
   });
+  return response;
+};
+
+// Class
+export const createClass = async (name: string, description?: string) => {
+  const response = await API.post("/api/v1/class/", { name, description });
+  return response;
+};
+
+export const getClassByIds = async (ids: string[]) => {
+  const response = await API.post("/api/v1/class/getbyids", { ids });
+  return response;
+};
+
+export const getClassesByClassOwner = async () => {
+  const response = await API.get("/api/v1/class/getbyclassowner");
   return response;
 };

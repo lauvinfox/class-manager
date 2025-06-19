@@ -58,7 +58,7 @@ export const signIn: RequestHandler = catchError(async (req, res) => {
 
   return setAuthCookies({ res, accessToken, refreshToken })
     .status(OK)
-    .json({ message: "Login successful" });
+    .json({ message: "Login successful", data: accessToken });
 });
 
 export const signOut: RequestHandler = catchError(async (req, res) => {

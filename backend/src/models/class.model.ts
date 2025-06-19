@@ -1,12 +1,14 @@
 import { toJSONPlugin } from "@utils/toJSONPlugin";
 import { Document, model, Schema, Types } from "mongoose";
+import { customAlphabet } from "nanoid";
 
 export interface IClass extends Document {
+  classId: string;
   name: string;
   description?: string;
   classOwner: Types.ObjectId;
-  instructors: Types.ObjectId[];
-  roles: string[];
+  instructors?: Types.ObjectId[];
+  roles?: string[];
   students?: Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
@@ -14,6 +16,16 @@ export interface IClass extends Document {
 
 const ClassSchema: Schema = new Schema<IClass>(
   {
+    classId: {
+      type: String,
+      unique: true,
+      default: () =>
+        customAlphabet(
+          "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
+          8
+        )(),
+      index: true,
+    },
     name: {
       type: String,
       required: [true, "Class name is required"],

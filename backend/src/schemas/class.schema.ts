@@ -23,9 +23,6 @@ export const ScheduleSchema = z.array(
 export const CreateClassSchema = z.object({
   name: z.string().min(1).max(100),
   description: z.string().max(500).optional(),
-  instructorId: z.string().min(1),
-  schedule: ScheduleSchema,
-  capacity: z.number().int().positive(),
 });
 
 export type CreateClassParams = z.infer<typeof CreateClassSchema>;

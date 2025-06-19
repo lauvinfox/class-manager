@@ -65,6 +65,7 @@ export const getUserInfo: RequestHandler = catchError(async (req, res) => {
   return res.status(200).json({
     message: "User info retrieved successfully",
     data: {
+      id: user._id,
       username: user.username,
       email: user.email,
       name: user.name,
@@ -111,5 +112,29 @@ export const changeUsername = catchError(async (req, res) => {
   return res.json({
     message: "Username changed successfully",
     data: result,
+  });
+});
+
+// Notification
+export const getNotifications = catchError(async (req, res) => {
+  const { userId } = req.params;
+
+  const userNotifs = await UserService.getNotificationsById(userId);
+  console.log(userNotifs);
+
+  return res.json({
+    message: "Notification data retrieved successfully",
+    data: userNotifs,
+  });
+});
+
+// Classes
+export const getClassesId: RequestHandler = catchError(async (req, res) => {
+  const userId = req.userId as string;
+
+  const classes = await UserService.getAllClassesId(userId);
+  return res.json({
+    message: "Class data retrieved succcessfully!",
+    data: classes?.classOwned,
   });
 });

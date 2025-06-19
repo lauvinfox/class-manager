@@ -5,31 +5,31 @@ import * as ClassController from "@controllers/class.controller";
 
 const router = Router();
 
-// All class routes are protected
-router.use(authenticate);
-
 // Get all classes
-router.get("/", ClassController.getClasses);
+// router.get("/", ClassController.getClasses);
 
-// Get class by ID
-router.get("/:id", ClassController.getClass);
+// Get class by ClassId
+router.post("/getbyids", ClassController.getClassByIds);
+
+// Get class by classOwner
+router.get("/getbyclassowner", ClassController.getClassesByClassOwnerID);
 
 // Get classes by instructor ID
-router.get("/instructor/:instructorId", ClassController.getInstructorClasses);
+// router.get("/instructor/:instructorId", ClassController.getInstructorClasses);
 
 // Create new class
 router.post("/", ClassController.createNewClass);
 
 // Update a class
-router.put("/:id", ClassController.updateClassDetails);
+// router.put("/:id", ClassController.updateClassDetails);
 
 // Add a student to a class
-router.put("/:classId/students/:studentId", ClassController.addStudent);
+// router.put("/:classId/students/:studentId", ClassController.addStudent);
 
 // Remove a student from a class
-router.delete("/:classId/students/:studentId", ClassController.removeStudent);
+// router.delete("/:classId/students/:studentId", ClassController.removeStudent);
 
 // Delete a class
-router.delete("/:id", ClassController.removeClass);
+// router.delete("/:id", ClassController.removeClass);
 
 export default router;

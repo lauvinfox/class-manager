@@ -41,7 +41,18 @@ const LoginPage: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    signin({ email, password });
+    signin(
+      { email, password },
+      {
+        onSuccess: (response: { data: string }) => {
+          // Setelah login berhasil dan menerima response dari backend
+          localStorage.setItem("accessToken", response.data);
+          navigate(redirectUrl, {
+            replace: true,
+          });
+        },
+      }
+    );
   };
 
   const togglePasswordVisibility = () => {
