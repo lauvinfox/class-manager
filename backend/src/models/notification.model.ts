@@ -3,23 +3,25 @@ import { model, Schema, Types } from "mongoose";
 interface INotification {
   userId: Types.ObjectId;
   message: string;
+  classId?: string;
   isRead: boolean;
   type: "invite" | "reminder" | "info" | "other";
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 const NotificationSchema: Schema = new Schema<INotification>(
   {
     userId: {
       type: Schema.Types.ObjectId,
+      ref: "User",
       required: [true, "User ID is required"],
     },
     message: {
       type: String,
       trim: true,
       maxlength: [500, "Description cannot exceed 500 characters"],
+      required: true,
     },
+    classId: { type: String, ref: "Class" },
     isRead: {
       type: Boolean,
       default: false,

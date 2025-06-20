@@ -99,6 +99,11 @@ export const createClass = async (name: string, description?: string) => {
   return response;
 };
 
+export const getClassByClassId = async (classid: string) => {
+  const response = await API.get(`/api/v1/class/id/${classid}`);
+  return response;
+};
+
 export const getClassByIds = async (ids: string[]) => {
   const response = await API.post("/api/v1/class/getbyids", { ids });
   return response;

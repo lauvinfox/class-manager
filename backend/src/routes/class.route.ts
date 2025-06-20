@@ -20,6 +20,12 @@ router.get("/getbyclassowner", ClassController.getClassesByClassOwnerID);
 // Create new class
 router.post("/", ClassController.createNewClass);
 
+// Get class info by Id
+router.get("/id/:classId", ClassController.getClassByClassId);
+
+// Invite instructor
+router.post("/:classId/invite-instructor", ClassController.inviteInstructor);
+
 // Update a class
 // router.put("/:id", ClassController.updateClassDetails);
 

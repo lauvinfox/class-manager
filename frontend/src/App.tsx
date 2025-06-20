@@ -10,6 +10,7 @@ import Classes from "./pages/Classes";
 import Notifications from "./pages/Notifications";
 import Help from "./pages/Help";
 import ProfilePage from "./pages/Profile";
+import ClassPage from "./pages/Class";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/profile/:username" element={<ProfilePage />} />
       <Route path="/classes" element={<Classes />} />
+      <Route path="/class/:classId" element={<ClassPage />} />
       <Route path="/notifications" element={<Notifications />} />
       <Route path="/settings" element={<Settings />} />
       <Route path="/help" element={<Help />} />

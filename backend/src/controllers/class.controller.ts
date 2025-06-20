@@ -38,6 +38,22 @@ export const getClassByIds: RequestHandler = catchError(async (req, res) => {
 });
 
 /**
+ * Get class Info by ClassId
+ */
+export const getClassByClassId: RequestHandler = catchError(
+  async (req, res) => {
+    const { classId } = req.params;
+
+    const classDoc = await ClassService.getClassInfoById(classId);
+
+    return res.json({
+      message: "Class data retrieved succesfully",
+      data: classDoc,
+    });
+  }
+);
+
+/**
  * Create a new class
  */
 export const createNewClass: RequestHandler = catchError(async (req, res) => {
@@ -77,6 +93,40 @@ export const createNewClass: RequestHandler = catchError(async (req, res) => {
 //     });
 //   }
 // );
+
+/**
+ * Invite instructor to a class
+ */
+export const inviteInstructor: RequestHandler = catchError(async (req, res) => {
+  const { classId } = req.params;
+  const { userId: inviteeId } = req.body;
+  const ownerId = req.userId as string;
+
+  const result = await ClassService.inviteClassInstructor(
+    classId,
+    ownerId,
+    inviteeId
+  );
+
+  return res.json({ message: "Invite user successfully", data: result });
+});
+
+export const respondInviteInstructor: RequestHandler = catchError(
+  async (req, res) => {
+    const { classId } = req.params;
+    const userId = req.userId as string;
+    const { response } = req.body; // "accepted" atau "denied"
+
+    // Validasi response
+    if (!["accepted", "denied"].includes(response)) {
+      return res.status(400).json({ message: "Invalid response" });
+    }
+
+    await ClassService.updateInstructorStatus(classId, userId, response);
+
+    return res.json({ message: `Invitation ${response}` });
+  }
+);
 
 /**
  * Add a student to a class

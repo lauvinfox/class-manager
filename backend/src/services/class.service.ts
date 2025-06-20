@@ -10,6 +10,7 @@ import {
 } from "@constants/statusCodes";
 import { Types } from "mongoose";
 import { UpdateClassParams } from "@schemas/class.schema";
+import NotificationModel from "@models/notification.model";
 
 /**
  * Get all classes
@@ -22,6 +23,20 @@ export const getClassOwnedBy = async (userId: string) => {
   );
 
   return users;
+};
+
+/**
+ * Get class info by ID
+ * @param id - Class IDs
+ * @returns Class document
+ */
+export const getClassInfoById = async (classId: string) => {
+  const classDocs = await ClassModel.find({ classId }).populate(
+    "classOwner",
+    "name username email"
+  );
+
+  return classDocs[0];
 };
 
 /**
@@ -166,6 +181,76 @@ export const createClass = async (data: CreateClassParams) => {
 
 //   return updatedClass;
 // };
+
+export const inviteClassInstructor = async (
+  classId: string,
+  ownerId: string,
+  inviteeId: string
+) => {
+  // Validasi class dan owner
+  const classDoc = await ClassModel.findOne({ classId });
+  appAssert(classDoc, NOT_FOUND, "Class not found");
+  appAssert(
+    classDoc.classOwner.toString() === ownerId,
+    FORBIDDEN,
+    "Only class owner can invite instructors"
+  );
+
+  // Validasi user yang diundang
+  const user = await UserModel.findById(inviteeId);
+  appAssert(user, NOT_FOUND, "User to invite not found");
+
+  // Tambahkan ke instructors dengan status pending
+  await ClassModel.updateOne(
+    { classId },
+    {
+      $addToSet: {
+        instructors: {
+          instructorId: inviteeId,
+          status: "pending",
+        },
+      },
+    }
+  );
+
+  // Buat notifikasi ke user yang diundang
+  await NotificationModel.create({
+    userId: inviteeId,
+    type: "invite",
+    message: `You have been invited to be an instructor in class "${classDoc.name}"`,
+    classId: classDoc.classId,
+    isRead: false,
+    createdAt: new Date(),
+  });
+};
+
+export const updateInstructorStatus = async (
+  classId: string,
+  instructorId: string,
+  status: "accepted" | "pending" | "denied"
+) => {
+  // Cari
+  const classDoc = await ClassModel.findOne({ classId });
+  appAssert(classDoc, BAD_REQUEST, "Invitation not found");
+
+  if (status === "denied") {
+    // Hapus instructor dari array jika status denied
+    await ClassModel.updateOne(
+      { classId },
+      {
+        $pull: {
+          instructors: { instructorId: new Types.ObjectId(instructorId) },
+        },
+      }
+    );
+  } else {
+    // Update status instructor jika bukan denied
+    await ClassModel.updateOne(
+      { classId, "instructors.instructorId": new Types.ObjectId(instructorId) },
+      { $set: { "instructors.$.status": status } }
+    );
+  }
+};
 
 /**
  * Add a student to a class

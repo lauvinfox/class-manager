@@ -2,17 +2,41 @@ import { toJSONPlugin } from "@utils/toJSONPlugin";
 import { Document, model, Schema, Types } from "mongoose";
 import { customAlphabet } from "nanoid";
 
+interface IInstructor {
+  instructorId: Types.ObjectId;
+  role: string;
+  status: string;
+}
+
 export interface IClass extends Document {
   classId: string;
   name: string;
   description?: string;
   classOwner: Types.ObjectId;
-  instructors?: Types.ObjectId[];
+  instructors?: IInstructor[];
   roles?: string[];
   students?: Types.ObjectId[];
-  createdAt: Date;
-  updatedAt: Date;
 }
+
+const InstructorSchema = new Schema<IInstructor>(
+  {
+    instructorId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    role: {
+      type: String,
+      required: true,
+    },
+    status: {
+      type: String,
+      enum: ["accepted", "pending", "denied"],
+      required: true,
+    },
+  },
+  { _id: false }
+);
 
 const ClassSchema: Schema = new Schema<IClass>(
   {
@@ -42,12 +66,7 @@ const ClassSchema: Schema = new Schema<IClass>(
       ref: "User",
       required: [true, "Instructor is required"],
     },
-    instructors: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
+    instructors: [InstructorSchema],
     students: [
       {
         type: Schema.Types.ObjectId,
