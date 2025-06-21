@@ -321,27 +321,39 @@ const ClassPage = () => {
                             />
                             {searchLoading && <Spinner />}
                           </div>
-                          {!searchLoading &&
-                            teacher !== "" &&
-                            searchResults.length === 0 && (
-                              <div className="mt-1 text-xs text-red-500">
-                                User not found
-                              </div>
-                            )}
-                          {!searchLoading &&
-                            teacher !== "" &&
-                            searchResults.length > 0 && (
-                              <div className="absolute top-18 left-0 right-0 mt-1 z-30 bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-700 shadow-lg overflow-hidden">
-                                {searchResults
-                                  .filter(
-                                    (user) =>
-                                      user.username !== currentUser?.username &&
-                                      !selectedInstructor?.some(
-                                        (selected) =>
-                                          selected.username === user.username
-                                      )
-                                  )
-                                  .map((user) => (
+                          {(() => {
+                            const filteredResults = searchResults.filter(
+                              (user) =>
+                                user.username !== currentUser?.username &&
+                                !selectedInstructor?.some(
+                                  (selected) =>
+                                    selected.username === user.username
+                                ) &&
+                                !classInfo?.instructors?.some(
+                                  (inst) => inst.username === user.username
+                                )
+                            );
+                            if (
+                              !searchLoading &&
+                              teacher !== "" &&
+                              (searchResults.length === 0 ||
+                                (searchResults.length > 0 &&
+                                  filteredResults.length === 0))
+                            ) {
+                              return (
+                                <div className="mt-1 text-xs text-red-500">
+                                  User not found
+                                </div>
+                              );
+                            }
+                            if (
+                              !searchLoading &&
+                              teacher !== "" &&
+                              filteredResults.length > 0
+                            ) {
+                              return (
+                                <div className="absolute top-18 left-0 right-0 mt-1 z-30 bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-700 shadow-lg overflow-hidden">
+                                  {filteredResults.map((user) => (
                                     <button
                                       key={user.username}
                                       type="button"
@@ -358,8 +370,11 @@ const ClassPage = () => {
                                       </span>
                                     </button>
                                   ))}
-                              </div>
-                            )}
+                                </div>
+                              );
+                            }
+                            return null;
+                          })()}
                           {selectedInstructor && (
                             <div
                               className="relative left-0 right-0 mt-1 z-20 bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-700 rounded-md overflow-hidden"
