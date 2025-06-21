@@ -2,7 +2,7 @@ import Header from "../components/Header";
 import { Sidebar } from "../components/Sidebar";
 import { AuthProvider } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getUserNotifications, respondInviteInstructor } from "../lib/api";
 
 interface Notification {
@@ -30,6 +30,7 @@ const Notifications = () => {
     queryFn: () => getUserNotifications().then((res) => res.data),
   });
 
+  const queryClient = useQueryClient();
   const { mutate: respondInvite } = useMutation({
     mutationFn: ({
       classId,
@@ -39,6 +40,10 @@ const Notifications = () => {
       inviteResponse: string;
     }) => {
       return respondInviteInstructor({ classId, inviteResponse });
+    },
+    onSuccess: () => {
+      // Refresh notifikasi setelah menerima atau menolak undangan
+      queryClient.invalidateQueries({ queryKey: ["userNotifications"] });
     },
   });
 
@@ -108,7 +113,6 @@ const Notifications = () => {
                               className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
                               onClick={() => {
                                 handleAcceptInvite(notif);
-                                notif.inviteResponse = "accepted";
                               }}
                             >
                               Accept
@@ -117,7 +121,6 @@ const Notifications = () => {
                               className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
                               onClick={() => {
                                 handleDenyInvite(notif);
-                                notif.inviteResponse = "denied";
                               }}
                             >
                               Deny

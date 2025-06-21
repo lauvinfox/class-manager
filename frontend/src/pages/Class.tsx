@@ -10,8 +10,6 @@ import {
   inviteInstructors,
 } from "../lib/api";
 import { useParams } from "react-router-dom";
-import { AiOutlineUsergroupAdd } from "react-icons/ai";
-import { FaChevronDown } from "react-icons/fa";
 import { IoPersonAddOutline } from "react-icons/io5";
 import { FiTrash2 } from "react-icons/fi";
 import Spinner from "../components/Spinner";
@@ -56,6 +54,8 @@ const ClassPage = () => {
   const [currentUser, setCurrentUser] = useState<{
     username: string;
   } | null>(null);
+
+  const [showAddStudentModal, setShowAddStudentModal] = useState(false);
 
   const isMounted = useRef(false);
 
@@ -167,7 +167,32 @@ const ClassPage = () => {
             />
             {activeTab == "Instructors" && (
               <div className="max-w-full overflow-x-auto py-4 px-4">
-                <div className="flex justify-end mb-4">
+                <div className="flex justify-end mb-4 gap-2">
+                  <button
+                    type="button"
+                    className="flex items-center gap-2 text-sm text-gray-700 dark:text-white bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200 font-semibold px-4 py-2 rounded-lg shadow"
+                    onClick={async () => {
+                      if (!classId) return;
+                      const classData = await fetchClassInfo(classId);
+                      if (classData) setClassInfo(classData);
+                    }}
+                    title="Refresh Table"
+                  >
+                    <svg
+                      className="w-4 h-4 mr-1"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M4 4v5h.582M20 20v-5h-.581M5.635 19A9 9 0 1 0 6 6.35"
+                      />
+                    </svg>
+                    Refresh
+                  </button>
                   <button
                     type="button"
                     className="flex items-center gap-2 text-sm text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200 font-semibold px-4 py-2 rounded-lg shadow"
@@ -412,6 +437,7 @@ const ClassPage = () => {
                   <button
                     type="button"
                     className="flex items-center gap-2 text-sm text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200 font-semibold px-4 py-2 rounded-lg shadow"
+                    onClick={() => setShowAddStudentModal(true)}
                   >
                     <IoPersonAddOutline className="text-lg" />
                     Add Student
@@ -466,6 +492,78 @@ const ClassPage = () => {
                     </tbody>
                   </table>
                 </div>
+                {showAddStudentModal && (
+                  <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40">
+                    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 w-full max-w-md relative">
+                      <button
+                        className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 dark:hover:text-white text-xl"
+                        onClick={() => setShowAddStudentModal(false)}
+                        aria-label="Close"
+                      >
+                        &times;
+                      </button>
+                      <h2 className="text-lg font-bold mb-4 text-font-primary dark:text-white">
+                        Add Students
+                      </h2>
+                      <form className="flex flex-col gap-4 h-90">
+                        <div className="flex items-center justify-center w-full">
+                          <label
+                            htmlFor="dropzone-file"
+                            className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500"
+                          >
+                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                              <svg
+                                className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
+                                aria-hidden="true"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 20 16"
+                              >
+                                <path
+                                  stroke="currentColor"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
+                                />
+                              </svg>
+                              <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                                <span className="font-semibold">
+                                  Click to upload
+                                </span>{" "}
+                                or drag and drop
+                              </p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                SVG, PNG, JPG or GIF (MAX. 800x400px)
+                              </p>
+                            </div>
+                            <input
+                              id="dropzone-file"
+                              type="file"
+                              className="hidden"
+                            />
+                          </label>
+                        </div>
+
+                        <div className="flex justify-end gap-2 mt-auto pt-8">
+                          <button
+                            type="button"
+                            className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600"
+                            onClick={() => setShowAddStudentModal(false)}
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="submit"
+                            className="px-4 py-2 rounded bg-indigo-600 text-white font-semibold hover:bg-indigo-700"
+                          >
+                            Add
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
