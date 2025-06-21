@@ -23,8 +23,14 @@ router.post("/", ClassController.createNewClass);
 // Get class info by Id
 router.get("/id/:classId", ClassController.getClassByClassId);
 
-// Invite instructor
-router.post("/:classId/invite-instructor", ClassController.inviteInstructor);
+// Invite instructors
+router.post("/:classId/inviteinstructors", ClassController.inviteInstructors);
+
+// Get class instructors
+router.get("/:classId/instructors", ClassController.getClassInstructors);
+
+// Respond to class invitation
+router.post("/:classId/invite/", ClassController.respondInviteInstructor);
 
 // Update a class
 // router.put("/:id", ClassController.updateClassDetails);

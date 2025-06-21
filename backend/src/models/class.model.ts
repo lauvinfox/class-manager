@@ -4,7 +4,7 @@ import { customAlphabet } from "nanoid";
 
 interface IInstructor {
   instructorId: Types.ObjectId;
-  role: string;
+  role?: string;
   status: string;
 }
 
@@ -27,7 +27,6 @@ const InstructorSchema = new Schema<IInstructor>(
     },
     role: {
       type: String,
-      required: true,
     },
     status: {
       type: String,

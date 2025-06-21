@@ -2,8 +2,19 @@ import Header from "../components/Header";
 import { Sidebar } from "../components/Sidebar";
 import { AuthProvider } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
-import { useQuery } from "@tanstack/react-query";
-import { getUserNotifications } from "../lib/api";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { getUserNotifications, respondInviteInstructor } from "../lib/api";
+
+interface Notification {
+  _id: string;
+  userId: string;
+  message: string;
+  classId?: string;
+  isRead: boolean;
+  type: "invite" | "reminder" | "info" | "other";
+  createdAt: string;
+  updatedAt: string;
+}
 
 const Notifications = () => {
   const { darkMode } = useTheme();
@@ -18,14 +29,27 @@ const Notifications = () => {
     queryFn: () => getUserNotifications().then((res) => res.data),
   });
 
-  const handleAcceptInvite = (notif: any) => {
-    // TODO: Implementasi aksi accept (misal: panggil API join class)
-    alert(`Accepted invite: ${notif._id}`);
+  const { mutate: respondInvite } = useMutation({
+    mutationFn: ({
+      classId,
+      inviteResponse,
+    }: {
+      classId: string;
+      inviteResponse: string;
+    }) => {
+      return respondInviteInstructor({ classId, inviteResponse });
+    },
+  });
+
+  const handleAcceptInvite = (notif: Notification) => {
+    // Panggil API untuk menerima undangan
+    const classId = notif.classId as string;
+    respondInvite({ classId, inviteResponse: "accepted" });
   };
 
-  const handleDenyInvite = (notif: any) => {
-    // TODO: Implementasi aksi deny (misal: panggil API tolak undangan)
-    alert(`Denied invite: ${notif._id}`);
+  const handleDenyInvite = (notif: Notification) => {
+    const classId = notif.classId as string;
+    respondInvite({ classId, inviteResponse: "denied" });
   };
 
   return (
@@ -51,7 +75,7 @@ const Notifications = () => {
                     No notifications.
                   </li>
                 )}
-                {notifs.map((notif: any) => (
+                {notifs.map((notif: Notification) => (
                   <li
                     key={notif._id}
                     className={`p-4 rounded shadow ${

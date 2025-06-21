@@ -113,3 +113,33 @@ export const getClassesByClassOwner = async () => {
   const response = await API.get("/api/v1/class/getbyclassowner");
   return response;
 };
+
+export const inviteInstructors = async (
+  classId: string,
+  invitees: { username: string; id: string }[]
+) => {
+  const response = await API.post(
+    `/api/v1/class/${classId}/inviteinstructors`,
+
+    invitees
+  );
+  return response;
+};
+
+export const respondInviteInstructor = async ({
+  classId,
+  inviteResponse,
+}: {
+  classId: string;
+  inviteResponse: string;
+}) => {
+  const response = await API.post(`/api/v1/class/${classId}/invite/`, {
+    inviteResponse,
+  });
+  return response;
+};
+
+export const getInstructorClass = async (classId: string) => {
+  const response = await API.get(`/api/v1/class/${classId}/instructors`);
+  return response;
+};

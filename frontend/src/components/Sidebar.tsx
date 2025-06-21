@@ -82,12 +82,15 @@ export const Sidebar = () => {
     };
   }, [user?.id, refetchNotifs]);
 
+  // Set hasUnread jika ada notifikasi belum dibaca
   useEffect(() => {
     if (
       Array.isArray(notifs) &&
       notifs.some((n: { isRead: boolean }) => n.isRead === false)
     ) {
       setHasUnread(true);
+    } else {
+      setHasUnread(false);
     }
   }, [notifs]);
 

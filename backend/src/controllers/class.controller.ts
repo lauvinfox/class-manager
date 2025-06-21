@@ -70,6 +70,7 @@ export const createNewClass: RequestHandler = catchError(async (req, res) => {
     description,
     classOwner: ownerId,
   });
+
   return res.status(CREATED).json({
     message: "Class successfully created",
     data: newClass,
@@ -97,34 +98,52 @@ export const createNewClass: RequestHandler = catchError(async (req, res) => {
 /**
  * Invite instructor to a class
  */
-export const inviteInstructor: RequestHandler = catchError(async (req, res) => {
-  const { classId } = req.params;
-  const { userId: inviteeId } = req.body;
-  const ownerId = req.userId as string;
+export const inviteInstructors: RequestHandler = catchError(
+  async (req, res) => {
+    const { classId } = req.params;
+    const invitees: { username: string; id: string }[] = req.body;
+    const ownerId = req.userId as string;
 
-  const result = await ClassService.inviteClassInstructor(
-    classId,
-    ownerId,
-    inviteeId
-  );
+    // Pastikan invitees adalah array dan memiliki id
+    if (!Array.isArray(invitees) || invitees.some((inv) => !inv.id)) {
+      return res.status(400).json({ message: "Invalid invitees format" });
+    }
 
-  return res.json({ message: "Invite user successfully", data: result });
-});
+    const result = await ClassService.inviteClassInstructor(
+      classId,
+      ownerId,
+      invitees.map((invitee) => ({ inviteeId: invitee.id }))
+    );
+
+    return res.json({ message: "Invite user successfully", data: result });
+  }
+);
+
+export const getClassInstructors: RequestHandler = catchError(
+  async (req, res) => {
+    const { classId } = req.params;
+    const instructors = await ClassService.getClassInstructors(classId);
+    return res.json({
+      message: "Instructors data retrieved successfully",
+      data: instructors,
+    });
+  }
+);
 
 export const respondInviteInstructor: RequestHandler = catchError(
   async (req, res) => {
     const { classId } = req.params;
     const userId = req.userId as string;
-    const { response } = req.body; // "accepted" atau "denied"
+    const { inviteResponse } = req.body;
 
     // Validasi response
-    if (!["accepted", "denied"].includes(response)) {
+    if (!["accepted", "denied"].includes(inviteResponse)) {
       return res.status(400).json({ message: "Invalid response" });
     }
 
-    await ClassService.updateInstructorStatus(classId, userId, response);
+    await ClassService.updateInstructorStatus(classId, userId, inviteResponse);
 
-    return res.json({ message: `Invitation ${response}` });
+    return res.json({ message: `Invitation ${inviteResponse}` });
   }
 );
 

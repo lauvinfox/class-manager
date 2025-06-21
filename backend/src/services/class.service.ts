@@ -1,5 +1,4 @@
 import ClassModel, { IClass } from "@models/class.model";
-import StudentModel from "@models/student.model";
 import UserModel from "@models/user.model";
 import appAssert from "@utils/appAssert";
 import {
@@ -9,7 +8,6 @@ import {
   FORBIDDEN,
 } from "@constants/statusCodes";
 import { Types } from "mongoose";
-import { UpdateClassParams } from "@schemas/class.schema";
 import NotificationModel from "@models/notification.model";
 
 /**
@@ -31,12 +29,27 @@ export const getClassOwnedBy = async (userId: string) => {
  * @returns Class document
  */
 export const getClassInfoById = async (classId: string) => {
-  const classDocs = await ClassModel.find({ classId }).populate(
-    "classOwner",
-    "name username email"
-  );
+  const classDoc = await ClassModel.findOne({ classId })
+    .populate("classOwner", "name username email")
+    .populate("instructors.instructorId", "name username email");
 
-  return classDocs[0];
+  if (!classDoc) return null;
+
+  // Format instructors to include only needed fields
+  const instructors = (classDoc.instructors || []).map((inst: any) => ({
+    instructorId: inst.instructorId?._id?.toString() ?? "",
+    name: inst.instructorId?.name ?? "",
+    username: inst.instructorId?.username ?? "",
+    email: inst.instructorId?.email ?? "",
+    status: inst.status,
+    role: inst.role || "",
+  }));
+
+  // Return class info with formatted instructors
+  return {
+    ...classDoc.toObject(),
+    instructors,
+  };
 };
 
 /**
@@ -185,7 +198,7 @@ export const createClass = async (data: CreateClassParams) => {
 export const inviteClassInstructor = async (
   classId: string,
   ownerId: string,
-  inviteeId: string
+  invitees: { inviteeId: string }[]
 ) => {
   // Validasi class dan owner
   const classDoc = await ClassModel.findOne({ classId });
@@ -196,32 +209,68 @@ export const inviteClassInstructor = async (
     "Only class owner can invite instructors"
   );
 
-  // Validasi user yang diundang
-  const user = await UserModel.findById(inviteeId);
-  appAssert(user, NOT_FOUND, "User to invite not found");
+  // Validasi semua user yang diundang
+  const inviteeIds = invitees.map((i) => i.inviteeId);
+  const users = await UserModel.find({ _id: { $in: inviteeIds } });
+  appAssert(
+    users.length === inviteeIds.length,
+    NOT_FOUND,
+    "One or more users to invite not found"
+  );
 
   // Tambahkan ke instructors dengan status pending
+  const instructorsToAdd = inviteeIds.map((id) => ({
+    instructorId: id,
+    status: "pending",
+  }));
+
   await ClassModel.updateOne(
     { classId },
     {
       $addToSet: {
-        instructors: {
-          instructorId: inviteeId,
-          status: "pending",
-        },
+        instructors: { $each: instructorsToAdd },
       },
     }
   );
 
-  // Buat notifikasi ke user yang diundang
-  await NotificationModel.create({
-    userId: inviteeId,
+  // Buat notifikasi ke setiap user yang diundang
+  const notifications = inviteeIds.map((id) => ({
+    userId: id,
     type: "invite",
     message: `You have been invited to be an instructor in class "${classDoc.name}"`,
     classId: classDoc.classId,
     isRead: false,
     createdAt: new Date(),
-  });
+  }));
+
+  await NotificationModel.insertMany(notifications);
+};
+
+export const getClassInstructors = async (classId: string) => {
+  // Validasi classId
+  appAssert(Types.ObjectId.isValid(classId), BAD_REQUEST, "Invalid class ID");
+  const classDoc = await ClassModel.findOne({ classId });
+  appAssert(classDoc, NOT_FOUND, "Class not found");
+  // Populate instructors with their user info
+  const instructors = await ClassModel.findOne({ classId }, { instructors: 1 })
+    .populate("instructors.instructorId", "name username email")
+    .lean()
+    .exec();
+
+  appAssert(instructors, NOT_FOUND, "Instructors not found for this class");
+
+  const instructorList = (instructors.instructors ?? []).map(
+    (instructor: any) => ({
+      instructorId: instructor.instructorId._id.toString(),
+      name: instructor.instructorId.name,
+      username: instructor.instructorId.username,
+      email: instructor.instructorId.email,
+      status: instructor.status,
+    })
+  );
+
+  // Map instructors to include their status
+  return instructorList;
 };
 
 export const updateInstructorStatus = async (

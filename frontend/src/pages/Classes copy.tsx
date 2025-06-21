@@ -57,15 +57,15 @@ const Classes = () => {
     }
   };
 
-  const fetchData = async () => {
-    if (isMounted.current) return; // Prevents fetching if already mounted
-    const userData = await fetchUserInfo();
-    setCurrentUser(userData);
-  };
-
-  useState(() => {
+  useEffect(() => {
+    const fetchData = async () => {
+      if (isMounted.current) return; // Hindari refetch jika sudah dilakukan
+      const userData = await fetchUserInfo();
+      setCurrentUser(userData);
+      isMounted.current = true;
+    };
     fetchData();
-  });
+  }, []);
 
   const searchTimeout = useRef<NodeJS.Timeout | null>(null);
 
@@ -163,7 +163,11 @@ const Classes = () => {
             </button>
             <h2 className="text-lg font-bold mb-4 text-font-primary dark:text-white">
               Create Class
-            </h2>
+            </h2> 
+            
+            
+          </div>
+        </div>
 
             {/* Modal Step 1 */}
             {modalStep === 1 && (
