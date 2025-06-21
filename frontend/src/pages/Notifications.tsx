@@ -14,6 +14,7 @@ interface Notification {
   type: "invite" | "reminder" | "info" | "other";
   createdAt: string;
   updatedAt: string;
+  inviteResponse?: "accepted" | "denied" | "pending";
 }
 
 const Notifications = () => {
@@ -64,12 +65,12 @@ const Notifications = () => {
           <div className="flex-1">
             <Header title="Class Manager" fontSize="text-xl" />
             <NotificationsHeader />
-            <div className="flex flex-col h-[76.5%] items-center justify-center">
+            <div className="flex flex-col h-[76%] w-full items-center justify-center">
               {isLoading && <p>Loading...</p>}
               {error && (
                 <p className="text-red-500">Failed to load notifications.</p>
               )}
-              <ul className="w-full max-w-lg space-y-2">
+              <ul className="w-full h-full space-y-1 overflow-auto">
                 {notifs.length === 0 && !isLoading && (
                   <li className="text-gray-500 text-center">
                     No notifications.
@@ -78,31 +79,51 @@ const Notifications = () => {
                 {notifs.map((notif: Notification) => (
                   <li
                     key={notif._id}
-                    className={`p-4 rounded shadow ${
+                    className={`w-full flex items-center justify-between p-4 rounded shadow transition-colors duration-150 cursor-pointer ${
                       notif.isRead
-                        ? "bg-gray-100 dark:bg-gray-800"
-                        : "bg-indigo-100 dark:bg-indigo-900 font-semibold"
+                        ? "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
+                        : "bg-indigo-100 dark:bg-indigo-900 font-semibold hover:bg-indigo-200 dark:hover:bg-indigo-800"
                     }`}
                   >
-                    <div>{notif.message}</div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {notif.type} •{" "}
-                      {new Date(notif.createdAt).toLocaleString()}
+                    <div className="flex flex-col flex-1 min-w-0">
+                      <span className="truncate">{notif.message}</span>
+                      <span className="text-xs text-gray-500 mt-1">
+                        {notif.type} •{" "}
+                        {new Date(notif.createdAt).toLocaleString()}
+                      </span>
                     </div>
                     {notif.type === "invite" && (
-                      <div className="mt-2 flex gap-2">
-                        <button
-                          className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
-                          onClick={() => handleAcceptInvite(notif)}
-                        >
-                          Accept
-                        </button>
-                        <button
-                          className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                          onClick={() => handleDenyInvite(notif)}
-                        >
-                          Deny
-                        </button>
+                      <div className="flex gap-2 ml-4">
+                        {notif.inviteResponse === "accepted" ? (
+                          <span className="text-green-600 font-semibold">
+                            Invite Accepted
+                          </span>
+                        ) : notif.inviteResponse === "denied" ? (
+                          <span className="text-red-600 font-semibold">
+                            Invite Denied
+                          </span>
+                        ) : (
+                          <>
+                            <button
+                              className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+                              onClick={() => {
+                                handleAcceptInvite(notif);
+                                notif.inviteResponse = "accepted";
+                              }}
+                            >
+                              Accept
+                            </button>
+                            <button
+                              className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                              onClick={() => {
+                                handleDenyInvite(notif);
+                                notif.inviteResponse = "denied";
+                              }}
+                            >
+                              Deny
+                            </button>
+                          </>
+                        )}
                       </div>
                     )}
                   </li>

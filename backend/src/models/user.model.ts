@@ -14,7 +14,7 @@ export interface IUser extends Document {
   dateOfBirth: Date;
   dateJoined: string;
   verified: boolean;
-  classes?: string[];
+  classes: string[];
   classOwned?: string[];
   invitations?: [
     {
@@ -87,7 +87,7 @@ const UserSchema: Schema = new Schema<IUser>(
       default: dateJoined,
     },
     verified: { type: Boolean, required: true, default: false },
-    classes: [{ type: String }],
+    classes: [{ type: String, ref: "Class", required: true, default: [] }],
     classOwned: [{ type: String }],
     invitations: [
       {

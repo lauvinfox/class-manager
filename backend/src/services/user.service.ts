@@ -114,3 +114,17 @@ export const updateUsername = async ({
 
   return user.omitPassword();
 };
+
+export const addClassToUser = async (userId: string, classId: string) => {
+  const user = await UserModel.findById(userId);
+  appAssert(user, NOT_FOUND, "User not found");
+
+  if (user.classes.includes(classId)) {
+    throw new Error("Class already exists in user's classes");
+  }
+
+  user.classes.push(classId);
+  await user.save();
+
+  return user.omitPassword();
+};

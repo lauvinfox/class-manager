@@ -203,7 +203,15 @@ const ClassPage = () => {
                               {instructor.name}
                             </td>
                             <td className="px-6 py-4">{instructor.username}</td>
-                            <td className="px-6 py-4">{instructor.status}</td>
+                            <td
+                              className={`px-6 py-4 ${
+                                instructor.status == "accepted"
+                                  ? "text-green-500"
+                                  : "text-yellow-400"
+                              }`}
+                            >
+                              {instructor.status}
+                            </td>
                             <td className="px-6 py-4 text-center">
                               <button
                                 type="button"

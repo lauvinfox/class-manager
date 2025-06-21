@@ -138,3 +138,21 @@ export const getClassesId: RequestHandler = catchError(async (req, res) => {
     data: classes?.classOwned,
   });
 });
+
+export const addClass: RequestHandler = catchError(async (req, res) => {
+  const { classId } = req.body;
+  const userId = req.userId as string;
+
+  // Validasi classId
+  if (!classId) {
+    return res.status(BAD_REQUEST).json({ message: "Class ID is required" });
+  }
+
+  // Tambahkan class ke user
+  const updatedUser = await UserService.addClassToUser(userId, classId);
+
+  return res.json({
+    message: "Class added successfully",
+    data: updatedUser,
+  });
+});

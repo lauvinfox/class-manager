@@ -1,12 +1,11 @@
 import { RequestHandler } from "express";
-
-import catchError from "@utils/error";
-import { CREATED, OK } from "@constants/statusCodes";
-import * as ClassService from "@services/class.service";
-import { ScheduleSchema, CreateClassSchema } from "@schemas/class.schema";
 import { Types } from "mongoose";
 
-const UpdateClassSchema = CreateClassSchema.partial();
+import catchError from "@utils/error";
+import { CREATED } from "@constants/statusCodes";
+import * as ClassService from "@services/class.service";
+import * as UserService from "@services/user.service";
+import { CreateClassSchema } from "@schemas/class.schema";
 
 /**
  * Get all classes by class owner ID
@@ -142,6 +141,9 @@ export const respondInviteInstructor: RequestHandler = catchError(
     }
 
     await ClassService.updateInstructorStatus(classId, userId, inviteResponse);
+
+    // Tambahkan class ke user
+    const updatedUser = await UserService.addClassToUser(userId, classId);
 
     return res.json({ message: `Invitation ${inviteResponse}` });
   }
