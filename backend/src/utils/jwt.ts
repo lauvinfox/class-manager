@@ -39,6 +39,32 @@ export const signToken = (
   return jwt.sign(payload, secret, { ...defaults, ...signOpts });
 };
 
+// export const verifyToken = <TPayload extends object = AccessTokenPayload>(
+//   token: string,
+//   options?: VerifyOptions & {
+//     secret?: string;
+//   }
+// ) => {
+//   const { secret = env.ACCESS_TOKEN_SECRET, ...verifyOpts } = options || {};
+//   try {
+//     const payload = jwt.verify(token, secret, {
+//       ...defaults,
+//       ...verifyOpts,
+//     }) as TPayload;
+//     return {
+//       payload,
+//     };
+//   } catch (error: any) {
+//     return {
+//       error: error.message,
+//     };
+//   }
+// };
+
+const verifyDefaults: VerifyOptions = {
+  audience: "user", // bisa juga array, sesuaikan dengan kebutuhan
+};
+
 export const verifyToken = <TPayload extends object = AccessTokenPayload>(
   token: string,
   options?: VerifyOptions & {
@@ -46,13 +72,21 @@ export const verifyToken = <TPayload extends object = AccessTokenPayload>(
   }
 ) => {
   const { secret = env.ACCESS_TOKEN_SECRET, ...verifyOpts } = options || {};
+
   try {
-    const payload = jwt.verify(token, secret, {
-      ...defaults,
+    const decoded = jwt.verify(token, secret, {
+      ...verifyDefaults,
       ...verifyOpts,
-    }) as TPayload;
+    });
+
+    if (typeof decoded === "object" && decoded !== null) {
+      return {
+        payload: decoded as TPayload,
+      };
+    }
+
     return {
-      payload,
+      error: "Invalid token payload type",
     };
   } catch (error: any) {
     return {
