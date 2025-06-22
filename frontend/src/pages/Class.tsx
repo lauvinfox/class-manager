@@ -7,35 +7,20 @@ import { FiTrash2 } from "react-icons/fi";
 import Header from "../components/Header";
 import { Sidebar } from "../components/Sidebar";
 import Spinner from "../components/Spinner";
+import Dropzone from "../components/Dropzone";
 
 import { AuthProvider } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
 
 import {
+  addStudentsToClass,
   getClassByClassId,
   getUserInfo,
   getUsersByUsername,
   inviteInstructors,
 } from "../lib/api";
-
-interface Instructor {
-  instructorId: string;
-  name: string;
-  username: string;
-  id: string;
-  role: string;
-  status: string;
-}
-
-interface ClassInfo {
-  classId: string;
-  name: string;
-  description?: string;
-  classOwner: string;
-  instructors?: Instructor[];
-  roles?: string[];
-  students?: string[];
-}
+import { useMutation } from "@tanstack/react-query";
+import { ClassInfo, Instructor } from "../types/types";
 
 const ClassPage = () => {
   const { darkMode } = useTheme();
@@ -49,7 +34,6 @@ const ClassPage = () => {
   const [teacher, setTeacher] = useState("");
   const [searchResults, setSearchResults] = useState<Instructor[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
-
   const [selectedInstructor, setSelectedInstructor] = useState<
     Instructor[] | null
   >(null);
@@ -60,6 +44,18 @@ const ClassPage = () => {
   } | null>(null);
 
   const [showAddStudentModal, setShowAddStudentModal] = useState(false);
+  const [addStudentTab, setAddStudentTab] = useState<"single" | "bulk">(
+    "single"
+  );
+
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  const { mutate: uploadStudentsCsv } = useMutation({
+    mutationFn: async (file: File) => {
+      if (!classId) throw new Error("Class ID not found");
+      return await addStudentsToClass(classId, file);
+    },
+  });
 
   const isMounted = useRef(false);
 
@@ -169,6 +165,7 @@ const ClassPage = () => {
               activeTab={activeTab}
               handleTab={handleTab}
             />
+
             {activeTab == "Instructors" && (
               <div className="max-w-full overflow-x-auto py-4 px-4">
                 <div className="flex justify-end mb-4 gap-2">
@@ -467,49 +464,62 @@ const ClassPage = () => {
                     <thead className="bg-gray-100 dark:bg-gray-800 text-xs uppercase tracking-wider">
                       <tr>
                         <th className="px-6 py-4">Name</th>
-                        <th className="px-6 py-4">Username</th>
-                        <th className="px-6 py-4">Status</th>
-                        <th className="px-6 py-4 text-center">Subject</th>
+                        <th className="px-6 py-4">Student ID</th>
+                        <th className="px-6 py-4">Birthdate</th>
+                        <th className="px-6 py-4">Action</th>
                       </tr>
                     </thead>
-                    <tbody>
-                      {classInfo?.instructors &&
-                      classInfo.instructors.length > 0 ? (
-                        classInfo.instructors.map((instructor, idx) => (
-                          <tr
-                            key={instructor.instructorId}
-                            className={`${
-                              idx % 2 === 0
-                                ? "bg-white dark:bg-gray-900"
-                                : "bg-gray-50 dark:bg-gray-800"
-                            } hover:bg-gray-100 dark:hover:bg-gray-700 transition`}
-                          >
-                            <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
-                              {instructor.name}
-                            </td>
-                            <td className="px-6 py-4">
-                              {instructor.instructorId}
-                            </td>
-                            <td className="px-6 py-4">{instructor.status}</td>
-                            <td className="px-6 py-4 text-center">
-                              <button
-                                type="button"
-                                className="text-sm dark:text-slate-50 border dark:border-slate-50 font-bold rounded-md h-8 w-16 min-w-0 min-h-0"
-                              >
-                                Edit
-                              </button>
+                  </table>
+                  <div className="max-h-64 overflow-y-auto">
+                    <table className="min-w-full text-sm text-left text-gray-600 dark:text-gray-300">
+                      <tbody>
+                        {classInfo?.students &&
+                        classInfo.students.length > 0 ? (
+                          classInfo.students.map((student, idx) => (
+                            <tr
+                              key={student.studentId}
+                              className={`${
+                                idx % 2 === 0
+                                  ? "bg-white dark:bg-gray-900"
+                                  : "bg-gray-50 dark:bg-gray-800"
+                              } hover:bg-gray-100 dark:hover:bg-gray-700 transition`}
+                            >
+                              <td className="px-6 py-4 font-medium text-gray-900 dark:text-white align-middle whitespace-nowrap min-w-[150px]">
+                                {student.name}
+                              </td>
+                              <td className="px-6 py-4 align-middle whitespace-nowrap min-w-[120px]">
+                                {student.studentId}
+                              </td>
+                              <td className="px-6 py-4 align-middle whitespace-nowrap min-w-[140px]">
+                                {new Date(student.birthDate).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                    year: "numeric",
+                                    month: "2-digit",
+                                    day: "2-digit",
+                                  }
+                                )}
+                              </td>
+                              <td className="px-6 py-4 align-middle whitespace-nowrap min-w-[100px]">
+                                <button
+                                  type="button"
+                                  className="text-sm dark:text-slate-50 border dark:border-slate-50 font-bold rounded-md h-8 w-16 min-w-0 min-h-0"
+                                >
+                                  Edit
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={4} className="px-6 py-4 text-center">
+                              No students found.
                             </td>
                           </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan={4} className="px-6 py-4 text-center">
-                            No instructors found.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
                 {showAddStudentModal && (
                   <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40">
@@ -524,62 +534,120 @@ const ClassPage = () => {
                       <h2 className="text-lg font-bold mb-4 text-font-primary dark:text-white">
                         Add Students
                       </h2>
-                      <form className="flex flex-col gap-4 h-90">
-                        <div className="flex items-center justify-center w-full">
-                          <label
-                            htmlFor="dropzone-file"
-                            className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500"
-                          >
-                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                              <svg
-                                className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
-                                aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 20 16"
-                              >
-                                <path
-                                  stroke="currentColor"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth="2"
-                                  d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
-                                />
-                              </svg>
-                              <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                                <span className="font-semibold">
-                                  Click to upload
-                                </span>{" "}
-                                or drag and drop
-                              </p>
-                              <p className="text-xs text-gray-500 dark:text-gray-400">
-                                SVG, PNG, JPG or GIF (MAX. 800x400px)
-                              </p>
-                            </div>
-                            <input
-                              id="dropzone-file"
-                              type="file"
-                              className="hidden"
-                            />
-                          </label>
-                        </div>
-
-                        <div className="flex justify-end gap-2 mt-auto pt-8">
-                          <button
-                            type="button"
-                            className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600"
-                            onClick={() => setShowAddStudentModal(false)}
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            type="submit"
-                            className="px-4 py-2 rounded bg-indigo-600 text-white font-semibold hover:bg-indigo-700"
-                          >
-                            Add
-                          </button>
-                        </div>
-                      </form>
+                      <div className="flex gap-2 mb-4">
+                        <button
+                          className={`px-4 py-2 rounded-t-md font-semibold border-b-2 transition-colors duration-150 ${
+                            addStudentTab === "single"
+                              ? "border-indigo-600 text-indigo-600 dark:text-indigo-400"
+                              : "border-transparent text-gray-500 dark:text-gray-400"
+                          }`}
+                          onClick={() => setAddStudentTab("single")}
+                        >
+                          Single
+                        </button>
+                        <button
+                          className={`px-4 py-2 rounded-t-md font-semibold border-b-2 transition-colors duration-150 ${
+                            addStudentTab === "bulk"
+                              ? "border-indigo-600 text-indigo-600 dark:text-indigo-400"
+                              : "border-transparent text-gray-500 dark:text-gray-400"
+                          }`}
+                          onClick={() => setAddStudentTab("bulk")}
+                        >
+                          Bulk Upload
+                        </button>
+                      </div>
+                      {addStudentTab === "single" ? (
+                        <form className="flex flex-col gap-2 h-90">
+                          {/* Form input satu-satu student */}
+                          <input
+                            className="border rounded px-3 py-2"
+                            placeholder="Name"
+                          />
+                          <input
+                            className="border rounded px-3 py-2"
+                            placeholder="Student Id"
+                          />
+                          <input
+                            className="border rounded px-3 py-2"
+                            placeholder="Birth date (YYYY-MM-DD)"
+                          />
+                          <input
+                            className="border rounded px-3 py-2"
+                            placeholder="Birth place"
+                          />
+                          <input
+                            className="border rounded px-3 py-2"
+                            placeholder="Contact"
+                          />
+                          <input
+                            className="border rounded px-3 py-2"
+                            placeholder="Address"
+                          />
+                          <div className="flex justify-end gap-2 mt-auto">
+                            <button
+                              type="button"
+                              className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600"
+                              onClick={() => setShowAddStudentModal(false)}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              type="submit"
+                              className="px-4 py-2 rounded bg-indigo-600 text-white font-semibold hover:bg-indigo-700"
+                            >
+                              Add
+                            </button>
+                          </div>
+                        </form>
+                      ) : (
+                        <form
+                          className="flex flex-col gap-4 h-90"
+                          onSubmit={async (e) => {
+                            e.preventDefault();
+                            if (!selectedFile) {
+                              alert("Please select a CSV file to upload.");
+                              return;
+                            }
+                            try {
+                              await uploadStudentsCsv(selectedFile as File);
+                              alert("Students uploaded successfully.");
+                              setShowAddStudentModal(false);
+                              setSelectedFile(null);
+                              // Optionally, refresh class info to show new students
+                              if (classId) {
+                                const classData = await fetchClassInfo(classId);
+                                if (classData) setClassInfo(classData);
+                              }
+                            } catch {
+                              alert("Failed to upload students.");
+                            }
+                          }}
+                        >
+                          {/* Dropzone untuk upload file */}
+                          <Dropzone
+                            selectedFile={selectedFile}
+                            setSelectedFile={setSelectedFile}
+                          />
+                          <div className="flex justify-end gap-2 mt-auto pt-8">
+                            <button
+                              type="button"
+                              className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600"
+                              onClick={() => {
+                                setShowAddStudentModal(false);
+                                setSelectedFile(null);
+                              }}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              type="submit"
+                              className="px-4 py-2 rounded bg-indigo-600 text-white font-semibold hover:bg-indigo-700"
+                            >
+                              Add
+                            </button>
+                          </div>
+                        </form>
+                      )}
                     </div>
                   </div>
                 )}

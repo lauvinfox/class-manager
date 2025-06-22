@@ -54,18 +54,14 @@ export const addStudents = async (students: Student[]) => {
     address: student.address,
   }));
 
-  const resultDocs = await StudentModel.insertMany(studentData);
-  const studentIds = resultDocs.map((doc) => doc._id as Schema.Types.ObjectId);
+  const newStudents = await StudentModel.insertMany(studentData);
+  const studentIds = newStudents.map(
+    (student) => student._id as Schema.Types.ObjectId
+  );
 
-  try {
-    await ClassService.addStudentsToClass(studentData[0].classId, studentIds);
-  } catch (err) {
-    // log error dan throw error spesifik
-    console.error("Error adding students to class:", err);
-    throw new Error("Failed to add students to class");
-  }
+  await ClassService.addStudentsToClass(studentData[0].classId, studentIds);
 
-  return resultDocs;
+  return newStudents;
 };
 
 export const getStudentsByClassId = async (classId: string) => {
