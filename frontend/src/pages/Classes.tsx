@@ -79,6 +79,11 @@ const Classes = () => {
           <div className="flex-1">
             <Header title="Class Manager" fontSize="text-xl" />
             <ClassHeader toggleShowModal={toggleShowModal} />
+            {isLoading && (
+              <div className="w-full bg-gray-200 rounded-full h-1 dark:bg-gray-700 overflow-hidden mb-2">
+                <div className="bg-indigo-500 h-1 rounded-full animate-pulse w-full transition-all duration-500 ease-in-out"></div>
+              </div>
+            )}
             <div className="w-full">
               {" "}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1 p-6">

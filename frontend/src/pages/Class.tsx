@@ -20,35 +20,7 @@ import {
   inviteInstructors,
 } from "../lib/api";
 import { useMutation } from "@tanstack/react-query";
-
-interface Instructor {
-  instructorId: string;
-  name: string;
-  username: string;
-  id: string;
-  role: string;
-  status: string;
-}
-
-interface Student {
-  id: string;
-  studentId: string;
-  name: string;
-  birthDate: string;
-  birthPlace: string;
-  contact: string;
-  address: string;
-}
-
-interface ClassInfo {
-  classId: string;
-  name: string;
-  description?: string;
-  classOwner: string;
-  instructors?: Instructor[];
-  roles?: string[];
-  students?: Student[];
-}
+import { ClassInfo, Instructor } from "../types/types";
 
 const ClassPage = () => {
   const { darkMode } = useTheme();
@@ -62,7 +34,6 @@ const ClassPage = () => {
   const [teacher, setTeacher] = useState("");
   const [searchResults, setSearchResults] = useState<Instructor[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
-
   const [selectedInstructor, setSelectedInstructor] = useState<
     Instructor[] | null
   >(null);
@@ -194,6 +165,7 @@ const ClassPage = () => {
               activeTab={activeTab}
               handleTab={handleTab}
             />
+
             {activeTab == "Instructors" && (
               <div className="max-w-full overflow-x-auto py-4 px-4">
                 <div className="flex justify-end mb-4 gap-2">
