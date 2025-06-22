@@ -1,4 +1,3 @@
-import StudentModel from "@models/student.model";
 import { RequestHandler } from "express";
 import appAssert from "@utils/appAssert";
 import { BAD_REQUEST } from "@constants/statusCodes";
@@ -133,7 +132,7 @@ export const uploadStudents: RequestHandler = catchError(async (req, res) => {
     return res.status(400).json({ message: "Unsupported file type" });
   }
 
-  res.json({
+  return res.json({
     message: "File uploaded and data saved to database successfully",
     data: inserted,
   });
