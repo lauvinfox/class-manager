@@ -22,6 +22,10 @@ router.put("/:id", StudentsController.updateStudent);
 router.delete("/:id", StudentsController.deleteStudent);
 
 // Upload
-router.post("/upload", upload.single("file"), StudentsController.uploadStudent);
+router.post(
+  "/:classId/upload",
+  upload.single("file"),
+  StudentsController.uploadStudents
+);
 
 export default router;

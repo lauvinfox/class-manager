@@ -1,7 +1,6 @@
 import { RequestHandler } from "express";
 import * as UserService from "@services/user.service";
 import catchError from "@utils/error";
-import userModel from "@models/user.model";
 import appAssert from "@utils/appAssert";
 import { BAD_REQUEST, UNAUTHORIZED } from "@constants/statusCodes";
 

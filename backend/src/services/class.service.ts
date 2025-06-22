@@ -6,8 +6,9 @@ import {
   CONFLICT,
   NOT_FOUND,
   FORBIDDEN,
+  INTERNAL_SERVER_ERROR,
 } from "@constants/statusCodes";
-import { Types } from "mongoose";
+import { ObjectId, Types } from "mongoose";
 import NotificationModel from "@models/notification.model";
 
 /**
@@ -307,43 +308,21 @@ export const updateInstructorStatus = async (
  * @param studentId - Student ID
  * @returns Updated class document
  */
-// export const addStudentToClass = async (classId: string, studentId: string) => {
-//   appAssert(Types.ObjectId.isValid(classId), BAD_REQUEST, "Invalid class ID");
-//   appAssert(
-//     Types.ObjectId.isValid(studentId),
-//     BAD_REQUEST,
-//     "Invalid student ID"
-//   );
+export const addStudentsToClass = async (
+  classId: string,
+  studentsId: ObjectId[]
+) => {
+  // Add student to class
+  const updatedClassDocs = await ClassModel.findOneAndUpdate(
+    { classId },
+    { $addToSet: { students: { $each: studentsId } } },
+    { new: true, runValidators: true }
+  ).populate("students", "name studentId");
 
-//   // Check if class exists
-//   const classDoc = await ClassModel.findById(classId);
-//   appAssert(classDoc, NOT_FOUND, "Class not found");
+  appAssert(updatedClassDocs, NOT_FOUND, "Class not found");
 
-//   // Check if student exists
-//   const student = await StudentModel.findById(studentId);
-//   appAssert(student, NOT_FOUND, "Student not found");
-
-//   // Check if class is at capacity
-//   appAssert(
-//     classDoc.students.length < classDoc.capacity,
-//     CONFLICT,
-//     "Class is at full capacity"
-//   );
-
-//   // Check if student is already in class
-//   const isStudentInClass = classDoc.students.some(
-//     (id) => id.toString() === studentId
-//   );
-//   appAssert(!isStudentInClass, CONFLICT, "Student is already in this class");
-
-//   // Add student to class
-//   classDoc.students.push(new Types.ObjectId(studentId));
-//   await classDoc.save();
-
-//   return ClassModel.findById(classId)
-//     .populate("instructor", "name email")
-//     .populate("students", "name studentId");
-// };
+  return updatedClassDocs;
+};
 
 /**
  * Remove a student from a class

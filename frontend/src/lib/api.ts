@@ -143,3 +143,10 @@ export const getInstructorClass = async (classId: string) => {
   const response = await API.get(`/api/v1/class/${classId}/instructors`);
   return response;
 };
+
+export const addStudentToClass = async (classId: string, studentId: string) => {
+  const response = await API.post(`/api/v1/class/${classId}/addstudent`, {
+    studentId,
+  });
+  return response;
+};

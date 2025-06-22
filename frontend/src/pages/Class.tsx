@@ -1,18 +1,22 @@
+import { useEffect, useRef, useState } from "react";
+import { useParams } from "react-router-dom";
+
+import { IoPersonAddOutline } from "react-icons/io5";
+import { FiTrash2 } from "react-icons/fi";
+
 import Header from "../components/Header";
 import { Sidebar } from "../components/Sidebar";
+import Spinner from "../components/Spinner";
+
 import { AuthProvider } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
-import { useEffect, useRef, useState } from "react";
+
 import {
   getClassByClassId,
   getUserInfo,
   getUsersByUsername,
   inviteInstructors,
 } from "../lib/api";
-import { useParams } from "react-router-dom";
-import { IoPersonAddOutline } from "react-icons/io5";
-import { FiTrash2 } from "react-icons/fi";
-import Spinner from "../components/Spinner";
 
 interface Instructor {
   instructorId: string;
