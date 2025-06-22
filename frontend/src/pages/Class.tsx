@@ -464,57 +464,62 @@ const ClassPage = () => {
                     <thead className="bg-gray-100 dark:bg-gray-800 text-xs uppercase tracking-wider">
                       <tr>
                         <th className="px-6 py-4">Name</th>
-                        <th className="px-6 py-4">StudentId</th>
+                        <th className="px-6 py-4">Student ID</th>
                         <th className="px-6 py-4">Birthdate</th>
-                        <th className="px-6 py-4">Address</th>
-                        <th className="px-6 py-4 text-center">Action</th>
+                        <th className="px-6 py-4">Action</th>
                       </tr>
                     </thead>
-                    <tbody>
-                      {classInfo?.students && classInfo.students.length > 0 ? (
-                        classInfo.students.map((student, idx) => (
-                          <tr
-                            key={student.studentId}
-                            className={`${
-                              idx % 2 === 0
-                                ? "bg-white dark:bg-gray-900"
-                                : "bg-gray-50 dark:bg-gray-800"
-                            } hover:bg-gray-100 dark:hover:bg-gray-700 transition`}
-                          >
-                            <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
-                              {student.name}
-                            </td>
-                            <td className="px-6 py-4">{student.studentId}</td>
-                            <td className="px-6 py-4">
-                              {new Date(student.birthDate).toLocaleDateString(
-                                "en-US",
-                                {
-                                  year: "numeric",
-                                  month: "2-digit",
-                                  day: "2-digit",
-                                }
-                              )}
-                            </td>
-                            <td className="px-6 py-4">{student.address}</td>
-                            <td className="px-6 py-4 text-center">
-                              <button
-                                type="button"
-                                className="text-sm dark:text-slate-50 border dark:border-slate-50 font-bold rounded-md h-8 w-16 min-w-0 min-h-0"
-                              >
-                                Edit
-                              </button>
+                  </table>
+                  <div className="max-h-64 overflow-y-auto">
+                    <table className="min-w-full text-sm text-left text-gray-600 dark:text-gray-300">
+                      <tbody>
+                        {classInfo?.students &&
+                        classInfo.students.length > 0 ? (
+                          classInfo.students.map((student, idx) => (
+                            <tr
+                              key={student.studentId}
+                              className={`${
+                                idx % 2 === 0
+                                  ? "bg-white dark:bg-gray-900"
+                                  : "bg-gray-50 dark:bg-gray-800"
+                              } hover:bg-gray-100 dark:hover:bg-gray-700 transition`}
+                            >
+                              <td className="px-6 py-4 font-medium text-gray-900 dark:text-white align-middle whitespace-nowrap min-w-[150px]">
+                                {student.name}
+                              </td>
+                              <td className="px-6 py-4 align-middle whitespace-nowrap min-w-[120px]">
+                                {student.studentId}
+                              </td>
+                              <td className="px-6 py-4 align-middle whitespace-nowrap min-w-[140px]">
+                                {new Date(student.birthDate).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                    year: "numeric",
+                                    month: "2-digit",
+                                    day: "2-digit",
+                                  }
+                                )}
+                              </td>
+                              <td className="px-6 py-4 align-middle whitespace-nowrap min-w-[100px]">
+                                <button
+                                  type="button"
+                                  className="text-sm dark:text-slate-50 border dark:border-slate-50 font-bold rounded-md h-8 w-16 min-w-0 min-h-0"
+                                >
+                                  Edit
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={4} className="px-6 py-4 text-center">
+                              No students found.
                             </td>
                           </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan={5} className="px-6 py-4 text-center">
-                            No students found.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
                 {showAddStudentModal && (
                   <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40">
@@ -604,7 +609,7 @@ const ClassPage = () => {
                               return;
                             }
                             try {
-                              await uploadStudentsCsv(selectedFile);
+                              await uploadStudentsCsv(selectedFile as File);
                               alert("Students uploaded successfully.");
                               setShowAddStudentModal(false);
                               setSelectedFile(null);
