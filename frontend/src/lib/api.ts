@@ -144,9 +144,34 @@ export const getInstructorClass = async (classId: string) => {
   return response;
 };
 
-export const addStudentToClass = async (classId: string, studentId: string) => {
-  const response = await API.post(`/api/v1/class/${classId}/addstudent`, {
-    studentId,
+export const addStudentToClass = async (
+  classId: string,
+  student: {
+    studentId: number;
+    name: string;
+    birthDate: string;
+    birthPlace: string;
+    contact: string;
+    address: string;
+  }
+) => {
+  return await API.post(`/api/v1/students/${classId}/create`, {
+    name: student.name,
+    studentId: student.studentId,
+    birthDate: student.birthDate,
+    birthPlace: student.birthPlace,
+    contact: student.contact,
+    address: student.address,
   });
-  return response;
+};
+
+export const addStudentsToClass = async (classId: string, file: File) => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return await API.post(`/api/v1/students/${classId}/upload`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
 };

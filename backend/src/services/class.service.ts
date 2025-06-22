@@ -32,7 +32,9 @@ export const getClassOwnedBy = async (userId: string) => {
 export const getClassInfoById = async (classId: string) => {
   const classDoc = await ClassModel.findOne({ classId })
     .populate("classOwner", "name username email")
-    .populate("instructors.instructorId", "name username email");
+    .populate("instructors.instructorId", "name username email")
+    .populate("students", "name studentId birthDate birthPlace contact address")
+    .exec();
 
   if (!classDoc) return null;
 
@@ -46,10 +48,21 @@ export const getClassInfoById = async (classId: string) => {
     role: inst.role || "",
   }));
 
+  const students = (classDoc.students || []).map((student: any) => ({
+    id: student._id.toString(),
+    studentId: student.studentId,
+    name: student.name,
+    birthDate: student.birthDate,
+    birthPlace: student.birthPlace,
+    contact: student.contact,
+    address: student.address,
+  }));
+
   // Return class info with formatted instructors
   return {
     ...classDoc.toObject(),
     instructors,
+    students,
   };
 };
 

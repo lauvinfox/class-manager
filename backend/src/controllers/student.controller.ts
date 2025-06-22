@@ -101,7 +101,7 @@ export const uploadStudents: RequestHandler = catchError(async (req, res) => {
   appAssert(classId, BAD_REQUEST, "Class ID is required");
 
   let students: Student[] = [];
-  let inserted: any[] = [];
+  let result: any = {};
 
   if (fileName.endsWith(".csv")) {
     // CSV parsing
@@ -126,14 +126,23 @@ export const uploadStudents: RequestHandler = catchError(async (req, res) => {
       });
     });
 
-    // Insert to DB
-    inserted = await StudentService.addStudents(students);
+    // Insert to DB (bulk)
+    result = await StudentService.addStudents(students);
   } else {
     return res.status(400).json({ message: "Unsupported file type" });
   }
 
+  // Jika ada duplikat, kembalikan info sukses & gagal
+  if (result.duplicates && result.duplicates.length > 0) {
+    return res.status(207).json({
+      message: "Some students could not be added due to duplicates.",
+      inserted: result.inserted,
+      duplicates: result.duplicates,
+    });
+  }
+
   return res.json({
     message: "File uploaded and data saved to database successfully",
-    data: inserted,
+    data: result.inserted,
   });
 });
