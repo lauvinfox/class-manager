@@ -132,17 +132,8 @@ export const uploadStudents: RequestHandler = catchError(async (req, res) => {
     return res.status(400).json({ message: "Unsupported file type" });
   }
 
-  // Jika ada duplikat, kembalikan info sukses & gagal
-  if (result.duplicates && result.duplicates.length > 0) {
-    return res.status(207).json({
-      message: "Some students could not be added due to duplicates.",
-      inserted: result.inserted,
-      duplicates: result.duplicates,
-    });
-  }
-
   return res.json({
     message: "File uploaded and data saved to database successfully",
-    data: result.inserted,
+    data: result,
   });
 });

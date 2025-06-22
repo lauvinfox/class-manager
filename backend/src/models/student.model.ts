@@ -59,7 +59,6 @@ const StudentSchema: Schema = new Schema<IStudent>({
   studentId: {
     type: Number,
     required: [true, "Student ID is required"],
-    unique: [true, "Student ID has been taken"],
     validate: {
       validator: function (value: number) {
         return Number.isInteger(value) && value > 0;
@@ -73,6 +72,9 @@ const StudentSchema: Schema = new Schema<IStudent>({
     required: [true, "Classroom is required"],
   },
 });
+
+// Compound unique index for studentId + classId
+StudentSchema.index({ studentId: 1, classId: 1 }, { unique: true });
 toJSONPlugin(StudentSchema);
 
 export default model<IStudent>("Student", StudentSchema);
