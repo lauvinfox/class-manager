@@ -1,7 +1,10 @@
+import { NOT_FOUND } from "@constants/statusCodes";
 import StudentModel from "@models/student.model";
 import { IStudent } from "@models/student.model";
 
 import * as ClassService from "@services/class.service";
+import appAssert from "@utils/appAssert";
+import app from "app";
 import { Schema } from "mongoose";
 
 type Student = {
@@ -71,12 +74,12 @@ export const getStudentsByClassId = async (classId: string) => {
   );
 };
 
-export const findAllStudents = async () => {
-  return await StudentModel.find();
+export const getStudentById = async (id: string) => {
+  return await StudentModel.findById(id);
 };
 
-export const findStudentById = async (id: string) => {
-  return await StudentModel.findById(id);
+export const findAllStudents = async () => {
+  return await StudentModel.find();
 };
 
 export const updateStudentById = async (
@@ -87,5 +90,5 @@ export const updateStudentById = async (
 };
 
 export const deleteStudentById = async (id: string) => {
-  return await StudentModel.findByIdAndDelete(id);
+  return await StudentModel.findByIdAndDelete({ id });
 };

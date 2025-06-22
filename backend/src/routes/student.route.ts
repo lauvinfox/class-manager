@@ -7,10 +7,10 @@ import { upload } from "@config/multer";
 const router = Router();
 
 // CREATE
-router.post("/", StudentsController.createStudent);
+router.post("/:classId/create", StudentsController.createStudent);
 
 // GET ALL
-router.get("/", authenticate, StudentsController.getStudents);
+router.get("/:classId/get", authenticate, StudentsController.getStudentsClass);
 
 // GET BY STUDENTID
 router.get("/:id", StudentsController.getStudent);

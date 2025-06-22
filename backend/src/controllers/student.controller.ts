@@ -6,7 +6,7 @@ import catchError from "@utils/error";
 import * as StudentService from "@services/student.service";
 import * as csv from "csv-parse";
 
-export const getStudents: RequestHandler = catchError(async (req, res) => {
+export const getStudentsClass: RequestHandler = catchError(async (req, res) => {
   const { classId } = req.params;
 
   const students = await StudentService.getStudentsByClassId(classId);
@@ -23,54 +23,44 @@ export const getStudents: RequestHandler = catchError(async (req, res) => {
 
 export const getStudent: RequestHandler = catchError(async (req, res) => {
   const { id } = req.params;
+  const student = await StudentService.getStudentById(id);
 
-  try {
-    const student = await StudentModel.findOne({ _id: id }).exec();
-
-    if (!student) {
-      res.status(404).json({ message: "Student not found" });
-    }
-
-    res.status(200).send({ message: "Student found", data: student });
-  } catch (error) {
-    if (error instanceof Error) {
-      res.status(500).json({ message: error.message });
-    }
+  if (!student) {
+    return res.status(404).json({ message: "Student not found" });
   }
+
+  return res.status(200).json({
+    message: "Student retrieved successfully",
+    data: student,
+  });
 });
 
 export const updateStudent: RequestHandler = catchError(async (req, res) => {
   const { id } = req.params;
   const updatedStudent = req.body;
 
-  try {
-    await StudentModel.updateOne({ _id: id }, updatedStudent);
-    res
-      .status(200)
-      .json({ message: "Data updated successfully", data: updatedStudent });
-  } catch (error) {
-    if (error instanceof Error) {
-      res.status(500).json({ message: "Unable to update the contact" });
-    }
+  const result = await StudentService.updateStudentById(id, updatedStudent);
+
+  if (!result) {
+    return res.status(404).json({ message: "Student not found" });
   }
+  return res.status(200).json({
+    message: "Student updated successfully",
+    data: result,
+  });
 });
 
 export const deleteStudent: RequestHandler = catchError(async (req, res) => {
   const { id } = req.params;
 
-  try {
-    const student = await StudentModel.findOne({ _id: id }).exec();
-
-    if (!student) {
-      res.status(404).json({ message: "Student not found" });
-    }
-
-    res.status(200).send({ message: "Student found", data: student });
-  } catch (error) {
-    if (error instanceof Error) {
-      res.status(500).json({ message: error.message });
-    }
+  const deletedStudent = await StudentService.deleteStudentById(id);
+  if (!deletedStudent) {
+    return res.status(404).json({ message: "Student not found" });
   }
+  return res.status(200).json({
+    message: "Student deleted successfully",
+    data: deletedStudent,
+  });
 });
 
 interface Student {
