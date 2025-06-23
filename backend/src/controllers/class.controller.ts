@@ -153,18 +153,59 @@ export const respondInviteInstructor: RequestHandler = catchError(
 );
 
 /**
- * Add a student to a class
+ * Add subjects to an instructor in a class
  */
-// export const addStudent: RequestHandler = catchError(async (req, res) => {
-//   const { classId, studentId } = req.params;
+export const addSubjects: RequestHandler = catchError(async (req, res) => {
+  const { classId } = req.params;
+  const { subjectNames } = req.body;
 
-//   const updatedClass = await addStudentToClass(classId, studentId);
+  const updatedClass = await ClassService.addClassSubjects(
+    classId,
+    subjectNames
+  );
 
-//   res.status(OK).json({
-//     message: "Student added to class successfully",
-//     data: updatedClass,
-//   });
-// });
+  return res.status(CREATED).json({
+    message: "Subject added to class successfully",
+    data: updatedClass,
+  });
+});
+
+/**
+ * Give subject to an instructor in a class
+ */
+export const giveSubjectToInstructor: RequestHandler = catchError(
+  async (req, res) => {
+    const { classId, instructorId } = req.params;
+    const { subjectName } = req.body;
+    appAssert(subjectName, BAD_REQUEST, "subjectName");
+
+    const updatedClass = await ClassService.giveInstructorSubjects(
+      classId,
+      instructorId,
+      subjectName
+    );
+
+    return res.json({
+      message: "Subject given to instructor successfully",
+      data: updatedClass,
+    });
+  }
+);
+
+/**
+ * Get all subjects in a class
+ */
+
+export const getClassSubjects: RequestHandler = catchError(async (req, res) => {
+  const { classId } = req.params;
+
+  const subjects = await ClassService.getClassSubjects(classId);
+
+  return res.json({
+    message: "Subjects data retrieved successfully",
+    data: subjects,
+  });
+});
 
 /**
  * Remove a student from a class

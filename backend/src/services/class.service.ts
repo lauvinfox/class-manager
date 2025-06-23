@@ -312,6 +312,11 @@ export const updateInstructorStatus = async (
       { classId, "instructors.instructorId": new Types.ObjectId(instructorId) },
       { $set: { "instructors.$.status": status } }
     );
+
+    await UserModel.updateOne(
+      { _id: instructorId },
+      { $addToSet: { classes: classId } } // Tambahkan classId
+    );
   }
 };
 
@@ -335,6 +340,72 @@ export const addStudentsToClass = async (
   appAssert(updatedClassDocs, NOT_FOUND, "Class not found");
 
   return updatedClassDocs;
+};
+
+/**
+ * Add instructor subjects to a class
+ * @param classId - Class ID
+ * @param subjects - Array of subject names
+ * @returns Updated class document
+ */
+
+export const addClassSubjects = async (classId: string, subjects: string[]) => {
+  const classDoc = await ClassModel.findOneAndUpdate(
+    { classId },
+    {
+      $addToSet: { subjects: { $each: subjects } },
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+
+  return classDoc;
+};
+
+/**
+ * Give instructor subjects in a class
+ * @param classId - Class ID
+ * @param subject - Subject names
+ * @returns Updated class document
+ */
+
+export const giveInstructorSubjects = async (
+  classId: string,
+  instructorId: string,
+  subject: string
+) => {
+  // Update subject pada instructor tertentu di array instructors
+  const classDoc = await ClassModel.findOneAndUpdate(
+    { classId, "instructors.instructorId": instructorId },
+    {
+      $set: { "instructors.$.subject": subject },
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+
+  return classDoc;
+};
+
+/**
+ * Give instructor subjects in a class
+ * @param classId - Class ID
+ * @returns Updated class document
+ */
+
+export const getClassSubjects = async (classId: string) => {
+  const classDoc = await ClassModel.findOne({ classId }, { subjects: 1 })
+    .populate("subjects", "name")
+    .lean()
+    .exec();
+
+  appAssert(classDoc, NOT_FOUND, "Class not found");
+
+  return classDoc.subjects || [];
 };
 
 /**

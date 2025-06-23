@@ -1,6 +1,7 @@
 import { CONFLICT, NOT_FOUND, UNAUTHORIZED } from "@constants/statusCodes";
 import userModel from "@models/user.model";
-import UserModel, { IUser } from "@models/user.model";
+import UserModel from "@models/user.model";
+import { IUser } from "@models/user.model";
 import appAssert from "@utils/appAssert";
 
 export const getAllUsers = async (): Promise<IUser[]> => {

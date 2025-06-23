@@ -1,7 +1,6 @@
 import { dateJoined } from "@utils/date";
 import { compareValue, hashValue } from "@utils/hash";
 import { toJSONPlugin } from "@utils/toJSONPlugin";
-import { bool } from "envalid";
 import { Document, model, Schema } from "mongoose";
 
 export interface IUser extends Document {
@@ -16,16 +15,11 @@ export interface IUser extends Document {
   verified: boolean;
   classes: string[];
   classOwned?: string[];
-  invitations?: [
-    {
-      classId: { type: Schema.Types.ObjectId; ref: "Class" };
-      status: {
-        type: String;
-        enum: ["pending", "accepted", "rejected"];
-        default: "pending";
-      };
-    },
-  ];
+  subjects?: {
+    classId: string;
+    subjectId: string;
+    subjectName: string;
+  }[];
   notifications?: {
     message: string;
     type: "invite" | "other";
@@ -71,15 +65,6 @@ const UserSchema: Schema = new Schema<IUser>(
       type: String,
       required: [true, "Password is required"],
       minlength: [6, "Password must be at least 6 characters"],
-      // validate: {
-      //   validator: function (value: string) {
-      //     return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+={}\[\]:;"'<>,.?/-]).$/.test(
-      //       value
-      //     );
-      //   },
-      //   message:
-      //     "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.",
-      // },
     },
     dateOfBirth: { type: Date, required: true },
     dateJoined: {
@@ -89,14 +74,11 @@ const UserSchema: Schema = new Schema<IUser>(
     verified: { type: Boolean, required: true, default: false },
     classes: [{ type: String, ref: "Class", required: true, default: [] }],
     classOwned: [{ type: String }],
-    invitations: [
+    subjects: [
       {
-        classId: { type: Schema.Types.ObjectId, ref: "Class" },
-        status: {
-          type: String,
-          enum: ["pending", "accepted", "rejected"],
-          default: "pending",
-        },
+        classId: { type: String, required: true },
+        subjectId: { type: String, required: true },
+        subjectName: { type: String, required: true },
       },
     ],
     notifications: [

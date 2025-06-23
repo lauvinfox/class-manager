@@ -4,7 +4,7 @@ import { customAlphabet } from "nanoid";
 
 interface IInstructor {
   instructorId: Types.ObjectId;
-  role?: string;
+  subject?: string;
   status: string;
 }
 
@@ -14,7 +14,7 @@ export interface IClass extends Document {
   description?: string;
   classOwner: Types.ObjectId;
   instructors?: IInstructor[];
-  roles?: string[];
+  subjects?: string[];
   students?: Types.ObjectId[];
 }
 
@@ -25,7 +25,7 @@ const InstructorSchema = new Schema<IInstructor>(
       ref: "User",
       required: true,
     },
-    role: {
+    subject: {
       type: String,
     },
     status: {
@@ -76,8 +76,5 @@ const ClassSchema: Schema = new Schema<IClass>(
   { timestamps: true }
 );
 toJSONPlugin(ClassSchema);
-// // Add index for faster queries
-// ClassSchema.index({ name: 1 });
-// ClassSchema.index({ instructor: 1 });
 
 export default model<IClass>("Class", ClassSchema);

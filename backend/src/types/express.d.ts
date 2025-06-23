@@ -1,4 +1,4 @@
-import { IUser } from "@models/user.model";
+import { IUser } from "./types";
 import { ISession } from "@models/session.model";
 
 declare global {

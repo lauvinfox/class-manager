@@ -21,7 +21,13 @@ router.put("/:id", StudentsController.updateStudent);
 // DELETE
 router.delete("/:id", StudentsController.deleteStudent);
 
-// Upload
+// Add a student to a class
+router.post(
+  "/:classId/students/:classId/create",
+  StudentsController.createStudent
+);
+
+// Upload students from CSV
 router.post(
   "/:classId/upload",
   upload.single("file"),
