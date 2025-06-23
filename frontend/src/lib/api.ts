@@ -175,3 +175,25 @@ export const addStudentsToClass = async (classId: string, file: File) => {
     },
   });
 };
+
+export const getClassSubjects = async (classId: string) => {
+  return await API.get(`/api/v1/class/${classId}/subjects`);
+};
+
+export const addSubjectsToClass = async (
+  classId: string,
+  subjects: string[]
+) => {
+  return await API.post(`/api/v1/class/${classId}/subjects`, { subjects });
+};
+
+export const giveSubjectToInstructor = async (
+  classId: string,
+  instructorId: string,
+  subject: string
+) => {
+  return await API.post(
+    `/api/v1/class/${classId}/instructors/${instructorId}/subjects`,
+    { subject }
+  );
+};
