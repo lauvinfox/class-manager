@@ -5,17 +5,11 @@ import * as ClassController from "@controllers/class.controller";
 
 const router = Router();
 
-// Get all classes
-// router.get("/", ClassController.getClasses);
-
 // Get class by ClassId
 router.post("/getbyids", ClassController.getClassByIds);
 
 // Get class by classOwner
 router.get("/getbyclassowner", ClassController.getClassesByClassOwnerID);
-
-// Get classes by instructor ID
-// router.get("/instructor/:instructorId", ClassController.getInstructorClasses);
 
 // Create new class
 router.post("/", ClassController.createNewClass);
@@ -32,16 +26,16 @@ router.get("/:classId/instructors", ClassController.getClassInstructors);
 // Respond to class invitation
 router.post("/:classId/invite/", ClassController.respondInviteInstructor);
 
-// Update a class
-// router.put("/:id", ClassController.updateClassDetails);
+// Get class subjects
+router.get("/:classId/subjects", ClassController.getClassSubjects);
 
-// Add a student to a class
-// router.put("/:classId/students/:studentId", ClassController.addStudent);
+// Add a subject to a class
+router.post("/:classId/subjects", ClassController.addSubjects);
 
-// Remove a student from a class
-// router.delete("/:classId/students/:studentId", ClassController.removeStudent);
-
-// Delete a class
-// router.delete("/:id", ClassController.removeClass);
+// Give a subject to an instructor
+router.post(
+  "/:classId/instructors/:instructorId/subjects",
+  ClassController.giveSubjectToInstructor
+);
 
 export default router;

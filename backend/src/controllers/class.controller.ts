@@ -1,13 +1,10 @@
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
-import * as csv from "csv-parse";
-import * as XLSX from "xlsx";
 
 import catchError from "@utils/error";
 import { BAD_REQUEST, CREATED } from "@constants/statusCodes";
 import * as ClassService from "@services/class.service";
 import * as UserService from "@services/user.service";
-import { CreateClassSchema } from "@schemas/class.schema";
 import appAssert from "@utils/appAssert";
 
 /**
@@ -80,24 +77,6 @@ export const createNewClass: RequestHandler = catchError(async (req, res) => {
 });
 
 /**
- * Update a class
- */
-// export const updateClassDetails: RequestHandler = catchError(
-//   async (req, res) => {
-//     const { id } = req.params;
-//     const userId = req.userId!; // From authenticate middleware
-//     const data = UpdateClassSchema.parse(req.body);
-
-//     const updatedClass = await updateClass(id, userId.toString(), data);
-
-//     res.status(OK).json({
-//       message: "Class successfully updated",
-//       data: updatedClass,
-//     });
-//   }
-// );
-
-/**
  * Invite instructor to a class
  */
 export const inviteInstructors: RequestHandler = catchError(
@@ -121,6 +100,9 @@ export const inviteInstructors: RequestHandler = catchError(
   }
 );
 
+/**
+ * Get instructors of a class
+ */
 export const getClassInstructors: RequestHandler = catchError(
   async (req, res) => {
     const { classId } = req.params;
@@ -132,6 +114,12 @@ export const getClassInstructors: RequestHandler = catchError(
   }
 );
 
+/**
+ * Respond to an instructor invitation
+ * Accept or deny an instructor's invitation to a class
+ * @param classId - The ID of the class
+ * @param inviteResponse - The response to the invitation, either "accepted" or "den
+ */
 export const respondInviteInstructor: RequestHandler = catchError(
   async (req, res) => {
     const { classId } = req.params;
@@ -206,31 +194,3 @@ export const getClassSubjects: RequestHandler = catchError(async (req, res) => {
     data: subjects,
   });
 });
-
-/**
- * Remove a student from a class
- */
-// export const removeStudent: RequestHandler = catchError(async (req, res) => {
-//   const { classId, studentId } = req.params;
-
-//   const updatedClass = await removeStudentFromClass(classId, studentId);
-
-//   res.status(OK).json({
-//     message: "Student removed from class successfully",
-//     data: updatedClass,
-//   });
-// });
-
-/**
- * Delete a class
- */
-// export const removeClass: RequestHandler = catchError(async (req, res) => {
-//   const { id } = req.params;
-//   const userId = req.userId!; // From authenticate middleware
-
-//   await deleteClass(id, userId.toString());
-
-//   res.status(OK).json({
-//     message: "Class successfully deleted",
-//   });
-// });
