@@ -24,3 +24,15 @@ export interface ClassInfo {
   subjects?: string[];
   students?: Student[];
 }
+export interface ClassOwnerParams {
+  _id: string;
+  name: string;
+  username: string;
+  email: string;
+}
+export interface ClassInfoParams {
+  classId: string;
+  name: string;
+  description?: string;
+  classOwner: ClassOwnerParams;
+}

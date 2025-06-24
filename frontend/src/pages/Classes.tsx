@@ -9,20 +9,7 @@ import { Sidebar } from "../components/Sidebar";
 import { AuthProvider } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { ProfilePic } from "../components/ProfilePic";
-
-interface ClassOwner {
-  _id: string;
-  name: string;
-  username: string;
-  email: string;
-}
-
-interface ClassInfoParams {
-  classId: string;
-  name: string;
-  description?: string;
-  classOwner: ClassOwner;
-}
+import { ClassInfoParams } from "../types/types";
 
 const Classes = () => {
   const { darkMode } = useTheme();
@@ -66,6 +53,11 @@ const Classes = () => {
     setName("");
     setDescription("");
   };
+
+  const { data: classData } = useQuery({
+    queryKey: ["classData"],
+    queryFn: () => getClassesByClassOwner(),
+  });
 
   return (
     <AuthProvider>
