@@ -72,6 +72,13 @@ const ClassSchema: Schema = new Schema<IClass>(
         ref: "Student",
       },
     ],
+    subjects: [
+      {
+        type: String,
+        trim: true,
+        maxlength: [100, "Subject name cannot exceed 100 characters"],
+      },
+    ],
   },
   { timestamps: true }
 );

@@ -14,9 +14,11 @@ import { useTheme } from "../contexts/ThemeContext";
 
 import {
   addStudentsToClass,
+  addSubjectsToClass,
   getClassByClassId,
   getUserInfo,
   getUsersByUsername,
+  giveSubjectToInstructor,
   inviteInstructors,
 } from "../lib/api";
 import { useMutation } from "@tanstack/react-query";
@@ -27,7 +29,6 @@ const ClassPage = () => {
   const { classId } = useParams();
 
   const [classInfo, setClassInfo] = useState<ClassInfo | null>(null);
-
   const [activeTab, setActiveTab] = useState("Overview");
 
   const [showAddTeacherModal, setshowAddTeacherModal] = useState(false);
@@ -43,13 +44,12 @@ const ClassPage = () => {
     username: string;
   } | null>(null);
 
+  // Student management state
   const [showAddStudentModal, setShowAddStudentModal] = useState(false);
   const [addStudentTab, setAddStudentTab] = useState<"single" | "bulk">(
     "single"
   );
-
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-
   const { mutate: uploadStudentsCsv } = useMutation({
     mutationFn: async (file: File) => {
       if (!classId) throw new Error("Class ID not found");
@@ -58,7 +58,6 @@ const ClassPage = () => {
   });
 
   const isMounted = useRef(false);
-
   const searchTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const handleTab = (tab: string) => {
@@ -107,6 +106,7 @@ const ClassPage = () => {
   const fetchClassInfo = async (classId: string) => {
     try {
       const res = await getClassByClassId(classId);
+      console.log("Class data fetched:", res.data);
       return res?.data;
     } catch (error) {
       console.error(error);
@@ -118,7 +118,6 @@ const ClassPage = () => {
     const fetchData = async () => {
       if (isMounted.current || !classId) return;
       const classData = await fetchClassInfo(classId);
-      console.log(classData);
       if (classData) {
         setClassInfo(classData);
         isMounted.current = true;
@@ -155,6 +154,60 @@ const ClassPage = () => {
   const [instructorSubjects, setInstructorSubject] = useState<
     { subjectName: string }[]
   >([]);
+
+  const { mutate: addSubjects } = useMutation({
+    mutationFn: async (subjects: string[]) => {
+      if (!classId) throw new Error("Class ID not found");
+      // Simulate API call to add subjects
+      const response = await addSubjectsToClass(classId, subjects);
+      return response.data;
+    },
+    onSuccess: () => {
+      alert("Subjects added successfully.");
+      setShowSubjectModal(false);
+      setSubjectInput("");
+      setInstructorSubject([]);
+    },
+    onError: (error) => {
+      console.error("Failed to add subjects:", error);
+      alert("Failed to add subjects.");
+    },
+  });
+
+  const [showGiveSubjectModal, setShowGiveSubjectModal] = useState(false);
+  const [selectedInstructorForSubject, setSelectedInstructorForSubject] =
+    useState<Instructor | null>(null);
+  const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
+
+  const { mutate: giveSubject } = useMutation({
+    mutationFn: async ({
+      classId,
+      instructorId,
+      subjectName,
+    }: {
+      classId: string;
+      instructorId: string;
+      subjectName: string;
+    }) => {
+      const response = await giveSubjectToInstructor(
+        classId,
+        instructorId,
+        subjectName
+      );
+
+      return response.data;
+    },
+    onSuccess: () => {
+      alert("Subject given to instructor successfully.");
+      setShowGiveSubjectModal(false);
+      setSelectedInstructorForSubject(null);
+      setSelectedSubject(null);
+    },
+    onError: (error) => {
+      console.error("Failed to give subject to instructor:", error);
+      alert("Failed to give subject to instructor.");
+    },
+  });
 
   return (
     <AuthProvider>
@@ -206,7 +259,7 @@ const ClassPage = () => {
                     type="button"
                     className="flex items-center gap-2 text-sm text-gray-700 dark:text-white bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200 font-semibold px-4 py-2 rounded-lg shadow"
                     onClick={() => setShowSubjectModal(true)}
-                    title="Add Role"
+                    title="Add Subject"
                   >
                     <svg
                       className="w-4 h-4 mr-1"
@@ -221,7 +274,7 @@ const ClassPage = () => {
                         d="M12 4v16m8-8H4"
                       />
                     </svg>
-                    Add Role
+                    Add Subject
                   </button>
                   <button
                     type="button"
@@ -233,62 +286,168 @@ const ClassPage = () => {
                   </button>
                 </div>
                 <div className="overflow-hidden rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
-                  <table className="min-w-full text-sm text-left text-gray-600 dark:text-gray-300">
-                    <thead className="bg-gray-100 dark:bg-gray-800 text-xs uppercase tracking-wider">
-                      <tr>
-                        <th className="px-6 py-4">Name</th>
-                        <th className="px-6 py-4">Username</th>
-                        <th className="px-6 py-4">Status</th>
-                        <th className="px-6 py-4 text-center">Subject</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {classInfo?.instructors &&
-                      classInfo.instructors.length > 0 ? (
-                        classInfo.instructors.map((instructor, idx) => (
-                          <tr
-                            key={instructor.instructorId}
-                            className={`${
-                              idx % 2 === 0
-                                ? "bg-white dark:bg-gray-900"
-                                : "bg-gray-50 dark:bg-gray-800"
-                            } hover:bg-gray-100 dark:hover:bg-gray-700 transition`}
-                          >
-                            <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
-                              {instructor.name}
-                            </td>
-                            <td className="px-6 py-4">{instructor.username}</td>
-                            <td
-                              className={`px-6 py-4 ${
-                                instructor.status == "accepted"
-                                  ? "text-green-500"
-                                  : "text-yellow-400"
-                              }`}
-                            >
-                              {instructor.status}
-                            </td>
-                            <td className="px-6 py-4 text-center">
-                              <button
-                                type="button"
-                                className="text-sm dark:text-slate-50 border dark:border-slate-50 font-bold rounded-md h-8 w-16 min-w-0 min-h-0"
+                  <div className="max-h-76 overflow-y-auto">
+                    <table className="min-w-full text-sm text-left text-gray-600 dark:text-gray-300">
+                      <thead className="bg-gray-100 dark:bg-gray-800 text-xs uppercase tracking-wider sticky top-0 z-10">
+                        <tr>
+                          <th className="px-6 py-4">Name</th>
+                          <th className="px-6 py-4">Username</th>
+                          <th className="px-6 py-4">Status</th>
+                          <th className="px-6 py-4 text-center">Subject</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {classInfo?.instructors &&
+                        classInfo.instructors.length > 0 ? (
+                          classInfo.instructors.map((instructor, idx) => {
+                            return (
+                              <tr
+                                key={instructor.instructorId}
+                                className={`${
+                                  idx % 2 === 0
+                                    ? "bg-white dark:bg-gray-900"
+                                    : "bg-gray-50 dark:bg-gray-800"
+                                } hover:bg-gray-100 dark:hover:bg-gray-700 transition`}
                               >
-                                Edit
-                              </button>
+                                <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
+                                  {instructor.name}
+                                </td>
+                                <td className="px-6 py-4">
+                                  {instructor.username}
+                                </td>
+                                <td
+                                  className={`px-6 py-4 ${
+                                    instructor.status == "accepted"
+                                      ? "text-green-500"
+                                      : "text-yellow-400"
+                                  }`}
+                                >
+                                  {instructor.status}
+                                </td>
+                                <td className="px-6 py-4 text-center relative">
+                                  <div className="inline-block">
+                                    {instructor.subject ? (
+                                      <span className="inline-block px-3 py-1 rounded-md bg-indigo-100 dark:bg-indigo-700 text-indigo-700 dark:text-white font-semibold">
+                                        {instructor.subject}
+                                      </span>
+                                    ) : instructor.status === "pending" ? (
+                                      <span className="inline-block px-3 py-1 rounded-md dark:bg-yellow-700 text-yellow-700 dark:text-white font-semibold">
+                                        need confirmation
+                                      </span>
+                                    ) : (
+                                      <button
+                                        type="button"
+                                        className="flex items-center justify-center gap-1 text-sm font-semibold rounded-md h-8 px-3 min-w-0 min-h-0 border border-gray-300 dark:border-slate-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-slate-50 hover:bg-indigo-50 dark:hover:bg-gray-700 transition"
+                                        onClick={() => {
+                                          setSelectedInstructorForSubject(
+                                            instructor
+                                          );
+                                          setShowGiveSubjectModal(true);
+                                        }}
+                                      >
+                                        <span>Give Subject</span>
+                                      </button>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })
+                        ) : (
+                          <tr>
+                            <td colSpan={4} className="px-6 py-4 text-center">
+                              No instructors found.
                             </td>
                           </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan={4} className="px-6 py-4 text-center">
-                            No instructors found.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
+                {showGiveSubjectModal && selectedInstructorForSubject && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 w-full max-w-md relative">
+                      <button
+                        className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 dark:hover:text-white text-xl"
+                        onClick={() => setShowGiveSubjectModal(false)}
+                        aria-label="Close"
+                      >
+                        &times;
+                      </button>
+                      <h2 className="text-lg font-bold mb-4 text-font-primary dark:text-white">
+                        Give Subject to {selectedInstructorForSubject.name}
+                      </h2>
+                      <div>
+                        <p className="mb-4">Choose one subject to give to</p>
+                        <div className="flex flex-col gap-2 mb-4 max-h-56 overflow-y-auto">
+                          {classInfo?.subjects &&
+                          classInfo.subjects.length > 0 ? (
+                            classInfo.subjects
+                              .filter((subject: string) => {
+                                // Jangan tampilkan jika subject sudah dipakai oleh instructor manapun
+                                return !classInfo.instructors?.some(
+                                  (inst) => inst.subject === subject
+                                );
+                              })
+                              .map((subject: string, idx: number) => (
+                                <button
+                                  key={idx}
+                                  type="button"
+                                  className={`w-full px-3 py-2 rounded dark:bg-gray-800 dark:text-white font-semibold transition text-left ${
+                                    selectedSubject === subject
+                                      ? "bg-indigo-200 dark:bg-indigo-700 border-indigo-500"
+                                      : "hover:bg-indigo-200 dark:hover:bg-gray-700 dark:border-gray-700"
+                                  }`}
+                                  onClick={() => setSelectedSubject(subject)}
+                                >
+                                  {subject}
+                                </button>
+                              ))
+                          ) : (
+                            <span className="text-gray-500">
+                              No subjects available.
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-2 mt-6">
+                        <button
+                          type="button"
+                          className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600"
+                          onClick={() => setShowGiveSubjectModal(false)}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          className="px-4 py-2 rounded bg-indigo-600 text-white font-semibold hover:bg-indigo-700"
+                          disabled={!selectedSubject}
+                          onClick={async () => {
+                            if (
+                              !selectedSubject ||
+                              !selectedInstructorForSubject ||
+                              !classId
+                            )
+                              return;
+                            giveSubject({
+                              classId,
+                              instructorId:
+                                selectedInstructorForSubject.instructorId,
+                              subjectName: selectedSubject,
+                            });
+                            console.log(classId);
+                            setShowGiveSubjectModal(false);
+                            setSelectedSubject(null);
+                          }}
+                        >
+                          Save
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 {showAddTeacherModal && (
-                  <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40">
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
                     <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 w-full max-w-md relative">
                       <button
                         className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 dark:hover:text-white text-xl"
@@ -298,7 +457,7 @@ const ClassPage = () => {
                         &times;
                       </button>
                       <h2 className="text-lg font-bold mb-4 text-font-primary dark:text-white">
-                        Invite users as Instructors
+                        Invite Instructors
                       </h2>
                       <form
                         className="flex flex-col gap-4 h-90"
@@ -488,20 +647,34 @@ const ClassPage = () => {
                         className="flex flex-col gap-4"
                         onSubmit={(e) => {
                           e.preventDefault();
-                          setShowSubjectModal(false);
+                          addSubjects(
+                            instructorSubjects.map((s) => s.subjectName)
+                          );
                         }}
                       >
                         <div>
                           <label className="block text-sm font-medium mb-1">
-                            Role
+                            Subject
                           </label>
                           <div className="flex gap-2 mb-2">
                             <input
                               type="text"
                               className="w-full rounded border border-slate-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-font-primary dark:text-white"
-                              placeholder="Add role"
+                              placeholder="Add subject"
                               value={subjectInput}
                               onChange={(e) => setSubjectInput(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  e.preventDefault();
+                                  if (subjectInput.trim() !== "") {
+                                    setInstructorSubject((prev) => [
+                                      ...prev,
+                                      { subjectName: subjectInput.trim() },
+                                    ]);
+                                    setSubjectInput("");
+                                  }
+                                }
+                              }}
                             />
                             <button
                               type="button"
@@ -590,18 +763,16 @@ const ClassPage = () => {
                   </button>
                 </div>
                 <div className="overflow-hidden rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
-                  <table className="min-w-full text-sm text-left text-gray-600 dark:text-gray-300">
-                    <thead className="bg-gray-100 dark:bg-gray-800 text-xs uppercase tracking-wider">
-                      <tr>
-                        <th className="px-6 py-4">Name</th>
-                        <th className="px-6 py-4">Student ID</th>
-                        <th className="px-6 py-4">Birthdate</th>
-                        <th className="px-6 py-4">Action</th>
-                      </tr>
-                    </thead>
-                  </table>
-                  <div className="max-h-64 overflow-y-auto">
+                  <div className="max-h-76 overflow-y-auto">
                     <table className="min-w-full text-sm text-left text-gray-600 dark:text-gray-300">
+                      <thead className="bg-gray-100 dark:bg-gray-800 text-xs uppercase tracking-wider sticky top-0 z-10">
+                        <tr>
+                          <th className="px-6 py-4">Name</th>
+                          <th className="px-6 py-4">Username</th>
+                          <th className="px-6 py-4">Status</th>
+                          <th className="px-6 py-4 text-center">Subject</th>
+                        </tr>
+                      </thead>
                       <tbody>
                         {classInfo?.students &&
                         classInfo.students.length > 0 ? (
@@ -614,13 +785,11 @@ const ClassPage = () => {
                                   : "bg-gray-50 dark:bg-gray-800"
                               } hover:bg-gray-100 dark:hover:bg-gray-700 transition`}
                             >
-                              <td className="px-6 py-4 font-medium text-gray-900 dark:text-white align-middle whitespace-nowrap min-w-[150px]">
+                              <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
                                 {student.name}
                               </td>
-                              <td className="px-6 py-4 align-middle whitespace-nowrap min-w-[120px]">
-                                {student.studentId}
-                              </td>
-                              <td className="px-6 py-4 align-middle whitespace-nowrap min-w-[140px]">
+                              <td className="px-6 py-4">{student.studentId}</td>
+                              <td className="px-6 py-4">
                                 {new Date(student.birthDate).toLocaleDateString(
                                   "en-US",
                                   {
@@ -630,7 +799,7 @@ const ClassPage = () => {
                                   }
                                 )}
                               </td>
-                              <td className="px-6 py-4 align-middle whitespace-nowrap min-w-[100px]">
+                              <td className="px-6 py-4 text-center">
                                 <button
                                   type="button"
                                   className="text-sm dark:text-slate-50 border dark:border-slate-50 font-bold rounded-md h-8 w-16 min-w-0 min-h-0"

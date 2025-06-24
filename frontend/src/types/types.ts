@@ -3,7 +3,7 @@ export interface Instructor {
   name: string;
   username: string;
   id: string;
-  role: string;
+  subject: string;
   status: string;
 }
 export interface Student {
@@ -21,6 +21,6 @@ export interface ClassInfo {
   description?: string;
   classOwner: string;
   instructors?: Instructor[];
-  roles?: string[];
+  subjects?: string[];
   students?: Student[];
 }

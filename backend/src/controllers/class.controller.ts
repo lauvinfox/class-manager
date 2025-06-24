@@ -145,16 +145,23 @@ export const respondInviteInstructor: RequestHandler = catchError(
  */
 export const addSubjects: RequestHandler = catchError(async (req, res) => {
   const { classId } = req.params;
-  const { subjectNames } = req.body;
+  const { subjects } = req.body;
 
-  const updatedClass = await ClassService.addClassSubjects(
-    classId,
-    subjectNames
-  );
+  if (
+    !Array.isArray(subjects) ||
+    !subjects.every((s) => typeof s === "string")
+  ) {
+    return res
+      .status(BAD_REQUEST)
+      .json({ message: "subjects must be an array of strings" });
+  }
+
+  const updatedClass = await ClassService.addClassSubjects(classId, subjects);
 
   return res.status(CREATED).json({
     message: "Subject added to class successfully",
     data: updatedClass,
+    subjects: subjects,
   });
 });
 
@@ -164,13 +171,13 @@ export const addSubjects: RequestHandler = catchError(async (req, res) => {
 export const giveSubjectToInstructor: RequestHandler = catchError(
   async (req, res) => {
     const { classId, instructorId } = req.params;
-    const { subjectName } = req.body;
-    appAssert(subjectName, BAD_REQUEST, "subjectName");
+    const { subject } = req.body;
+    appAssert(subject, BAD_REQUEST, "subjectName");
 
     const updatedClass = await ClassService.giveInstructorSubjects(
       classId,
       instructorId,
-      subjectName
+      subject
     );
 
     return res.json({

@@ -45,7 +45,7 @@ export const getClassInfoById = async (classId: string) => {
     username: inst.instructorId?.username ?? "",
     email: inst.instructorId?.email ?? "",
     status: inst.status,
-    role: inst.role || "",
+    subject: inst.subject || "",
   }));
 
   const students = (classDoc.students || []).map((student: any) => ({
@@ -350,6 +350,23 @@ export const addStudentsToClass = async (
  */
 
 export const addClassSubjects = async (classId: string, subjects: string[]) => {
+  // Pastikan classId bertipe string dan subjects array of string
+  appAssert(
+    typeof classId === "string" && classId.length > 0,
+    BAD_REQUEST,
+    "classId is required"
+  );
+  appAssert(
+    Array.isArray(subjects) && subjects.length > 0,
+    BAD_REQUEST,
+    "subjects must be a non-empty array"
+  );
+
+  // Pastikan classId ada di database
+  const classDocExists = await ClassModel.findOne({ classId });
+  appAssert(classDocExists, NOT_FOUND, "Class not found");
+
+  // Update subjects
   const classDoc = await ClassModel.findOneAndUpdate(
     { classId },
     {
@@ -358,8 +375,11 @@ export const addClassSubjects = async (classId: string, subjects: string[]) => {
     {
       new: true,
       runValidators: true,
+      // Make sure to return plain object with all fields
     }
-  );
+  ).lean();
+
+  appAssert(classDoc, INTERNAL_SERVER_ERROR, "Failed to update subjects");
 
   return classDoc;
 };
@@ -399,12 +419,9 @@ export const giveInstructorSubjects = async (
 
 export const getClassSubjects = async (classId: string) => {
   const classDoc = await ClassModel.findOne({ classId }, { subjects: 1 })
-    .populate("subjects", "name")
     .lean()
     .exec();
-
   appAssert(classDoc, NOT_FOUND, "Class not found");
-
   return classDoc.subjects || [];
 };
 
