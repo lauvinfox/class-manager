@@ -13,6 +13,7 @@ export interface IClass extends Document {
   name: string;
   description?: string;
   classOwner: Types.ObjectId;
+  assignments?: Types.ObjectId[];
   instructors?: IInstructor[];
   subjects?: string[];
   students?: Types.ObjectId[];
@@ -66,6 +67,12 @@ const ClassSchema: Schema = new Schema<IClass>(
       required: [true, "Instructor is required"],
     },
     instructors: [InstructorSchema],
+    assignments: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Assignment",
+      },
+    ],
     students: [
       {
         type: Schema.Types.ObjectId,
