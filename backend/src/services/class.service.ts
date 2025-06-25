@@ -8,7 +8,7 @@ import {
   FORBIDDEN,
   INTERNAL_SERVER_ERROR,
 } from "@constants/statusCodes";
-import { ObjectId, Types } from "mongoose";
+import { ObjectId, Schema, Types } from "mongoose";
 import NotificationModel from "@models/notification.model";
 
 /**
@@ -64,6 +64,12 @@ export const getClassInfoById = async (classId: string) => {
     instructors,
     students,
   };
+};
+
+export const getIdByClassId = async (classId: string) => {
+  const classDoc = await ClassModel.findOne({ classId }).select("_id").lean();
+  appAssert(classDoc, BAD_REQUEST, "Class not found");
+  return classDoc._id as Schema.Types.ObjectId;
 };
 
 /**
@@ -143,7 +149,11 @@ export const createClass = async (data: CreateClassParams) => {
   // Update classOwner's classOwned field to include the new class
   await UserModel.findByIdAndUpdate(
     data.classOwner,
-    { $addToSet: { classOwned: newClass.classId } },
+    {
+      $addToSet: {
+        classOwned: { id: newClass._id, classId: newClass.classId },
+      },
+    },
     { new: true }
   );
 
@@ -315,7 +325,9 @@ export const updateInstructorStatus = async (
 
     await UserModel.updateOne(
       { _id: instructorId },
-      { $addToSet: { classes: classId } } // Tambahkan classId
+      {
+        $addToSet: { classes: { id: classDoc._id, classId: classDoc.classId } },
+      } // Tambahkan classId
     );
   }
 };

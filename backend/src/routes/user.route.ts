@@ -17,7 +17,7 @@ router.get("/classes", UsersController.getClassesId);
 
 // Public routes
 router.get("/", UsersController.getUsers);
-router.get("/:id", UsersController.getUser);
+// router.get("/:id", UsersController.getUser);
 router.put("/:id", UsersController.updateUser);
 router.delete("/:id", UsersController.deleteUser);
 
@@ -26,4 +26,7 @@ router.put("/username/change", UsersController.changeUsername);
 // Notification
 // Rute untuk mendapatkan notifikasi user
 router.get("/:userId/notifications", UsersController.getNotifications);
+
+router.get("/class/get", UsersController.getUserClass);
+
 export default router;

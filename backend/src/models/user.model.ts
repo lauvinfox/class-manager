@@ -1,7 +1,7 @@
 import { dateJoined } from "@utils/date";
 import { compareValue, hashValue } from "@utils/hash";
 import { toJSONPlugin } from "@utils/toJSONPlugin";
-import { Document, model, Schema } from "mongoose";
+import { Document, model, Schema, Types } from "mongoose";
 
 export interface IUser extends Document {
   name: string;
@@ -13,8 +13,8 @@ export interface IUser extends Document {
   dateOfBirth: Date;
   dateJoined: string;
   verified: boolean;
-  classes: string[];
-  classOwned?: string[];
+  classes?: { id: Types.ObjectId; classId: string }[];
+  classOwned?: { id: Types.ObjectId; classId: string }[];
   subjects?: {
     classId: string;
     subjectId: string;
@@ -35,6 +35,14 @@ export interface IUser extends Document {
     "_id" | "email" | "username" | "verified" | "createdAt" | "updatedAt"
   >;
 }
+
+const ClassRefSchema = new Schema(
+  {
+    classId: { type: String, required: true },
+    id: { type: Schema.Types.ObjectId, ref: "Class" },
+  },
+  { _id: false }
+);
 
 const UserSchema: Schema = new Schema<IUser>(
   {
@@ -72,8 +80,8 @@ const UserSchema: Schema = new Schema<IUser>(
       default: dateJoined,
     },
     verified: { type: Boolean, required: true, default: false },
-    classes: [{ type: String, ref: "Class", required: true, default: [] }],
-    classOwned: [{ type: String }],
+    classes: [ClassRefSchema],
+    classOwned: [ClassRefSchema],
     subjects: [
       {
         classId: { type: String, required: true },

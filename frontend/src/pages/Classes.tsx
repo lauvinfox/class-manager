@@ -54,11 +54,6 @@ const Classes = () => {
     setDescription("");
   };
 
-  const { data: classData } = useQuery({
-    queryKey: ["classData"],
-    queryFn: () => getClassesByClassOwner(),
-  });
-
   return (
     <AuthProvider>
       <div

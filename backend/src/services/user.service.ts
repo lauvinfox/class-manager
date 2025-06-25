@@ -1,5 +1,5 @@
 import { CONFLICT, NOT_FOUND, UNAUTHORIZED } from "@constants/statusCodes";
-import userModel from "@models/user.model";
+import * as ClassService from "@services/class.service";
 import UserModel from "@models/user.model";
 import { IUser } from "@models/user.model";
 import appAssert from "@utils/appAssert";
@@ -58,6 +58,21 @@ export const getNotificationsById = async (userId: string) => {
   appAssert(userNotifs, NOT_FOUND, "User not found");
 
   return userNotifs.notifications;
+};
+
+export const getClasses = async (userId: string) => {
+  const user = await UserModel.findById(userId)
+    .select("classOwned classes")
+    .populate("classOwned.id", "name description ")
+    .populate("classes.id", "name description")
+    .exec();
+
+  appAssert(user, NOT_FOUND, "User not found");
+
+  return {
+    classOwned: user.classOwned,
+    classes: user.classes,
+  };
 };
 
 export const updateUserById = async (
@@ -120,12 +135,12 @@ export const addClassToUser = async (userId: string, classId: string) => {
   const user = await UserModel.findById(userId);
   appAssert(user, NOT_FOUND, "User not found");
 
-  if (user.classes.includes(classId)) {
-    throw new Error("Class already exists in user's classes");
-  }
+  const id = await ClassService.getIdByClassId(classId);
 
-  user.classes.push(classId);
-  await user.save();
+  await UserModel.updateOne(
+    { _id: userId },
+    { $addToSet: { classes: { id, classId } } }
+  );
 
   return user.omitPassword();
 };

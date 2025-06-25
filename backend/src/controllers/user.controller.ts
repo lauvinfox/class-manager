@@ -3,6 +3,7 @@ import * as UserService from "@services/user.service";
 import catchError from "@utils/error";
 import appAssert from "@utils/appAssert";
 import { BAD_REQUEST, UNAUTHORIZED } from "@constants/statusCodes";
+import { date } from "zod";
 
 export const getUsers: RequestHandler = catchError(async (_req, res) => {
   const users = await UserService.getAllUsers();
@@ -153,5 +154,16 @@ export const addClass: RequestHandler = catchError(async (req, res) => {
   return res.json({
     message: "Class added successfully",
     data: updatedUser,
+  });
+});
+
+export const getUserClass: RequestHandler = catchError(async (req, res) => {
+  const userId = req.userId as string;
+
+  const classes = await UserService.getClasses(userId);
+
+  return res.json({
+    message: "Data retrieved successfully",
+    data: classes,
   });
 });
