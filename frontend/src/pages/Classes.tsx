@@ -1,6 +1,6 @@
 import { MdGroupAdd } from "react-icons/md";
 import { useState } from "react";
-import { createClass, getClassesByClassOwner } from "../lib/api";
+import { createClass, getClasses } from "../lib/api";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 
@@ -9,7 +9,15 @@ import { Sidebar } from "../components/Sidebar";
 import { AuthProvider } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { ProfilePic } from "../components/ProfilePic";
-import { ClassInfoParams } from "../types/types";
+
+export interface ClassInfoParams {
+  classId: string;
+  id: {
+    name: string;
+    description?: string;
+    id: string;
+  };
+}
 
 const Classes = () => {
   const { darkMode } = useTheme();
@@ -39,20 +47,20 @@ const Classes = () => {
     },
   });
 
-  const {
-    data: classOwnedData,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["classesByOwner"],
-    queryFn: getClassesByClassOwner,
-  });
-
   const toggleShowModal = () => {
     setShowModal((prev) => !prev);
     setName("");
     setDescription("");
   };
+
+  const {
+    data: classesData,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["userClasses"],
+    queryFn: getClasses,
+  });
 
   return (
     <AuthProvider>
@@ -78,20 +86,43 @@ const Classes = () => {
                 {error && (
                   <div className="text-red-500">Failed to load classes.</div>
                 )}
-                {classOwnedData &&
-                  classOwnedData.data &&
-                  classOwnedData.data.length === 0 &&
+                {classesData?.data &&
+                  classesData?.data?.classOwned &&
+                  classesData.data.classOwned.length === 0 &&
                   !isLoading && (
                     <div className="col-span-full text-center text-gray-500">
                       No classes found.
                     </div>
                   )}
-                {classOwnedData &&
-                  classOwnedData.data &&
-                  classOwnedData.data.map((cls: ClassInfoParams) => (
+                {classesData?.data &&
+                  classesData.data.classOwned &&
+                  classesData.data.classOwned.map((cls: ClassInfoParams) => (
                     <ClassCard
                       key={cls.classId}
-                      title={cls.name}
+                      title={cls.id.name}
+                      classId={cls.classId}
+                    />
+                  ))}
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1 p-6">
+                {isLoading && <div>Loading...</div>}
+                {error && (
+                  <div className="text-red-500">Failed to load classes.</div>
+                )}
+                {classesData?.data &&
+                  classesData?.data?.classes &&
+                  classesData.data.classes.length === 0 &&
+                  !isLoading && (
+                    <div className="col-span-full text-center text-gray-500">
+                      No classes found.
+                    </div>
+                  )}
+                {classesData?.data &&
+                  classesData.data.classes &&
+                  classesData.data.classes.map((cls: ClassInfoParams) => (
+                    <ClassCard
+                      key={cls.classId}
+                      title={cls.id.name}
                       classId={cls.classId}
                     />
                   ))}
