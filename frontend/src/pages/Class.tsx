@@ -15,6 +15,7 @@ import { useMutation } from "@tanstack/react-query";
 import { ClassInfo } from "../types/types";
 import InstructorsTab from "../components/InstructorsTab";
 import { ClassHeader } from "../components/ClassHeader";
+import { MdSort } from "react-icons/md";
 
 const ClassPage = () => {
   const { darkMode } = useTheme();
@@ -311,7 +312,7 @@ const ClassPage = () => {
                               return;
                             }
                             try {
-                              await uploadStudentsCsv(selectedFile as File);
+                              uploadStudentsCsv(selectedFile as File);
                               alert("Students uploaded successfully.");
                               setShowAddStudentModal(false);
                               setSelectedFile(null);
@@ -353,6 +354,33 @@ const ClassPage = () => {
                     </div>
                   </div>
                 )}
+              </div>
+            )}
+            {activeTab == "Assignments" && (
+              <div className="max-w-full overflow-x-auto py-4 px-4">
+                <div className="flex justify-end mb-4 gap-2">
+                  <button
+                    type="button"
+                    className="flex items-center gap-2 text-sm text-gray-700 dark:text-white bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200 font-semibold px-4 py-2 rounded-lg shadow"
+                    title="Filter"
+                  >
+                    <MdSort />
+                    Filter
+                  </button>
+                  {classInfo?.role == "member" && (
+                    <button
+                      type="button"
+                      className="flex items-center gap-2 text-sm text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200 font-semibold px-4 py-2 rounded-lg shadow"
+                      onClick={() => setShowAddStudentModal(true)}
+                    >
+                      <IoPersonAddOutline className="text-lg" />
+                      Add Student
+                    </button>
+                  )}
+                </div>
+                <div className="overflow-hidden rounded-xl shadow-md  dark:border-gray-700">
+                  <div className="max-h-76 overflow-y-auto"></div>
+                </div>
               </div>
             )}
           </div>
