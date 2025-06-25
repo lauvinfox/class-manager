@@ -1,4 +1,4 @@
-import ClassModel, { IClass } from "@models/class.model";
+import ClassModel from "@models/class.model";
 import UserModel from "@models/user.model";
 import appAssert from "@utils/appAssert";
 import {

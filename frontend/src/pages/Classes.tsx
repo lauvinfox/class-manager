@@ -10,7 +10,7 @@ import { AuthProvider } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { ProfilePic } from "../components/ProfilePic";
 
-export interface ClassInfoParams {
+export interface ClassesDataType {
   classId: string;
   id: {
     name: string;
@@ -96,7 +96,7 @@ const Classes = () => {
                   )}
                 {classesData?.data &&
                   classesData.data.classOwned &&
-                  classesData.data.classOwned.map((cls: ClassInfoParams) => (
+                  classesData.data.classOwned.map((cls: ClassesDataType) => (
                     <ClassCard
                       key={cls.classId}
                       title={cls.id.name}
@@ -119,7 +119,7 @@ const Classes = () => {
                   )}
                 {classesData?.data &&
                   classesData.data.classes &&
-                  classesData.data.classes.map((cls: ClassInfoParams) => (
+                  classesData.data.classes.map((cls: ClassesDataType) => (
                     <ClassCard
                       key={cls.classId}
                       title={cls.id.name}
@@ -134,7 +134,7 @@ const Classes = () => {
 
       {/* Create Class Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 w-full max-w-md relative">
             <button
               className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 dark:hover:text-white text-xl"

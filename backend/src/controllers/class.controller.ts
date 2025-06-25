@@ -41,13 +41,39 @@ export const getClassByIds: RequestHandler = catchError(async (req, res) => {
  */
 export const getClassByClassId: RequestHandler = catchError(
   async (req, res) => {
+    const userId = req.userId as string;
     const { classId } = req.params;
 
     const classDoc = await ClassService.getClassInfoById(classId);
+    let role = "";
+    if (
+      classDoc &&
+      classDoc.classOwner &&
+      classDoc.classOwner._id &&
+      classDoc.classOwner._id.toString() === userId
+    ) {
+      role = "owner";
+    } else if (
+      classDoc &&
+      Array.isArray(classDoc.instructors) &&
+      classDoc.instructors.some(
+        (instructor: any) =>
+          instructor &&
+          instructor.instructorId &&
+          instructor.instructorId.toString() === userId &&
+          instructor.status === "accepted"
+      )
+    ) {
+      role = "member";
+    } else {
+      return res.json({
+        message: "You are not member of this class!",
+      });
+    }
 
     return res.json({
       message: "Class data retrieved succesfully",
-      data: classDoc,
+      data: { ...classDoc, role: role },
     });
   }
 );
