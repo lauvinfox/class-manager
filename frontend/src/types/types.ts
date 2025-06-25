@@ -23,6 +23,7 @@ export interface ClassInfo {
   instructors?: Instructor[];
   subjects?: string[];
   students?: Student[];
+  role: string;
 }
 export interface ClassOwnerParams {
   _id: string;
