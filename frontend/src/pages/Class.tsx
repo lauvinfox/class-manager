@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 
-import { IoPersonAddOutline } from "react-icons/io5";
+import { IoPersonAddOutline, IoSearchOutline } from "react-icons/io5";
 import { FiTrash2 } from "react-icons/fi";
 
 import Header from "../components/Header";
@@ -209,6 +209,18 @@ const ClassPage = () => {
     },
   });
 
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const handleRefresh = async () => {
+    if (!classId) return;
+    const classData = await fetchClassInfo(classId);
+    if (classData) setClassInfo(classData);
+  };
+
   return (
     <AuthProvider>
       <div
@@ -228,62 +240,47 @@ const ClassPage = () => {
 
             {activeTab == "Instructors" && (
               <div className="max-w-full overflow-x-auto py-4 px-4">
-                <div className="flex justify-end mb-4 gap-2">
-                  <button
-                    type="button"
-                    className="flex items-center gap-2 text-sm text-gray-700 dark:text-white bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200 font-semibold px-4 py-2 rounded-lg shadow"
-                    onClick={async () => {
-                      if (!classId) return;
-                      const classData = await fetchClassInfo(classId);
-                      if (classData) setClassInfo(classData);
-                    }}
-                    title="Refresh Table"
-                  >
-                    <svg
-                      className="w-4 h-4 mr-1"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      viewBox="0 0 24 24"
+                <div className="flex justify-between items-center mb-4 gap-2">
+                  {/* Search bar di kiri */}
+                  <div className="flex md:w-[30%] w-[70%] items-center gap-5 rounded-lg px-3 py-2 bg-gray-200">
+                    <IoSearchOutline className="text-gray-800" />
+                    <input
+                      type="text"
+                      placeholder="Search"
+                      value={searchTerm}
+                      onChange={handleSearch}
+                      className="w-full outline-none bg-transparent"
+                    />
+                  </div>
+                  {/* Tombol-tombol di kanan */}
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      className="flex items-center gap-2 text-sm text-gray-700 dark:text-white bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200 font-semibold px-4 py-2 rounded-lg shadow"
+                      onClick={handleRefresh}
+                      title="Refresh Table"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M4 4v5h.582M20 20v-5h-.581M5.635 19A9 9 0 1 0 6 6.35"
-                      />
-                    </svg>
-                    Refresh
-                  </button>
-                  {/* Tombol baru di samping tombol refresh */}
-                  <button
-                    type="button"
-                    className="flex items-center gap-2 text-sm text-gray-700 dark:text-white bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200 font-semibold px-4 py-2 rounded-lg shadow"
-                    onClick={() => setShowSubjectModal(true)}
-                    title="Add Subject"
-                  >
-                    <svg
-                      className="w-4 h-4 mr-1"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      viewBox="0 0 24 24"
+                      {/* Icon Refresh */}
+                      Refresh
+                    </button>
+                    <button
+                      type="button"
+                      className="flex items-center gap-2 text-sm text-gray-700 dark:text-white bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200 font-semibold px-4 py-2 rounded-lg shadow"
+                      onClick={() => setShowSubjectModal(true)}
+                      title="Add Subject"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M12 4v16m8-8H4"
-                      />
-                    </svg>
-                    Add Subject
-                  </button>
-                  <button
-                    type="button"
-                    className="flex items-center gap-2 text-sm text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200 font-semibold px-4 py-2 rounded-lg shadow"
-                    onClick={toggleAddTeacherModal}
-                  >
-                    <IoPersonAddOutline className="text-lg" />
-                    Add Instructor
-                  </button>
+                      {/* Icon Add Subject */}
+                      Add Subject
+                    </button>
+                    <button
+                      type="button"
+                      className="flex items-center gap-2 text-sm text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200 font-semibold px-4 py-2 rounded-lg shadow"
+                      onClick={toggleAddTeacherModal}
+                    >
+                      <IoPersonAddOutline className="text-lg" />
+                      Add Instructor
+                    </button>
+                  </div>
                 </div>
                 <div className="overflow-hidden rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
                   <div className="max-h-76 overflow-y-auto">
@@ -299,60 +296,68 @@ const ClassPage = () => {
                       <tbody>
                         {classInfo?.instructors &&
                         classInfo.instructors.length > 0 ? (
-                          classInfo.instructors.map((instructor, idx) => {
-                            return (
-                              <tr
-                                key={instructor.instructorId}
-                                className={`${
-                                  idx % 2 === 0
-                                    ? "bg-white dark:bg-gray-900"
-                                    : "bg-gray-50 dark:bg-gray-800"
-                                } hover:bg-gray-100 dark:hover:bg-gray-700 transition`}
-                              >
-                                <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
-                                  {instructor.name}
-                                </td>
-                                <td className="px-6 py-4">
-                                  {instructor.username}
-                                </td>
-                                <td
-                                  className={`px-6 py-4 ${
-                                    instructor.status == "accepted"
-                                      ? "text-green-500"
-                                      : "text-yellow-400"
-                                  }`}
+                          classInfo.instructors
+                            .filter((instructor) =>
+                              searchTerm.trim() === ""
+                                ? true
+                                : instructor.username
+                                    .toLowerCase()
+                                    .includes(searchTerm.trim().toLowerCase())
+                            )
+                            .map((instructor, idx) => {
+                              return (
+                                <tr
+                                  key={instructor.instructorId}
+                                  className={`${
+                                    idx % 2 === 0
+                                      ? "bg-white dark:bg-gray-900"
+                                      : "bg-gray-50 dark:bg-gray-800"
+                                  } hover:bg-gray-100 dark:hover:bg-gray-700 transition`}
                                 >
-                                  {instructor.status}
-                                </td>
-                                <td className="px-6 py-4 text-center relative">
-                                  <div className="inline-block">
-                                    {instructor.subject ? (
-                                      <span className="inline-block px-3 py-1 rounded-md bg-indigo-100 dark:bg-indigo-700 text-indigo-700 dark:text-white font-semibold">
-                                        {instructor.subject}
-                                      </span>
-                                    ) : instructor.status === "pending" ? (
-                                      <span className="inline-block px-3 py-1 rounded-md dark:bg-yellow-700 text-yellow-700 dark:text-white font-semibold">
-                                        need confirmation
-                                      </span>
-                                    ) : (
-                                      <button
-                                        type="button"
-                                        className="flex items-center justify-center gap-1 text-sm font-semibold rounded-md h-8 px-3 min-w-0 min-h-0 border border-gray-300 dark:border-slate-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-slate-50 hover:bg-indigo-50 dark:hover:bg-gray-700 transition"
-                                        onClick={() => {
-                                          setSelectedInstructorForSubject(
-                                            instructor
-                                          );
-                                          setShowGiveSubjectModal(true);
-                                        }}
-                                      >
-                                        <span>Give Subject</span>
-                                      </button>
-                                    )}
-                                  </div>
-                                </td>
-                              </tr>
-                            );
-                          })
+                                  <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
+                                    {instructor.name}
+                                  </td>
+                                  <td className="px-6 py-4">
+                                    {instructor.username}
+                                  </td>
+                                  <td
+                                    className={`px-6 py-4 ${
+                                      instructor.status == "accepted"
+                                        ? "text-green-500"
+                                        : "text-yellow-400"
+                                    }`}
+                                  >
+                                    {instructor.status}
+                                  </td>
+                                  <td className="px-6 py-4 text-center relative">
+                                    <div className="inline-block">
+                                      {instructor.subject ? (
+                                        <span className="inline-block px-3 py-1 rounded-md bg-indigo-100 dark:bg-indigo-700 text-indigo-700 dark:text-white font-semibold">
+                                          {instructor.subject}
+                                        </span>
+                                      ) : instructor.status === "pending" ? (
+                                        <span className="inline-block px-3 py-1 rounded-md dark:bg-yellow-700 text-yellow-700 dark:text-white font-semibold">
+                                          need confirmation
+                                        </span>
+                                      ) : (
+                                        <button
+                                          type="button"
+                                          className="flex items-center justify-center gap-1 text-sm font-semibold rounded-md h-8 px-3 min-w-0 min-h-0 border border-gray-300 dark:border-slate-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-slate-50 hover:bg-indigo-50 dark:hover:bg-gray-700 transition"
+                                          onClick={() => {
+                                            setSelectedInstructorForSubject(
+                                              instructor
+                                            );
+                                            setShowGiveSubjectModal(true);
+                                          }}
+                                        >
+                                          <span>Give Subject</span>
+                                        </button>
+                                      )}
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })
                         ) : (
                           <tr>
                             <td colSpan={4} className="px-6 py-4 text-center">
