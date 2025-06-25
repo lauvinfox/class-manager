@@ -114,6 +114,10 @@ export const getClassesByClassOwner = async () => {
   return response;
 };
 
+export const getClasses = async () => {
+  return await API.get("/api/v1/users/class/get");
+};
+
 export const inviteInstructors = async (
   classId: string,
   invitees: { username: string; id: string }[]
