@@ -37,3 +37,8 @@ export interface ClassInfoParams {
   description?: string;
   classOwner: ClassOwnerParams;
 }
+export interface ClassHeaderProps {
+  title: string;
+  activeTab: string;
+  handleTab: (tab: string) => void;
+}
