@@ -61,7 +61,7 @@ export const getScoreByClass: RequestHandler = catchError(async (req, res) => {
   const isClassOwner = await ClassService.checkClassOwner(classId, userId);
   appAssert(isClassOwner, NOT_FOUND, "You are not class owner!");
 
-  const assignments = await AssignmentService.getScoreByClass(classId);
+  const assignments = await AssignmentService.getAssignmentsByClass(classId);
 
   return res
     .status(OK)
@@ -88,3 +88,23 @@ export const getScoreBySubject: RequestHandler = catchError(
       .json({ message: "Data retrieved successfully", data: assignments });
   }
 );
+
+export const getScoreStudent: RequestHandler = catchError(async (req, res) => {
+  const userId = req.userId as string;
+  const { classId } = req.params;
+  const { studentId } = req.body;
+
+  const isClassOwner = await ClassService.checkClassOwner(classId, userId);
+  appAssert(isClassOwner, NOT_FOUND, "You are not class owner!");
+
+  const assignments = await AssignmentService.getAssignmentsByStudent({
+    classId,
+    studentId,
+  });
+  appAssert(assignments, NOT_FOUND, "Assignments data not found!");
+
+  return res.status(OK).json({
+    message: "Data retrieved sucessfully!",
+    data: assignments,
+  });
+});

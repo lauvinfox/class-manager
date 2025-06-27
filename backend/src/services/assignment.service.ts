@@ -217,31 +217,7 @@ export const giveStudentsScore = async ({
   return assignment;
 };
 
-export const getScoreBySubject = async (classId: string, subject: string) => {
-  const assignmentsDocs = await AssignmentModel.find(
-    { classId, subject },
-    { title: 1, subject: 1, grades: 1 }
-  ).lean();
-
-  return assignmentsDocs;
-};
-
-export const getScoreByAssignment = async (
-  classId: string,
-  assignmentId: string
-) => {
-  const assignmentsDocs = await AssignmentModel.find(
-    {
-      classId,
-      _id: assignmentId,
-    },
-    { title: 1, subject: 1, grades: 1 }
-  ).lean();
-
-  return assignmentsDocs;
-};
-
-export const getScoreByClass = async (classId: string) => {
+export const getAssignmentsByClass = async (classId: string) => {
   const assignmentsDocs = await AssignmentModel.find(
     { classId },
     { title: 1, subject: 1, grades: 1 }
@@ -278,7 +254,20 @@ export const getScoreByClass = async (classId: string) => {
   return groupedBySubject;
 };
 
-export const getScoreByStudent = async ({
+// Mengelompokkan data berdasarkan classId dan studentId
+type StudentAssignment = {
+  classId: string;
+  studentId: string;
+  assignments: {
+    assignmentId: Types.ObjectId;
+    title: string;
+    subject: string;
+    score?: number;
+    notes?: string;
+  }[];
+};
+
+export const getAssignmentsByStudent = async ({
   classId,
   studentId,
 }: {
@@ -290,18 +279,53 @@ export const getScoreByStudent = async ({
       classId,
       "grades.studentId": studentId,
     },
-    { title: 1, subject: 1, grades: 1 }
-  ).lean();
+    { classId: 1, title: 1, subject: 1, grades: 1 }
+  )
+    .populate("grades.studentId", "name")
+    .lean();
 
-  const result = assignmentsDocs.map((a) => {
-    const grade = a.grades.find((g) => g.studentId.toString() === studentId);
+  // Cari nama student dari salah satu assignment yang ditemukan
+  let studentName = "";
+  for (const assignment of assignmentsDocs) {
+    const grade = assignment.grades.find(
+      (g: any) =>
+        (g.studentId?._id?.toString?.() || g.studentId?.toString?.()) ===
+        studentId
+    );
+    if (
+      grade &&
+      grade.studentId &&
+      typeof grade.studentId === "object" &&
+      "name" in grade.studentId
+    ) {
+      studentName = (grade.studentId as { name: string }).name;
+      break;
+    }
+  }
+
+  // Susun assignments
+  const assignments = assignmentsDocs.map((assignment) => {
+    const grade = assignment.grades.find(
+      (g: any) =>
+        (g.studentId?._id?.toString?.() || g.studentId?.toString?.()) ===
+        studentId
+    );
     return {
-      assignmentId: a._id,
-      title: a.title,
-      subject: a.subject,
+      assignmentId: assignment._id,
+      title: assignment.title,
+      subject: assignment.subject,
       score: grade?.score,
       notes: grade?.notes,
     };
   });
-  return result;
+
+  // Return sesuai format permintaan
+  return [
+    {
+      classId,
+      studentId,
+      name: studentName,
+      assignments,
+    },
+  ];
 };

@@ -12,5 +12,9 @@ router.get(
   "/:classId/subject-assignments/get",
   AssignmentController.getScoreBySubject
 );
+router.get(
+  "/:classId/student-assignments/get",
+  AssignmentController.getScoreBySubject
+);
 
 export default router;
