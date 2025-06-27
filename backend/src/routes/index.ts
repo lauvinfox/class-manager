@@ -5,6 +5,7 @@ import UserRouter from "@routes/user.route";
 import AuthRouter from "@routes/auth.route";
 import NotificationRouter from "@routes/notification.route";
 import ClassRouter from "@routes/class.route";
+import AssignmentRouter from "@routes/assignment.route";
 
 import authenticate from "@middleware/authenticate";
 
@@ -23,5 +24,7 @@ router.use("/api/v1/students", StudentRouter);
 router.use("/api/v1/notifications", NotificationRouter);
 
 router.use("/api/v1/class", authenticate, ClassRouter);
+
+router.use("/api/v1/assignments", authenticate, AssignmentRouter);
 
 export default router;
