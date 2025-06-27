@@ -1,6 +1,5 @@
 import { NOT_FOUND } from "@constants/statusCodes";
 import AssignmentModel from "@models/assignment.model";
-import classModel from "@models/class.model";
 import UserModel from "@models/user.model";
 import * as NotificationService from "@services/notification.service";
 import appAssert from "@utils/appAssert";
@@ -69,11 +68,77 @@ export const getAssignmentsBySubject = async (
 };
 
 export const giveStudentScore = async ({
+  assignmentId,
   studentId,
   score,
   notes,
 }: {
+  assignmentId: string;
   studentId: string;
   score: number;
   notes?: string;
-}) => {};
+}) => {
+  const assignmentDocs = await AssignmentModel.findOneAndUpdate(
+    { _id: assignmentId, "scores.studentId": studentId },
+    {
+      $set: {
+        "scores.$.score": score,
+        "scores.$.notes": notes,
+      },
+    },
+    { new: true }
+  );
+
+  // If student score entry doesn't exist, push a new one
+  if (!assignmentDocs) {
+    return await AssignmentModel.findByIdAndUpdate(
+      assignmentId,
+      {
+        $push: {
+          scores: {
+            studentId,
+            score,
+            notes,
+          },
+        },
+      },
+      { new: true }
+    );
+  }
+
+  return assignmentDocs;
+};
+
+export const giveStudentsScore = async ({
+  assignmentId,
+  scoresData,
+}: {
+  assignmentId: string;
+  scoresData: {
+    studentId: string;
+    score: number;
+    notes?: string;
+  }[];
+}) => {
+  const assignment = await AssignmentModel.findById(assignmentId);
+  appAssert(assignment, NOT_FOUND, "Assignment not found!");
+
+  for (const { studentId, score, notes } of scoresData) {
+    const existingScore = assignment.grades.find(
+      (s: any) => s.studentId.toString() === studentId
+    );
+    if (existingScore) {
+      existingScore.score = score;
+      existingScore.notes = notes;
+    } else {
+      assignment.grades.push({
+        studentId: new (require("mongoose").Types.ObjectId)(studentId),
+        score,
+        notes,
+      });
+    }
+  }
+
+  await assignment.save();
+  return assignment;
+};

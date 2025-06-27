@@ -104,21 +104,42 @@ export const getClassesInfoByIds = async (ids: string[]) => {
 };
 
 /**
- * Get classes by instructor ID
+ * Get subject name by Class ID and User ID
  * @param instructorId - User ID of instructor
  * @returns Array of classes
  */
-// export const getClassesByInstructor = async (instructorId: string) => {
-//   appAssert(
-//     Types.ObjectId.isValid(instructorId),
-//     BAD_REQUEST,
-//     "Invalid instructor ID"
-//   );
+export const getSubjectByClassUserId = async (
+  instructorId: string,
+  classId: string
+) => {
+  appAssert(
+    typeof classId === "string" && classId.length > 0,
+    BAD_REQUEST,
+    "classId is required"
+  );
+  appAssert(
+    Types.ObjectId.isValid(instructorId),
+    BAD_REQUEST,
+    "Invalid instructor ID"
+  );
 
-//   return ClassModel.find({ instructor: instructorId })
-//     .populate("students", "name studentId")
-//     .exec();
-// };
+  const classDoc = await ClassModel.findOne({ classId }).lean();
+  appAssert(classDoc, NOT_FOUND, "Class not found");
+
+  const instructor = (classDoc.instructors || []).find(
+    (inst: {
+      instructorId: Types.ObjectId;
+      subject?: string;
+      status: string;
+    }) =>
+      (inst.instructorId?.toString?.() ?? inst.instructorId) === instructorId &&
+      inst.status === "accepted"
+  );
+
+  appAssert(instructor, NOT_FOUND, "Instructor not found in this class");
+
+  return instructor.subject || null;
+};
 
 /**
  * Create a new class
