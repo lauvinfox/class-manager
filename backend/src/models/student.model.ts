@@ -1,5 +1,5 @@
 import { toJSONPlugin } from "@utils/toJSONPlugin";
-import { Document, model, Schema } from "mongoose";
+import { Document, model, Schema, Types } from "mongoose";
 
 export interface IStudent extends Document {
   name: string;

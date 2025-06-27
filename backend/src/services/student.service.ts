@@ -88,3 +88,21 @@ export const updateStudentById = async (
 export const deleteStudentById = async (id: string) => {
   return await StudentModel.findByIdAndDelete({ id });
 };
+
+// Assignment
+export const addAssignmentScore = async ({
+  assignmentId,
+  score,
+  id,
+}: {
+  assignmentId: string;
+  score: number;
+  id: string;
+}) => {
+  const student = await StudentModel.findOneAndUpdate(
+    { _id: id },
+    { $push: { assignments: { assignmentId, score } } },
+    { new: true }
+  );
+  return student;
+};

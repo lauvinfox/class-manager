@@ -7,7 +7,7 @@ import { RequestHandler } from "express";
 import { Types } from "mongoose";
 
 export const sendNotification: RequestHandler = catchError(async (req, res) => {
-  const { userId, message, type } = req.body;
+  const { userId, message, type, classId } = req.body;
 
   // Validasi userId
   if (!Types.ObjectId.isValid(userId)) {
@@ -18,6 +18,8 @@ export const sendNotification: RequestHandler = catchError(async (req, res) => {
     userId,
     message,
     type,
+    classId,
+    isRead: false,
   });
 
   return res

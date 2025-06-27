@@ -9,7 +9,8 @@ import {
   INTERNAL_SERVER_ERROR,
 } from "@constants/statusCodes";
 import { ObjectId, Schema, Types } from "mongoose";
-import NotificationModel from "@models/notification.model";
+import * as NotificationService from "@services/notification.service";
+import { io } from "@server/server";
 
 /**
  * Get all classes
@@ -162,63 +163,6 @@ export const createClass = async (data: CreateClassParams) => {
   return { classId };
 };
 
-/**
- * Update a class
- * @param id - Class ID
- * @param userId - User ID making the request (for authorization)
- * @param data - Updated class data
- * @returns Updated class document
- */
-// export const updateClass = async (
-//   id: string,
-//   userId: string,
-//   data: UpdateClassParams
-// ) => {
-//   appAssert(Types.ObjectId.isValid(id), BAD_REQUEST, "Invalid class ID");
-
-//   const classDoc = await ClassModel.findById(id);
-//   appAssert(classDoc, NOT_FOUND, "Class not found");
-
-//   // Ensure only the instructor can update the class
-//   appAssert(
-//     classDoc.classOwner.toString() === userId,
-//     FORBIDDEN,
-//     "Only the instructor can update this class"
-//   );
-
-//   // If updating instructor
-//   if (data.instructorId) {
-//     const instructor = await UserModel.findById(data.instructorId);
-//     appAssert(instructor, NOT_FOUND, "New instructor not found");
-//   }
-
-//   // Check if class name is being changed and if it conflicts
-//   if (data.name && data.name !== classDoc.name) {
-//     const existingClass = await ClassModel.findOne({ name: data.name });
-//     appAssert(
-//       !existingClass,
-//       CONFLICT,
-//       "Another class with this name already exists"
-//     );
-//   }
-
-//   // Update the class
-//   const updateData: any = { ...data };
-//   if (data.instructorId) {
-//     updateData.instructor = data.instructorId;
-//     delete updateData.instructorId;
-//   }
-
-//   const updatedClass = await ClassModel.findByIdAndUpdate(id, updateData, {
-//     new: true,
-//     runValidators: true,
-//   })
-//     .populate("instructor", "name email")
-//     .populate("students", "name studentId");
-
-//   return updatedClass;
-// };
-
 export const inviteClassInstructor = async (
   classId: string,
   ownerId: string,
@@ -257,17 +201,13 @@ export const inviteClassInstructor = async (
     }
   );
 
-  // Buat notifikasi ke setiap user yang diundang
-  const notifications = inviteeIds.map((id) => ({
-    userId: id,
-    type: "invite",
+  await NotificationService.createNotifications({
+    inviteeIds,
+    notificationType: "invite",
     message: `You have been invited to be an instructor in class "${classDoc.name}"`,
     classId: classDoc.classId,
     isRead: false,
-    createdAt: new Date(),
-  }));
-
-  await NotificationModel.insertMany(notifications);
+  });
 };
 
 export const getClassInstructors = async (classId: string) => {
