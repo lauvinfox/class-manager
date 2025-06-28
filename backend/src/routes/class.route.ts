@@ -9,6 +9,18 @@ const router = Router();
 router.post("/getbyids", ClassController.getClassByIds);
 
 // Get class by classOwner
+/**
+ * @swagger
+ * /api/v1/class/getbyclassowner:
+ *   get:
+ *     summary: Get all classes owned by the authenticated user
+ *     tags: [Class]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of classes
+ */
 router.get("/getbyclassowner", ClassController.getClassesByClassOwnerID);
 
 // Create new class
