@@ -106,7 +106,8 @@ export const getClassesInfoByIds = async (ids: string[]) => {
 /**
  * Get subject name by Class ID and User ID
  * @param instructorId - User ID of instructor
- * @returns Array of classes
+ * @param classId - Class ID
+ * @returns - Instructor's subject
  */
 export const getSubjectByClassUserId = async (
   instructorId: string,
@@ -139,6 +140,20 @@ export const getSubjectByClassUserId = async (
   appAssert(instructor, NOT_FOUND, "Instructor not found in this class");
 
   return instructor.subject || null;
+};
+
+export const checkInstructor = async (classId: string, userId: string) => {
+  const classDoc = await ClassModel.findOne({
+    classId,
+    "instructors.instructorId": userId,
+  });
+  return !!classDoc;
+};
+
+export const checkClassOwner = async (classId: string, userId: string) => {
+  const classDoc = await ClassModel.findOne({ classId, classOwner: userId });
+
+  return !!classDoc;
 };
 
 /**

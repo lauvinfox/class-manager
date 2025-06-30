@@ -55,8 +55,28 @@ const AssignmentSchema = new Schema<IAssignment>(
       type: Date,
       required: true,
     },
+    grades: [
+      {
+        studentId: {
+          type: Schema.Types.ObjectId,
+          ref: "Student",
+          required: true,
+        },
+        score: {
+          type: Number,
+        },
+        notes: {
+          type: String,
+          trim: true,
+          maxlength: 500,
+        },
+        _id: false,
+      },
+    ],
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
 AssignmentSchema.plugin(toJSONPlugin);
