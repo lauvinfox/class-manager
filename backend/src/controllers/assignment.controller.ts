@@ -89,10 +89,9 @@ export const getScoreBySubject: RequestHandler = catchError(
   }
 );
 
-export const getScoreStudent: RequestHandler = catchError(async (req, res) => {
+export const getStudentScore: RequestHandler = catchError(async (req, res) => {
   const userId = req.userId as string;
-  const { classId } = req.params;
-  const { studentId } = req.body;
+  const { classId, studentId } = req.params;
 
   const isClassOwner = await ClassService.checkClassOwner(classId, userId);
   appAssert(isClassOwner, NOT_FOUND, "You are not class owner!");

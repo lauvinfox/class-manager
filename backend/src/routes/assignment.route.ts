@@ -13,8 +13,8 @@ router.get(
   AssignmentController.getScoreBySubject
 );
 router.get(
-  "/:classId/student-assignments/get",
-  AssignmentController.getScoreBySubject
+  "/:classId/score/:studentId/get",
+  AssignmentController.getStudentScore
 );
 
 export default router;
