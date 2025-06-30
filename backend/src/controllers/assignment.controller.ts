@@ -54,19 +54,40 @@ export const giveScore = catchError(async (req, res) => {
   });
 });
 
-export const getScoreByClass: RequestHandler = catchError(async (req, res) => {
-  const userId = req.userId as string;
-  const { classId } = req.params;
+export const getAssignmentById: RequestHandler = catchError(
+  async (req, res) => {
+    const userId = req.userId as string;
+    const { classId } = req.params;
+    const { assignmentId } = req.body;
 
-  const isClassOwner = await ClassService.checkClassOwner(classId, userId);
-  appAssert(isClassOwner, NOT_FOUND, "You are not class owner!");
+    const isInstructor = await ClassService.checkInstructor(classId, userId);
+    appAssert(isInstructor, NOT_FOUND, "Instructors Not Found");
 
-  const assignments = await AssignmentService.getAssignmentsByClass(classId);
+    const assignment = await AssignmentService.getAssignmentById(assignmentId);
+    appAssert(assignment, NOT_FOUND, "Not found");
 
-  return res
-    .status(OK)
-    .json({ message: "Data retrieved successfully", data: assignments });
-});
+    return res.json({
+      message: "Data retrieved successfully!",
+      data: assignment,
+    });
+  }
+);
+
+export const getAssignmentsByClass: RequestHandler = catchError(
+  async (req, res) => {
+    const userId = req.userId as string;
+    const { classId } = req.params;
+
+    const isClassOwner = await ClassService.checkClassOwner(classId, userId);
+    appAssert(isClassOwner, NOT_FOUND, "You are not class owner!");
+
+    const assignments = await AssignmentService.getAssignmentsByClass(classId);
+
+    return res
+      .status(OK)
+      .json({ message: "Data retrieved successfully", data: assignments });
+  }
+);
 
 export const getScoreBySubject: RequestHandler = catchError(
   async (req, res) => {

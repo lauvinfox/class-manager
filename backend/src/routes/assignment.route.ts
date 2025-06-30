@@ -7,7 +7,13 @@ const router = Router();
 router.post("/:classId/create", AssignmentController.createAssignmentByClassId);
 router.post("/:classId/give-score", AssignmentController.giveScore);
 
-router.get("/:classId/get-assignments", AssignmentController.getScoreByClass);
+router.get(
+  "/:classId/get-assignments",
+  AssignmentController.getAssignmentsByClass
+);
+
+router.post("/:classId/get-assignment", AssignmentController.getAssignmentById);
+
 router.get(
   "/:classId/subject-assignments/get",
   AssignmentController.getScoreBySubject

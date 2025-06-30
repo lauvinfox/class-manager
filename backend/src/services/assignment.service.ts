@@ -217,10 +217,16 @@ export const giveStudentsScore = async ({
   return assignment;
 };
 
+export const getAssignmentById = async (assignmentId: string) => {
+  const assignment = await AssignmentModel.findById(assignmentId);
+  appAssert(assignment, NOT_FOUND, "Assignment Not Found!");
+  return assignment;
+};
+
 export const getAssignmentsByClass = async (classId: string) => {
   const assignmentsDocs = await AssignmentModel.find(
     { classId },
-    { title: 1, subject: 1, grades: 1 }
+    { title: 1, subject: 1, grades: 1, assignmentDate: 1 }
   )
     .populate("grades.studentId", "name")
     .lean(); // Menggunakan lean() untuk mendapatkan plain JavaScript objects
@@ -237,6 +243,7 @@ export const getAssignmentsByClass = async (classId: string) => {
       acc[assignment.subject].push({
         assignmentId: assignment._id,
         title: assignment.title,
+        assignmentDate: assignment.assignmentDate,
         grades: (assignment.grades || []).map((g: any) => ({
           studentId: g.studentId._id,
           name: g.studentId.name,

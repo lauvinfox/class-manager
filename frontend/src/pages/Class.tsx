@@ -10,12 +10,34 @@ import Dropzone from "../components/Dropzone";
 import { AuthProvider } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
 
-import { addStudentsToClass, getClassByClassId, getUserInfo } from "../lib/api";
-import { useMutation } from "@tanstack/react-query";
+import {
+  addStudentsToClass,
+  getAssignmentById,
+  getAssignmentsByClass,
+  getClassByClassId,
+  getUserInfo,
+} from "../lib/api";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { ClassInfo } from "../types/types";
 import InstructorsTab from "../components/InstructorsTab";
 import { ClassHeader } from "../components/ClassHeader";
 import { MdSort } from "react-icons/md";
+import { FiChevronDown } from "react-icons/fi";
+import { getThisMonthRange, getThisWeekRange } from "../utils/date";
+
+interface AssignmentGrade {
+  studentId: string;
+  name: string;
+  score: number;
+  notes?: string;
+}
+
+interface Assignment {
+  assignmentId: string;
+  title: string;
+  assignmentDate: Date;
+  grades: AssignmentGrade[];
+}
 
 const ClassPage = () => {
   const { darkMode } = useTheme();
@@ -105,6 +127,42 @@ const ClassPage = () => {
   const handleStudentSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchStudentTerm(event.target.value);
   };
+
+  // Assignments
+  const { data: assignmentsData } = useQuery({
+    queryKey: ["assignmentsClass"],
+    queryFn: async () => {
+      const res = await getAssignmentsByClass(classId as string);
+      return res.data;
+    },
+  });
+
+  const subjects = assignmentsData ? Object.keys(assignmentsData) : [];
+
+  const [selectedSubject, setSelectedSubject] = useState("");
+  const [subjectDropdown, setSubjectDropdown] = useState(false);
+
+  // Add missing sort dropdown state
+  const [sortDropdown, setSortDropdown] = useState(false);
+  const [sortOption, setSortOption] = useState<"all" | "week" | "month">("all");
+
+  const { weekStart, weekEnd } = getThisWeekRange();
+
+  const { monthStart, monthEnd } = getThisMonthRange();
+
+  const { mutate: getAssignment } = useMutation({
+    mutationFn: async ({
+      classId,
+      assignmentId,
+    }: {
+      classId: string;
+      assignmentId: string;
+    }) => {
+      const res = await getAssignmentById(classId, assignmentId);
+      // Assuming assignmentId is available in res.data.assignmentId
+      return res.data;
+    },
+  });
 
   return (
     <AuthProvider>
@@ -360,26 +418,188 @@ const ClassPage = () => {
               <div className="max-w-full overflow-x-auto py-4 px-4">
                 <div className="flex justify-end mb-4 gap-2">
                   <button
+                    className="flex items-center justify-between gap-2 text-sm text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700"
                     type="button"
-                    className="flex items-center gap-2 text-sm text-gray-700 dark:text-white bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200 font-semibold px-4 py-2 rounded-lg shadow"
-                    title="Filter"
+                    onClick={() => setSubjectDropdown((v) => !v)}
                   >
-                    <MdSort />
-                    Filter
+                    <span>
+                      {selectedSubject == "" ? "Subject" : selectedSubject}
+                    </span>
+                    <FiChevronDown className="ml-auto" />
                   </button>
-                  {classInfo?.role == "member" && (
-                    <button
-                      type="button"
-                      className="flex items-center gap-2 text-sm text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200 font-semibold px-4 py-2 rounded-lg shadow"
-                      onClick={() => setShowAddStudentModal(true)}
-                    >
-                      <IoPersonAddOutline className="text-lg" />
-                      Add Student
-                    </button>
+
+                  {subjectDropdown && (
+                    <div className="z-10 absolute mt-12 bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700">
+                      <ul
+                        className="py-2 text-sm text-gray-700 dark:text-gray-200"
+                        aria-labelledby="dropdownDefaultButton"
+                      >
+                        {subjects.length === 0 ? (
+                          <li>
+                            <span className="block px-4 py-2 text-gray-400">
+                              No subjects
+                            </span>
+                          </li>
+                        ) : (
+                          subjects.map((subject) => (
+                            <li key={subject}>
+                              <button
+                                type="button"
+                                className={`block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white ${
+                                  selectedSubject === subject
+                                    ? "font-bold text-indigo-600 dark:text-indigo-400"
+                                    : ""
+                                }`}
+                                onClick={() => {
+                                  setSelectedSubject(subject);
+                                  setSubjectDropdown(false);
+                                }}
+                              >
+                                {subject}
+                              </button>
+                            </li>
+                          ))
+                        )}
+                      </ul>
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    className="flex items-center justify-between gap-2 text-sm text-gray-700 dark:text-white bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200 font-semibold px-4 py-2 w-40 rounded-lg shadow"
+                    title="Sort"
+                    onClick={() => setSortDropdown((v) => !v)}
+                  >
+                    <span className="flex items-center gap-2">
+                      <MdSort className="text-lg" />
+                      {sortOption === "all"
+                        ? "All"
+                        : sortOption === "week"
+                        ? "This Week"
+                        : "This Month"}
+                    </span>
+                    <FiChevronDown className="ml-auto" />
+                  </button>
+                  {sortDropdown && (
+                    <div className="z-10 absolute mt-12 mr-25 bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-40 dark:bg-gray-700">
+                      <ul className="py-2 text-sm text-gray-700 dark:text-gray-200">
+                        <li>
+                          <button
+                            type="button"
+                            className={`block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white ${
+                              sortOption === "all"
+                                ? "font-bold text-indigo-600 dark:text-indigo-400"
+                                : ""
+                            }`}
+                            onClick={() => {
+                              setSortOption("all");
+                              setSortDropdown(false);
+                            }}
+                          >
+                            All
+                          </button>
+                        </li>
+                        <li>
+                          <button
+                            type="button"
+                            className={`block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white ${
+                              sortOption === "week"
+                                ? "font-bold text-indigo-600 dark:text-indigo-400"
+                                : ""
+                            }`}
+                            onClick={() => {
+                              setSortOption("week");
+                              setSortDropdown(false);
+                            }}
+                          >
+                            This Week
+                          </button>
+                        </li>
+                        <li>
+                          <button
+                            type="button"
+                            className={`block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white ${
+                              sortOption === "month"
+                                ? "font-bold text-indigo-600 dark:text-indigo-400"
+                                : ""
+                            }`}
+                            onClick={() => {
+                              setSortOption("month");
+                              setSortDropdown(false);
+                            }}
+                          >
+                            This Month
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
                   )}
                 </div>
-                <div className="overflow-hidden rounded-xl shadow-md  dark:border-gray-700">
-                  <div className="max-h-76 overflow-y-auto"></div>
+                <div className="flex flex-col gap-2">
+                  {selectedSubject &&
+                  assignmentsData &&
+                  assignmentsData[selectedSubject] ? (
+                    assignmentsData[selectedSubject]
+                      .filter((assignment: Assignment) => {
+                        if (sortOption === "all") return true;
+                        const date = new Date(assignment.assignmentDate);
+                        if (sortOption === "week") {
+                          return date >= weekStart && date <= weekEnd;
+                        }
+                        if (sortOption === "month") {
+                          return date >= monthStart && date <= monthEnd;
+                        }
+                        return true;
+                      })
+                      .map((assignment: Assignment) => (
+                        <div
+                          key={assignment.assignmentId}
+                          className="p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 transition-colors duration-100  hover:bg-indigo-50 dark:hover:bg-gray-700"
+                          onClick={() =>
+                            getAssignment({
+                              classId: classId as string,
+                              assignmentId: assignment.assignmentId,
+                            })
+                          }
+                        >
+                          <div className="font-semibold text-lg mb-2">
+                            {assignment.title}
+                          </div>
+                          <div className="text-sm text-gray-500 dark:text-gray-300">
+                            {assignment.assignmentDate &&
+                              (() => {
+                                const date = new Date(
+                                  assignment.assignmentDate
+                                );
+                                const day = date.getDate();
+                                const month = date.toLocaleString("id-ID", {
+                                  month: "long",
+                                });
+                                const year = date.getFullYear();
+                                return `${month} ${day}, ${year}`;
+                              })()}
+                          </div>
+                          <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-300">
+                            <div>
+                              {/* Left side: you can add more info here if needed */}
+                            </div>
+                            {assignment.grades.length === 0 ? (
+                              <div className="ml-auto text-right">Ungraded</div>
+                            ) : (
+                              <div className="ml-auto text-right">
+                                {assignment.grades.length}/
+                                {classInfo?.students?.length}
+                              </div>
+                            )}
+                          </div>
+                          {/* Optionally, show more details here */}
+                        </div>
+                      ))
+                  ) : (
+                    <div className="text-gray-500 dark:text-gray-400">
+                      {selectedSubject === "" &&
+                        "No assignments found for this subject."}
+                    </div>
+                  )}
                 </div>
               </div>
             )}

@@ -201,3 +201,16 @@ export const giveSubjectToInstructor = async (
     { subject }
   );
 };
+
+export const getAssignmentsByClass = async (classId: string) => {
+  return await API.get(`/api/v1/assignments/${classId}/get-assignments`);
+};
+
+export const getAssignmentById = async (
+  classId: string,
+  assignmentId: string
+) => {
+  return await API.post(`/api/v1/assignments/${classId}/get-assignments`, {
+    assignmentId,
+  });
+};
