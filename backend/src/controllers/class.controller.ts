@@ -227,3 +227,86 @@ export const getClassSubjects: RequestHandler = catchError(async (req, res) => {
     data: subjects,
   });
 });
+
+export const updateSubjectWeights: RequestHandler = catchError(
+  async (req, res) => {
+    const userId = req.userId as string;
+    const { classId } = req.params;
+    const { subject, assignmentWeight } = req.body;
+
+    const isInstructor = await ClassService.checkInstructor(classId, userId);
+    appAssert(
+      isInstructor,
+      BAD_REQUEST,
+      "You are not an instructor of this class"
+    );
+
+    const result = await ClassService.updateClassWeights(classId, {
+      userId,
+      subject,
+      assignmentWeights: assignmentWeight,
+    });
+
+    return res.json({
+      message: "Subject weights updated successfully",
+      data: result,
+    });
+  }
+);
+
+export const getClassWeights: RequestHandler = catchError(async (req, res) => {
+  const userId = req.userId as string;
+
+  const { classId } = req.params;
+
+  const isOwner = await ClassService.checkClassOwner(classId, userId);
+  appAssert(isOwner, BAD_REQUEST, "You are not the owner of this class");
+
+  const weights = await ClassService.getClassWeights(classId);
+
+  return res.json({
+    message: "Subject weights retrieved successfully",
+    data: weights,
+  });
+});
+
+export const getClassWeightBySubject: RequestHandler = catchError(
+  async (req, res) => {
+    const userId = req.userId as string;
+    const { classId, subject } = req.params;
+
+    const isInstructor = await ClassService.checkInstructor(classId, userId);
+    appAssert(
+      isInstructor,
+      BAD_REQUEST,
+      "You are not the instructor of this class"
+    );
+
+    const weight = await ClassService.getClassWeightBySubject(classId, subject);
+
+    return res.json({
+      message: "Subject weight retrieved successfully",
+      data: weight,
+    });
+  }
+);
+
+export const deleteClass: RequestHandler = catchError(async (req, res) => {
+  const userId = req.userId as string;
+  const { classId } = req.params;
+
+  // Validasi userId
+  if (!Types.ObjectId.isValid(userId)) {
+    return res.status(400).json({ message: "Invalid userId" });
+  }
+
+  const isOwner = await ClassService.checkClassOwner(classId, userId);
+  appAssert(isOwner, BAD_REQUEST, "You are not the owner of this class");
+
+  const result = await ClassService.deleteClass(userId, classId);
+
+  return res.json({
+    message: "Class deleted successfully",
+    result,
+  });
+});

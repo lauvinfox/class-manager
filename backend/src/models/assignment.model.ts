@@ -12,7 +12,18 @@ interface IAssignment {
   startTime: Date;
   endTime: Date;
   grades: { studentId: Types.ObjectId; score?: number; notes?: string }[];
-  assignmentType?: string;
+  assignmentType: "homework" | "quiz" | "exam" | "project" | "finalExam";
+  weights: {
+    userId: Types.ObjectId;
+    subject: string;
+    assignmentWeight: {
+      homework?: number;
+      quiz?: number;
+      exam?: number;
+      project?: number;
+      finalExam?: number;
+    };
+  }[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -41,6 +52,7 @@ const AssignmentSchema = new Schema<IAssignment>(
     },
     assignedBy: {
       type: Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
     assignmentDate: {
@@ -73,6 +85,11 @@ const AssignmentSchema = new Schema<IAssignment>(
         _id: false,
       },
     ],
+    assignmentType: {
+      type: String,
+      enum: ["homework", "quiz", "exam", "project", "final exam"],
+      required: true,
+    },
   },
   {
     timestamps: true,

@@ -8,7 +8,14 @@ import { RequestHandler } from "express";
 export const createAssignmentByClassId = catchError(async (req, res) => {
   const userId = req.userId as string;
   const { classId } = req.params;
-  const { title, description, assignmentDate, startTime, endTime } = req.body;
+  const {
+    title,
+    description,
+    assignmentDate,
+    assignmentType,
+    startTime,
+    endTime,
+  } = req.body;
 
   const subject = (await ClassService.getSubjectByClassUserId(
     userId,
@@ -22,6 +29,7 @@ export const createAssignmentByClassId = catchError(async (req, res) => {
     title,
     description,
     assignmentDate,
+    assignmentType,
     startTime,
     endTime,
   });
@@ -54,6 +62,27 @@ export const giveScore = catchError(async (req, res) => {
   });
 });
 
+export const giveScores = catchError(async (req, res) => {
+  const userId = req.userId as string;
+  appAssert(userId, UNAUTHORIZED, "User Not Authorized!");
+  const { classId, assignmentId } = req.params;
+
+  const isInstructor = await ClassService.checkInstructor(classId, userId);
+  appAssert(isInstructor, NOT_FOUND, "Instructors Not Found");
+
+  const { scoresData } = req.body;
+
+  const assignment = await AssignmentService.giveStudentsScore({
+    assignmentId,
+    scoresData,
+  });
+
+  return res.status(OK).json({
+    message: "Scores have been given!",
+    data: assignment,
+  });
+});
+
 export const getAssignmentById: RequestHandler = catchError(
   async (req, res) => {
     const userId = req.userId as string;
@@ -61,7 +90,8 @@ export const getAssignmentById: RequestHandler = catchError(
     const { assignmentId } = req.body;
 
     const isInstructor = await ClassService.checkInstructor(classId, userId);
-    appAssert(isInstructor, NOT_FOUND, "Instructors Not Found");
+    const isClassOwner = await ClassService.checkClassOwner(classId, userId);
+    appAssert(isInstructor || isClassOwner, NOT_FOUND, "Instructors Not Found");
 
     const assignment = await AssignmentService.getAssignmentById(assignmentId);
     appAssert(assignment, NOT_FOUND, "Not found");
@@ -79,13 +109,14 @@ export const getAssignmentsByClass: RequestHandler = catchError(
     const { classId } = req.params;
 
     const isClassOwner = await ClassService.checkClassOwner(classId, userId);
-    appAssert(isClassOwner, NOT_FOUND, "You are not class owner!");
+    const isInstructor = await ClassService.checkInstructor(classId, userId);
+    appAssert(isInstructor || isClassOwner, NOT_FOUND, "Instructors Not Found");
 
     const assignments = await AssignmentService.getAssignmentsByClass(classId);
 
     return res
       .status(OK)
-      .json({ message: "Data retrieved successfully", data: assignments });
+      .json({ message: "Data retrieved successfully!", data: assignments });
   }
 );
 

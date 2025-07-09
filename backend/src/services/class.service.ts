@@ -9,8 +9,11 @@ import {
   INTERNAL_SERVER_ERROR,
 } from "@constants/statusCodes";
 import { ObjectId, Schema, Types } from "mongoose";
+
 import * as NotificationService from "@services/notification.service";
-import { io } from "@server/server";
+import * as UserService from "@services/user.service";
+import * as StudentService from "@services/student.service";
+import * as AssignmentService from "@services/assignment.service";
 
 /**
  * Get all classes
@@ -366,7 +369,22 @@ export const addClassSubjects = async (classId: string, subjects: string[]) => {
       // Make sure to return plain object with all fields
     }
   ).lean();
+  // Tambahkan entry weights untuk setiap subject yang baru ditambahkan
+  const addedSubjects = subjects.filter(
+    (subject) => !(classDocExists.subjects || []).includes(subject)
+  );
 
+  if (addedSubjects.length > 0) {
+    const weightsToAdd = addedSubjects.map((subject) => ({
+      subject,
+      assignmentWeight: {},
+    }));
+
+    await ClassModel.updateOne(
+      { classId },
+      { $addToSet: { weights: { $each: weightsToAdd } } }
+    );
+  }
   appAssert(classDoc, INTERNAL_SERVER_ERROR, "Failed to update subjects");
 
   return classDoc;
@@ -396,6 +414,15 @@ export const giveInstructorSubjects = async (
     }
   );
 
+  await ClassModel.updateOne(
+    { classId, "weights.subject": subject },
+    {
+      $set: {
+        "weights.$.userId": instructorId,
+      },
+    }
+  );
+
   return classDoc;
 };
 
@@ -413,62 +440,136 @@ export const getClassSubjects = async (classId: string) => {
   return classDoc.subjects || [];
 };
 
+export const updateClassWeights = async (
+  classId: string,
+  {
+    userId,
+    subject,
+    assignmentWeights,
+  }: {
+    userId: string; // Optional userId for specific user weights
+    subject: string;
+    assignmentWeights: {
+      homework: number;
+      quiz: number;
+      exam: number;
+      project: number;
+      finalExam: number;
+    };
+  }
+) => {
+  // Cek apakah ada entri dengan userId dan subject yang sesuai
+  const classDoc = await ClassModel.findOneAndUpdate(
+    { classId, "weights.userId": userId, "weights.subject": subject },
+    {
+      // Jika ada, update assignmentWeights untuk userId dan subject yang cocok
+      $set: {
+        "weights.$.assignmentWeight": assignmentWeights,
+      },
+    },
+    { new: true, runValidators: true }
+  )
+    .select("weights")
+    .lean();
+
+  return classDoc;
+};
+
+/**
+ * Get class weights for a specific class
+ * @param classId - Class ID
+ * @returns Array of class weights
+ */
+export const getClassWeights = async (classId: string) => {
+  const classDoc = await ClassModel.findOne({ classId }, { weights: 1 })
+    .populate("weights.userId", "name username email")
+    .lean()
+    .exec();
+  appAssert(classDoc, NOT_FOUND, "Class not found");
+
+  return classDoc.weights || [];
+};
+
+/**
+ * Get class weight for a specific subject
+ * @param classId - Class ID
+ * @param subject - Subject name
+ * @returns Class weight for the subject
+ */
+export const getClassWeightBySubject = async (
+  classId: string,
+  subject: string
+) => {
+  const classDoc = await ClassModel.findOne(
+    { classId, "weights.subject": subject },
+    { weights: 1 }
+  )
+    .populate("weights.userId", "name username email")
+    .lean()
+    .exec();
+  appAssert(classDoc, NOT_FOUND, "Class not found or subject not found");
+
+  // Filter weights sesuai subject
+  const weightItem = (classDoc.weights || []).find(
+    (w: any) => w.subject === subject
+  );
+
+  return weightItem || null;
+};
+
 /**
  * Remove a student from a class
  * @param classId - Class ID
  * @param studentId - Student ID
  * @returns Updated class document
  */
-// export const removeStudentFromClass = async (
-//   classId: string,
-//   studentId: string
-// ) => {
-//   appAssert(Types.ObjectId.isValid(classId), BAD_REQUEST, "Invalid class ID");
-//   appAssert(
-//     Types.ObjectId.isValid(studentId),
-//     BAD_REQUEST,
-//     "Invalid student ID"
-//   );
+export const removeStudentsFromClass = async (classId: string) => {
+  appAssert(
+    typeof classId === "string" && classId.length > 0,
+    BAD_REQUEST,
+    "Invalid class ID"
+  );
 
-//   // Check if class exists
-//   const classDoc = await ClassModel.findById(classId);
-//   appAssert(classDoc, NOT_FOUND, "Class not found");
+  // Remove all students from the class with the given classId
+  const updatedClass = await ClassModel.findOneAndUpdate(
+    { classId },
+    { $set: { students: [] } },
+    { new: true }
+  ).populate("classOwner", "name username email");
 
-//   // Check if student is in class
-//   const isStudentInClass = classDoc.students.some(
-//     (id) => id.toString() === studentId
-//   );
-//   appAssert(isStudentInClass, NOT_FOUND, "Student is not in this class");
+  appAssert(updatedClass, NOT_FOUND, "Class not found");
 
-//   // Remove student from class
-//   classDoc.students = classDoc.students.filter(
-//     (id) => id.toString() !== studentId
-//   );
-//   await classDoc.save();
-
-//   return ClassModel.findById(classId)
-//     .populate("instructor", "name email")
-//     .populate("students", "name studentId");
-// };
+  return updatedClass;
+};
 
 /**
  * Delete a class
- * @param id - Class ID
+ * @param classId - Class ID to delete
  * @param userId - User ID making the request (for authorization)
  */
-// export const deleteClass = async (id: string, userId: string) => {
-//   appAssert(Types.ObjectId.isValid(id), BAD_REQUEST, "Invalid class ID");
+export const deleteClass = async (userId: string, classId: string) => {
+  // Delete field classOwned dari user yang memiliki class ini
+  await UserService.removeClassOwned(userId, classId);
 
-//   const classDoc = await ClassModel.findById(id);
-//   appAssert(classDoc, NOT_FOUND, "Class not found");
+  const instructors = await ClassModel.findOne(
+    { classId },
+    { "instructors.instructorId": 1, _id: 0 }
+  ).lean();
 
-//   // Ensure only the instructor can delete the class
-//   appAssert(
-//     classDoc.instructor.toString() === userId,
-//     FORBIDDEN,
-//     "Only the instructor can delete this class"
-//   );
+  const instructorIds = (instructors?.instructors || []).map(
+    (inst: any) => inst.instructorId
+  );
 
-//   await classDoc.deleteOne();
-//   return { success: true };
-// };
+  // Delete field classes dari user yang memiliki class ini
+  await UserService.removeClasses(instructorIds, classId);
+
+  // Delete all students associated with this class
+  await StudentService.deleteAllStudentsByClassId(classId);
+
+  // Delete assignments and grades associated with this class
+  await AssignmentService.deleteAssignmentsByClassId(classId);
+
+  const result = await ClassModel.deleteOne({ classId });
+
+  return result;
+};

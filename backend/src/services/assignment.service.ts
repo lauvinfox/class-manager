@@ -1,6 +1,7 @@
 import { NOT_FOUND } from "@constants/statusCodes";
 import AssignmentModel from "@models/assignment.model";
 import * as NotificationService from "@services/notification.service";
+import * as StudentService from "@services/student.service";
 
 import UserModel from "@models/user.model";
 import appAssert from "@utils/appAssert";
@@ -16,6 +17,7 @@ export const createAssignment = async ({
   assignmentDate,
   startTime,
   endTime,
+  assignmentType,
 }: {
   userId: string;
   classId: string;
@@ -23,6 +25,7 @@ export const createAssignment = async ({
   title: string;
   description: string;
   assignmentDate: string;
+  assignmentType: string;
   startTime: string;
   endTime: string;
 }) => {
@@ -56,6 +59,13 @@ export const createAssignment = async ({
     );
   }
 
+  const students = await StudentService.getStudentsByClassId(classId);
+
+  const grades = students.map((student: any) => ({
+    studentId: student._id,
+    // score dan notes bisa dikosongkan, nanti diisi saat penilaian
+  }));
+
   const assignmentDocs = await AssignmentModel.create({
     assignedBy: userId,
     classId,
@@ -65,15 +75,17 @@ export const createAssignment = async ({
     assignmentDate,
     startTime: startTimeString,
     endTime: endTimeString,
+    grades,
+    assignmentType,
   });
 
   return assignmentDocs;
 };
 
 export const getAssignmentsByClassId = async (classId: string) => {
-  const assignmentsDocs = await AssignmentModel.find({ classId });
+  const assignmentsDocs = await AssignmentModel.find({ classId }).lean();
   appAssert(assignmentsDocs, NOT_FOUND, "Assignments not found!");
-  return assignmentsDocs;
+  return { assignmentsDocs };
 };
 
 type AssignmentsBySubject = {
@@ -204,12 +216,6 @@ export const giveStudentsScore = async ({
     if (existingScore) {
       existingScore.score = score;
       existingScore.notes = notes;
-    } else {
-      assignment.grades.push({
-        studentId: new (require("mongoose").Types.ObjectId)(studentId),
-        score,
-        notes,
-      });
     }
   }
 
@@ -217,8 +223,19 @@ export const giveStudentsScore = async ({
   return assignment;
 };
 
+export const deleteStudentsByClassId = async (classId: string) => {
+  const result = await AssignmentModel.updateMany(
+    { classId },
+    { $set: { grades: [] } }
+  );
+  return result;
+};
+
 export const getAssignmentById = async (assignmentId: string) => {
-  const assignment = await AssignmentModel.findById(assignmentId);
+  const assignment = await AssignmentModel.findById(assignmentId)
+    .populate("grades.studentId", "name")
+    .populate("assignedBy", "name")
+    .lean();
   appAssert(assignment, NOT_FOUND, "Assignment Not Found!");
   return assignment;
 };
@@ -229,7 +246,7 @@ export const getAssignmentsByClass = async (classId: string) => {
     { title: 1, subject: 1, grades: 1, assignmentDate: 1 }
   )
     .populate("grades.studentId", "name")
-    .lean(); // Menggunakan lean() untuk mendapatkan plain JavaScript objects
+    .lean();
 
   // Mengelompokkan berdasarkan subject
   const groupedBySubject = assignmentsDocs.reduce(
@@ -244,6 +261,7 @@ export const getAssignmentsByClass = async (classId: string) => {
         assignmentId: assignment._id,
         title: assignment.title,
         assignmentDate: assignment.assignmentDate,
+        assignmentType: assignment.assignmentType,
         grades: (assignment.grades || []).map((g: any) => ({
           studentId: g.studentId._id,
           name: g.studentId.name,
@@ -335,4 +353,12 @@ export const getAssignmentsByStudent = async ({
       assignments,
     },
   ];
+};
+
+export const deleteAssignmentsByClassId = async (classId: string) => {
+  const result = await AssignmentModel.deleteMany({ classId });
+  if (result.deletedCount === 0) {
+    throw new Error("No assignments found for the given classId");
+  }
+  return result;
 };

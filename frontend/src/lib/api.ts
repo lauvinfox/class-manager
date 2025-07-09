@@ -180,6 +180,14 @@ export const addStudentsToClass = async (classId: string, file: File) => {
   });
 };
 
+export const deleteStudentsByClassId = async (classId: string) => {
+  return await API.delete(`/api/v1/students/${classId}/delete`);
+};
+
+export const deleteClass = async (classId: string) => {
+  return await API.delete(`/api/v1/class/${classId}`);
+};
+
 export const getClassSubjects = async (classId: string) => {
   return await API.get(`/api/v1/class/${classId}/subjects`);
 };
@@ -210,7 +218,78 @@ export const getAssignmentById = async (
   classId: string,
   assignmentId: string
 ) => {
-  return await API.post(`/api/v1/assignments/${classId}/get-assignments`, {
+  return await API.post(`/api/v1/assignments/${classId}/get-assignment`, {
     assignmentId,
   });
+};
+
+export const createAssignmentByClassId = async (
+  classId: string,
+  assignment: {
+    title: string;
+    description: string;
+    assignmentDate: string;
+    assignmentType: "homework" | "quiz" | "exam" | "project" | "finalExam";
+    startTime: string;
+    endTime: string;
+  }
+) => {
+  return await API.post(`/api/v1/assignments/${classId}/create`, assignment);
+};
+
+export const updateAssignmentGrades = async (
+  classId: string,
+  assignmentId: string,
+  grades: { studentId: string; score: number; notes?: string }[]
+) => {
+  // PATCH endpoint, sesuaikan dengan backend
+  return await API.patch(
+    `/api/v1/assignments/${classId}/${assignmentId}/grades`,
+    { grades }
+  );
+};
+
+export const giveScores = async (
+  classId: string,
+  assignmentId: string,
+  scoresData: { studentId: string; score: number; notes?: string }[]
+) => {
+  return await API.post(
+    `/api/v1/assignments/${classId}/givescore/${assignmentId}`,
+    {
+      scoresData: scoresData,
+    }
+  );
+};
+
+export const giveSubjectWeights = async ({
+  classId,
+  subject,
+  assignmentWeight,
+}: {
+  classId: string;
+  subject: string;
+  assignmentWeight: {
+    homework?: number;
+    quiz?: number;
+    exam?: number;
+    project?: number;
+    finalExam?: number;
+  };
+}) => {
+  return await API.patch(`/api/v1/class/${classId}/weights`, {
+    subject,
+    assignmentWeight,
+  });
+};
+
+export const getClassWeights = async (classId: string) => {
+  return await API.get(`/api/v1/class/${classId}/weights`);
+};
+
+export const getClassWeightBySubject = async (
+  classId: string,
+  subject: string
+) => {
+  return await API.get(`/api/v1/class/${classId}/weights/${subject}`);
 };

@@ -1,10 +1,8 @@
-import { NOT_FOUND } from "@constants/statusCodes";
 import StudentModel from "@models/student.model";
 import { IStudent } from "@models/student.model";
 
 import * as ClassService from "@services/class.service";
-import appAssert from "@utils/appAssert";
-import app from "app";
+import * as AssignmentService from "@services/assignment.service";
 import { Schema } from "mongoose";
 
 type Student = {
@@ -54,11 +52,30 @@ export const addStudents = async (students: Student[]) => {
     address: student.address,
   }));
 
+  // Filter out students that already exist (same studentId and classId)
+  const filteredStudentData = [];
+  for (const student of studentData) {
+    const exists = await StudentModel.findOne({
+      studentId: student.studentId,
+      classId: student.classId,
+    });
+    if (!exists) {
+      filteredStudentData.push(student);
+    }
+  }
+  if (filteredStudentData.length === 0) {
+    throw new Error("All students already exist in their respective classes");
+  }
+  // Use filteredStudentData for insertion
+  studentData.length = 0;
+  studentData.push(...filteredStudentData);
+
   const newStudents = await StudentModel.insertMany(studentData);
   const studentIds = newStudents.map(
     (student) => student._id as Schema.Types.ObjectId
   );
 
+  // Tambahkan studentIds ke list students pada class, jika sudah ada maka append
   await ClassService.addStudentsToClass(studentData[0].classId, studentIds);
 
   return newStudents;
@@ -105,4 +122,15 @@ export const addAssignmentScore = async ({
     { new: true }
   );
   return student;
+};
+
+export const deleteAllStudentsByClassId = async (classId: string) => {
+  const result = await StudentModel.deleteMany({ classId });
+  if (result.deletedCount === 0) {
+    throw new Error("No students found for this class");
+  }
+
+  await ClassService.removeStudentsFromClass(classId);
+  await AssignmentService.deleteStudentsByClassId(classId);
+  return result;
 };

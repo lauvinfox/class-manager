@@ -5,7 +5,11 @@ import * as AssignmentController from "@controllers/assignment.controller";
 const router = Router();
 
 router.post("/:classId/create", AssignmentController.createAssignmentByClassId);
-router.post("/:classId/give-score", AssignmentController.giveScore);
+router.post("/:classId/givescore", AssignmentController.giveScore);
+router.post(
+  "/:classId/givescore/:assignmentId",
+  AssignmentController.giveScores
+);
 
 router.get(
   "/:classId/get-assignments",

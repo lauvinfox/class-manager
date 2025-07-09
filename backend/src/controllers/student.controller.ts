@@ -137,3 +137,21 @@ export const uploadStudents: RequestHandler = catchError(async (req, res) => {
     data: result,
   });
 });
+
+export const deleteStudents: RequestHandler = catchError(async (req, res) => {
+  const { classId } = req.params;
+  appAssert(classId, BAD_REQUEST, "Class ID is required");
+
+  const deletedStudents =
+    await StudentService.deleteAllStudentsByClassId(classId);
+  if (!deletedStudents) {
+    return res
+      .status(404)
+      .json({ message: "No students found for this class" });
+  }
+
+  return res.status(200).json({
+    message: "Students deleted successfully",
+    data: deletedStudents,
+  });
+});

@@ -1,4 +1,5 @@
 import { MdGroupAdd } from "react-icons/md";
+import { FiChevronDown } from "react-icons/fi";
 import { useState } from "react";
 import { createClass, getClasses } from "../lib/api";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -8,7 +9,7 @@ import Header from "../components/Header";
 import { Sidebar } from "../components/Sidebar";
 import { AuthProvider } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
-import { ProfilePic } from "../components/ProfilePic";
+import { ClassCard } from "../components/ClassCard";
 
 export interface ClassesDataType {
   classId: string;
@@ -62,6 +63,9 @@ const Classes = () => {
     queryFn: getClasses,
   });
 
+  const [openClassOwned, setOpenClassOwned] = useState(false);
+  const [openClassJoined, setOpenClassJoined] = useState(false);
+
   return (
     <AuthProvider>
       <div
@@ -73,59 +77,119 @@ const Classes = () => {
           <Sidebar />
           <div className="flex-1">
             <Header title="Class Manager" fontSize="text-xl" />
+
             <ClassHeader toggleShowModal={toggleShowModal} />
+
             {isLoading && (
               <div className="w-full bg-gray-200 rounded-full h-1 dark:bg-gray-700 overflow-hidden mb-2">
                 <div className="bg-indigo-500 h-1 rounded-full animate-pulse w-full transition-all duration-500 ease-in-out"></div>
               </div>
             )}
-            <div className="w-full">
-              {" "}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1 p-6">
-                {isLoading && <div>Loading...</div>}
-                {error && (
-                  <div className="text-red-500">Failed to load classes.</div>
-                )}
-                {classesData?.data &&
-                  classesData?.data?.classOwned &&
-                  classesData.data.classOwned.length === 0 &&
-                  !isLoading && (
-                    <div className="col-span-full text-center text-gray-500">
-                      No classes found.
-                    </div>
-                  )}
-                {classesData?.data &&
-                  classesData.data.classOwned &&
-                  classesData.data.classOwned.map((cls: ClassesDataType) => (
-                    <ClassCard
-                      key={cls.classId}
-                      title={cls.id.name}
-                      classId={cls.classId}
+            <div className="w-full overflow-y-auto max-h-[590px]">
+              {/* Owned Classes */}
+              <div className="pt-6 pl-6 pr-6">
+                <div
+                  className="flex items-center gap-2 hover:cursor-pointer hover:bg-slate-100 dark:hover:bg-gray-800 rounded-md p-2 select-none"
+                  onClick={() => {
+                    setOpenClassOwned(!openClassOwned);
+                  }}
+                >
+                  <div className="flex items-center">
+                    <FiChevronDown
+                      className={`mr-2 transition-transform duration-200 ${
+                        openClassOwned ? "rotate-90 md:rotate-180" : "rotate-0"
+                      }`}
+                      style={{
+                        transform: openClassOwned
+                          ? "rotate(180deg)"
+                          : "rotate(270deg)",
+                      }}
                     />
-                  ))}
+                    <span className="text-lg translate-x-[-1px] translate-y-[4px] font-semibold mb-2 text-font-primary dark:text-white">
+                      Owned Class
+                    </span>
+                  </div>
+                </div>
+                {openClassOwned && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                    {isLoading && <div>Loading...</div>}
+                    {error && (
+                      <div className="text-red-500">
+                        Failed to load classes.
+                      </div>
+                    )}
+                    {classesData?.data &&
+                      classesData?.data?.classOwned &&
+                      classesData.data.classOwned.length === 0 &&
+                      !isLoading && (
+                        <div className="col-span-full text-center text-gray-500">
+                          No classes found.
+                        </div>
+                      )}
+                    {classesData?.data &&
+                      classesData.data.classOwned &&
+                      classesData.data.classOwned.map(
+                        (cls: ClassesDataType) => (
+                          <ClassCard
+                            key={cls.classId}
+                            title={cls.id.name}
+                            classId={cls.classId}
+                            owned={true}
+                          />
+                        )
+                      )}
+                  </div>
+                )}
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1 p-6">
-                {isLoading && <div>Loading...</div>}
-                {error && (
-                  <div className="text-red-500">Failed to load classes.</div>
-                )}
-                {classesData?.data &&
-                  classesData?.data?.classes &&
-                  classesData.data.classes.length === 0 &&
-                  !isLoading && (
-                    <div className="col-span-full text-center text-gray-500">
-                      No classes found.
-                    </div>
-                  )}
-                {classesData?.data &&
-                  classesData.data.classes &&
-                  classesData.data.classes.map((cls: ClassesDataType) => (
-                    <ClassCard
-                      key={cls.classId}
-                      title={cls.id.name}
-                      classId={cls.classId}
+              {/* Joined Classes */}
+              <div className="pt-6 pl-6 pr-6">
+                <div
+                  className="flex items-center gap-2 hover:cursor-pointer hover:bg-slate-100 dark:hover:bg-gray-800 rounded-md p-2 select-none"
+                  onClick={() => setOpenClassJoined(!openClassJoined)}
+                >
+                  <div className="flex items-center">
+                    <FiChevronDown
+                      className={`mr-2 transition-transform duration-200 ${
+                        openClassJoined ? "rotate-90 md:rotate-180" : "rotate-0"
+                      }`}
+                      style={{
+                        transform: openClassJoined
+                          ? "rotate(180deg)"
+                          : "rotate(270deg)",
+                      }}
                     />
-                  ))}
+                    <span className="text-lg translate-x-[-1px] translate-y-[4px] font-semibold mb-2 text-font-primary dark:text-white">
+                      Joined Class
+                    </span>
+                  </div>
+                </div>
+                {openClassJoined && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1">
+                    {isLoading && <div>Loading...</div>}
+                    {error && (
+                      <div className="text-red-500">
+                        Failed to load classes.
+                      </div>
+                    )}
+                    {classesData?.data &&
+                      classesData?.data?.classes &&
+                      classesData.data.classes.length === 0 &&
+                      !isLoading && (
+                        <div className="col-span-full text-center text-gray-500">
+                          No classes found.
+                        </div>
+                      )}
+                    {classesData?.data &&
+                      classesData.data.classes &&
+                      classesData.data.classes.map((cls: ClassesDataType) => (
+                        <ClassCard
+                          key={cls.classId}
+                          title={cls.id.name}
+                          classId={cls.classId}
+                        />
+                      ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -203,41 +267,21 @@ interface ClassHeaderProps {
 
 const ClassHeader = ({ toggleShowModal }: ClassHeaderProps) => {
   return (
-    <nav className="relative top-0 z-40 flex items-center justify-between bg-primary border-b border-slate-200 px-6 py-4 dark:bg-gray-900 dark:border-gray-800 min-w-0">
-      <span className="text-lg font-semibold text-font-primary dark:text-white select-none">
-        Classes
-      </span>
+    <div className="sticky top-0 z-45 bg-white">
+      <nav className="relative top-0 z-40 flex items-center justify-between bg-primary border-b border-slate-200 px-6 py-4 dark:bg-gray-900 dark:border-gray-800 min-w-0">
+        <span className="text-lg font-semibold text-font-primary dark:text-white select-none">
+          Classes
+        </span>
 
-      <button
-        type="button"
-        className="flex items-center gap-2 px-4 text-sm dark:text-slate-50 border dark:border-slate-50 font-bold rounded-md h-10 min-w-0 min-h-0 transition-colors hover:bg-slate-100 dark:hover:bg-gray-800 ml-2"
-        onClick={toggleShowModal}
-      >
-        <MdGroupAdd className="text-lg" />
-        <span>Create class</span>
-      </button>
-    </nav>
-  );
-};
-
-const ClassCard = ({
-  title,
-  classId,
-}: {
-  title: string;
-
-  classId: string;
-}) => {
-  const navigate = useNavigate();
-  return (
-    <div
-      onClick={() => navigate(`/class/${classId}`)}
-      className="bg-white hover:bg-slate-100 dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden flex flex-row items-center transition h-40 w-76 justify-center gap-4"
-    >
-      <ProfilePic firstName={title} size={80} random={true} />
-      <div className="text-base font-semibold text-font-primary dark:text-white text-center">
-        {title}
-      </div>
+        <button
+          type="button"
+          className="flex items-center gap-2 px-4 text-sm dark:text-slate-50 border dark:border-slate-50 font-bold rounded-md h-10 min-w-0 min-h-0 transition-colors hover:bg-slate-100 dark:hover:bg-gray-800 ml-2"
+          onClick={toggleShowModal}
+        >
+          <MdGroupAdd className="text-lg" />
+          <span>Create class</span>
+        </button>
+      </nav>
     </div>
   );
 };

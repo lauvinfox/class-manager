@@ -20,7 +20,14 @@ export interface ClassInfo {
   name: string;
   description?: string;
   classOwner: string;
-  instructors?: Instructor[];
+  instructors?: {
+    instructorId: string;
+    name: string;
+    username: string;
+    id: string;
+    subject: string;
+    status: string;
+  }[];
   subjects?: string[];
   students?: Student[];
   role: string;
@@ -41,4 +48,15 @@ export interface ClassHeaderProps {
   title: string;
   activeTab: string;
   handleTab: (tab: string) => void;
+}
+export interface Assignment {
+  assignmentId: string;
+  title: string;
+  assignmentDate: Date;
+  grades: {
+    studentId: string;
+    name: string;
+    score: number;
+    notes?: string;
+  }[];
 }

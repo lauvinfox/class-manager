@@ -34,4 +34,7 @@ router.post(
   StudentsController.uploadStudents
 );
 
+// Delete multiple students by ClassId
+router.delete("/:classId/delete", StudentsController.deleteStudents);
+
 export default router;

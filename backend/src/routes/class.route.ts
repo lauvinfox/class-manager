@@ -49,4 +49,19 @@ router.post(
   ClassController.giveSubjectToInstructor
 );
 
+// Update class weights
+router.patch("/:classId/weights", ClassController.updateSubjectWeights);
+
+// Get class weights
+router.get("/:classId/weights", ClassController.getClassWeights);
+
+// Get class weights by subject
+router.get(
+  "/:classId/weights/:subject",
+  ClassController.getClassWeightBySubject
+);
+
+// Delete class
+router.delete("/:classId", ClassController.deleteClass);
+
 export default router;

@@ -17,6 +17,17 @@ export interface IClass extends Document {
   instructors?: IInstructor[];
   subjects?: string[];
   students?: Types.ObjectId[];
+  weights?: {
+    userId?: Types.ObjectId;
+    subject: string;
+    assignmentWeight: {
+      homework: number;
+      quiz: number;
+      exam: number;
+      project: number;
+      finalExam: number;
+    };
+  }[];
 }
 
 const InstructorSchema = new Schema<IInstructor>(
@@ -84,6 +95,25 @@ const ClassSchema: Schema = new Schema<IClass>(
         type: String,
         trim: true,
         maxlength: [100, "Subject name cannot exceed 100 characters"],
+      },
+    ],
+    weights: [
+      {
+        userId: {
+          type: Schema.Types.ObjectId,
+          ref: "User",
+        },
+        subject: {
+          type: String,
+          required: true,
+        },
+        assignmentWeight: {
+          homework: { type: Number, default: 0 },
+          quiz: { type: Number, default: 0 },
+          exam: { type: Number, default: 0 },
+          project: { type: Number, default: 0 },
+          finalExam: { type: Number, default: 0 },
+        },
       },
     ],
   },

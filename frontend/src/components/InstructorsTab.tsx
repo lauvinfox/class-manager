@@ -38,6 +38,25 @@ const InstructorsTab = ({
 
   const searchTimeout = useRef<NodeJS.Timeout | null>(null);
 
+  const { mutate: inviteInstructorsMutation } = useMutation({
+    mutationFn: async (instructors: { username: string; id: string }[]) => {
+      if (!classId) throw new Error("Class ID not found");
+      return inviteInstructors(classId, instructors);
+    },
+    onSuccess: () => {
+      alert("Instructors invited successfully.");
+      setshowAddTeacherModal(false);
+      setSelectedInstructor(null);
+      setTeacher("");
+      setSearchResults([]);
+      handleRefresh();
+    },
+    onError: (error) => {
+      console.error("Failed to invite instructors:", error);
+      alert("Failed to invite instructors.");
+    },
+  });
+
   const handleAddInstructors = async () => {
     if (!selectedInstructor || selectedInstructor.length === 0) {
       alert("Please select at least one instructor.");
@@ -47,23 +66,12 @@ const InstructorsTab = ({
       alert("Class ID not found.");
       return;
     }
-    try {
-      await inviteInstructors(
-        classId,
-        selectedInstructor.map((i) => ({
-          username: i.username,
-          id: i.id,
-        }))
-      );
-      alert("Instructors invited successfully.");
-      setSelectedInstructor(null);
-      setTeacher("");
-      setSearchResults([]);
-      setshowAddTeacherModal(false);
-    } catch (error) {
-      console.error("Failed to invite instructors:", error);
-      alert("Failed to invite instructors.");
-    }
+    inviteInstructorsMutation(
+      selectedInstructor.map((i) => ({
+        username: i.username,
+        id: i.id,
+      }))
+    );
   };
 
   const handleInstructorSearch = (
@@ -139,6 +147,7 @@ const InstructorsTab = ({
       setShowSubjectModal(false);
       setSubjectInput("");
       setInstructorSubject([]);
+      handleRefresh();
     },
     onError: (error) => {
       console.error("Failed to add subjects:", error);
@@ -169,6 +178,7 @@ const InstructorsTab = ({
       setShowGiveSubjectModal(false);
       setSelectedInstructorForSubject(null);
       setSelectedSubject(null);
+      handleRefresh();
     },
     onError: (error) => {
       console.error("Failed to give subject to instructor:", error);
@@ -200,12 +210,13 @@ const InstructorsTab = ({
     }
   };
 
-  const handleDeleteSelectedSubject = (idx: number) =>
+  const handleDeleteSelectedSubject = (idx: number) => {
     setInstructorSubject(
       instructorSubjects.filter(
         (_: { subjectName: string }, i: number) => i !== idx
       )
     );
+  };
 
   const toggleAddSubjectInput = () => {
     if (subjectInput.trim() !== "") {
@@ -601,6 +612,7 @@ const InstructorsTab = ({
               onSubmit={(e) => {
                 e.preventDefault();
                 addSubjects(instructorSubjects.map((s) => s.subjectName));
+                handleRefresh();
               }}
             >
               <div>

@@ -86,6 +86,20 @@ export const deleteUserById = async (id: string): Promise<void> => {
   await UserModel.findByIdAndDelete(id).exec();
 };
 
+export const removeClassOwned = async (userId: string, classId: string) => {
+  await UserModel.updateOne(
+    { _id: userId },
+    { $pull: { classOwned: { classId } } }
+  );
+};
+
+export const removeClasses = async (userId: string[], classId: string) => {
+  await UserModel.updateMany(
+    { _id: { $in: userId } },
+    { $pull: { classes: { classId } } }
+  );
+};
+
 export const checkGetMe = async (userId: string) => {
   // get the user
   const user = await UserModel.findById(userId);
