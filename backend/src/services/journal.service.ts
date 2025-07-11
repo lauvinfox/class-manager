@@ -1,322 +1,164 @@
+import cron from "node-cron";
+
 import { NOT_FOUND } from "@constants/statusCodes";
-import JournalModel from "@models/journal.model";
-import UserModel from "@models/user.model";
 import appAssert from "@utils/appAssert";
+
+import JournalModel from "@models/journal.model";
+
+import * as StudentService from "@services/student.service";
+import * as NotificationService from "@services/notification.service";
+
+enum AttendanceStatus {
+  PRESENT = "present",
+  ABSENT = "absent",
+  LATE = "late",
+  SICK = "sick",
+  EXCUSED = "excused",
+  PENDING = "pending",
+}
 
 export const createJournal = async ({
   userId,
   classId,
   subject,
+  title,
+  description,
+  journalDate,
+  startTime,
+  endTime,
 }: {
   userId: string;
   classId: string;
   subject: string;
+  title: string;
+  description?: string;
+  journalDate: string;
+  startTime: string;
+  endTime: string;
 }) => {
-  // Validate instructor exists
-  const instructor = await UserModel.findById(userId);
-  appAssert(instructor, NOT_FOUND, "Instructor not found");
+  const startTimeString = `${journalDate}T${startTime}`;
+  const endTimeString = `${journalDate}T${endTime}`;
+
+  const now = new Date();
+
+  if (new Date(journalDate) > now) {
+    const timezone = "Asia/Jakarta"; // WIB timezone
+    cron.schedule(
+      "0 6 * * *",
+      async () => {
+        await NotificationService.createNotification({
+          userId,
+          message: "Reminder: You have an upcoming assignment!",
+          type: "reminder",
+          classId,
+        });
+      },
+      {
+        timezone: timezone,
+      }
+    );
+  }
+
+  const students = await StudentService.getStudentsByClassId(classId);
+
+  const journals = students.map((student: any) => ({
+    studentId: student._id,
+    status: "pending",
+  }));
 
   const journalDocs = await JournalModel.create({
     createdBy: userId,
     classId,
     subject,
+    title,
+    description,
+    journals,
+    journalDate: journalDate,
+    startTime: startTimeString,
+    endTime: endTimeString,
   });
 
   return journalDocs;
 };
 
-export const getJournalsByClassId = async (classId: string) => {
-  const journalsDocs = await JournalModel.find({ classId }).sort({
-    createdAt: -1,
-  });
-  appAssert(journalsDocs, NOT_FOUND, "Journals not found!");
-  return journalsDocs;
+export const getJournalById = async ({ journalId }: { journalId: string }) => {
+  const journal = await JournalModel.findById(journalId)
+    .populate("createdBy", "name")
+    .populate("journals.studentId", "name")
+    .lean();
+  appAssert(journal, NOT_FOUND, "Journal not found!");
+  return journal;
 };
 
-export const getJournalsBySubjectClassUser = async ({
-  userId,
+export const addAttendancesAndNotes = async ({
+  journalId,
+  journals,
+}: {
+  journalId: string;
+  journals: {
+    studentId: string;
+    status?: AttendanceStatus;
+    note?: string;
+  }[];
+}) => {
+  const journal = await JournalModel.findById(journalId);
+  appAssert(journal, NOT_FOUND, "Journal not found!");
+
+  // Update attendance records
+  for (const { studentId, status, note } of journals) {
+    const existingAttendance = journal.journals.find(
+      (a) => a.studentId.toString() === studentId
+    );
+
+    if (existingAttendance) {
+      existingAttendance.status = status as AttendanceStatus;
+      existingAttendance.note = note;
+    }
+  }
+
+  await journal.save();
+  return journal;
+};
+
+export const getJournalsByClassId = async (classId: string) => {
+  const journalsDocs = await JournalModel.find({ classId })
+    .populate("journals.studentId", "name")
+    .sort({ createdAt: -1 })
+    .lean();
+  appAssert(journalsDocs, NOT_FOUND, "Journals not found!");
+
+  const result = journalsDocs.map((journal: any) => ({
+    journalId: journal._id.toString(),
+    title: journal.title,
+    subject: journal.subject,
+    createdBy:
+      journal.createdBy?._id?.toString?.() || journal.createdBy?.toString?.(),
+    createdByName: journal.createdBy?.name || "",
+    description: journal.description,
+    journalDate: journal.journalDate,
+    journals: (journal.journals || []).map((j: any) => ({
+      studentId: j.studentId?._id?.toString?.() || j.studentId?.toString?.(),
+      name: j.studentId?.name || "",
+      status: j.status,
+      note: j.note,
+    })),
+  }));
+
+  return result;
+};
+
+export const getJournalsBySubject = async ({
   classId,
   subject,
 }: {
-  userId: string;
   classId: string;
   subject: string;
 }) => {
   const journalsDocs = await JournalModel.find({
-    createdBy: userId,
     classId,
     subject,
   }).sort({ createdAt: -1 });
-  appAssert(journalsDocs, NOT_FOUND, "Journals not found!");
 
+  appAssert(journalsDocs, NOT_FOUND, "Journals not found!");
   return journalsDocs;
 };
-
-// import { Types } from "mongoose";
-// import JournalModel, {
-//   AttendanceStatus,
-//   IAttendanceRecord,
-//   IJournal,
-// } from "@models/journal.model";
-// import StudentModel from "@models/student.model";
-// import UserModel from "@models/user.model";
-// import appAssert from "@utils/appAssert";
-// import { BAD_REQUEST, NOT_FOUND } from "@constants/statusCodes";
-// import {
-//   CreateJournalParams,
-//   UpdateJournalParams,
-//   UpdateAttendanceParams,
-// } from "@schemas/journal.schema";
-
-// /**
-//  * Create a new journal entry
-//  */
-// export const createJournal = async (
-//   data: CreateJournalParams
-// ): Promise<IJournal> => {
-//   // Validate teacher exists
-//   const teacherExists = await UserModel.exists({ _id: data.teacherId });
-//   appAssert(teacherExists, BAD_REQUEST, "Teacher not found");
-
-//   // Validate each student exists
-//   for (const record of data.attendanceRecords) {
-//     const studentExists = await StudentModel.exists({ _id: record.studentId });
-//     appAssert(
-//       studentExists,
-//       BAD_REQUEST,
-//       `Student with ID ${record.studentId} not found`
-//     );
-//   }
-
-//   // Create journal entry
-//   const journal = await JournalModel.create({
-//     date: new Date(data.date),
-//     className: data.className,
-//     subject: data.subject,
-//     teacherId: new Types.ObjectId(data.teacherId),
-//     attendanceRecords: data.attendanceRecords.map((record) => ({
-//       studentId: new Types.ObjectId(record.studentId),
-//       status: record.status,
-//       notes: record.notes,
-//     })),
-//     classNotes: data.classNotes,
-//   });
-
-//   return journal;
-// };
-
-// /**
-//  * Get all journal entries with pagination
-//  */
-// export const getJournals = async (
-//   page: number = 1,
-//   limit: number = 10,
-//   className?: string,
-//   teacherId?: string,
-//   startDate?: string,
-//   endDate?: string
-// ): Promise<{
-//   journals: IJournal[];
-//   total: number;
-//   page: number;
-//   pages: number;
-// }> => {
-//   const query: any = {};
-
-//   if (className) {
-//     query.className = className;
-//   }
-
-//   if (teacherId) {
-//     query.teacherId = new Types.ObjectId(teacherId);
-//   }
-
-//   if (startDate || endDate) {
-//     query.date = {};
-//     if (startDate) {
-//       query.date.$gte = new Date(startDate);
-//     }
-//     if (endDate) {
-//       query.date.$lte = new Date(endDate);
-//     }
-//   }
-
-//   const skip = (page - 1) * limit;
-//   const total = await JournalModel.countDocuments(query);
-//   const pages = Math.ceil(total / limit);
-
-//   const journals = await JournalModel.find(query)
-//     .sort({ date: -1 })
-//     .skip(skip)
-//     .limit(limit)
-//     .populate("teacherId", "name email username")
-//     .exec();
-
-//   return {
-//     journals,
-//     total,
-//     page,
-//     pages,
-//   };
-// };
-
-// /**
-//  * Get a journal entry by ID
-//  */
-// export const getJournalById = async (id: string): Promise<IJournal> => {
-//   const journal = await JournalModel.findById(id)
-//     .populate("teacherId", "name email username")
-//     .exec();
-
-//   appAssert(journal, NOT_FOUND, "Journal entry not found");
-
-//   return journal;
-// };
-
-// /**
-//  * Update a journal entry
-//  */
-// export const updateJournal = async (
-//   id: string,
-//   data: UpdateJournalParams
-// ): Promise<IJournal> => {
-//   const journal = await JournalModel.findById(id);
-//   appAssert(journal, NOT_FOUND, "Journal entry not found");
-
-//   // If updating teacherId, validate teacher exists
-//   if (data.teacherId) {
-//     const teacherExists = await UserModel.exists({ _id: data.teacherId });
-//     appAssert(teacherExists, BAD_REQUEST, "Teacher not found");
-//   }
-
-//   // If updating attendance records
-//   if (data.attendanceRecords) {
-//     // Validate each student exists
-//     for (const record of data.attendanceRecords) {
-//       const studentExists = await StudentModel.exists({
-//         _id: record.studentId,
-//       });
-//       appAssert(
-//         studentExists,
-//         BAD_REQUEST,
-//         `Student with ID ${record.studentId} not found`
-//       );
-//     }
-
-//     // Map to proper format
-//     data.attendanceRecords = data.attendanceRecords.map((record) => ({
-//       studentId: record.studentId,
-//       status: record.status,
-//       notes: record.notes,
-//     }));
-//   }
-
-//   // Convert date string to Date object if provided
-//   if (data.date) {
-//     data.date = new Date(data.date).toISOString();
-//   }
-
-//   const updatedJournal = await JournalModel.findByIdAndUpdate(
-//     id,
-//     { $set: data },
-//     { new: true, runValidators: true }
-//   ).populate("teacherId", "name email username");
-
-//   appAssert(updatedJournal, NOT_FOUND, "Failed to update journal");
-
-//   return updatedJournal;
-// };
-
-// /**
-//  * Delete a journal entry
-//  */
-// export const deleteJournal = async (id: string): Promise<void> => {
-//   const result = await JournalModel.deleteOne({ _id: id });
-//   appAssert(result.deletedCount > 0, NOT_FOUND, "Journal entry not found");
-// };
-
-// /**
-//  * Update attendance for a specific student in a journal
-//  */
-// export const updateAttendance = async (
-//   journalId: string,
-//   data: UpdateAttendanceParams
-// ): Promise<IJournal> => {
-//   const journal = await JournalModel.findById(journalId);
-//   appAssert(journal, NOT_FOUND, "Journal entry not found");
-
-//   const studentExists = await StudentModel.exists({ _id: data.studentId });
-//   appAssert(studentExists, BAD_REQUEST, "Student not found");
-
-//   // Find the attendance record for this student
-//   const studentIdObj = new Types.ObjectId(data.studentId);
-//   const recordIndex = journal.attendanceRecords.findIndex((record) =>
-//     record.studentId.equals(studentIdObj)
-//   );
-
-//   if (recordIndex === -1) {
-//     // Add new record if student doesn't have one yet
-//     journal.attendanceRecords.push({
-//       studentId: studentIdObj,
-//       status: data.status,
-//       notes: data.notes,
-//     });
-//   } else {
-//     // Update existing record
-//     journal.attendanceRecords[recordIndex].status = data.status;
-//     if (data.notes !== undefined) {
-//       journal.attendanceRecords[recordIndex].notes = data.notes;
-//     }
-//   }
-
-//   await journal.save();
-//   return journal;
-// };
-
-// /**
-//  * Get attendance records for a specific student across all journals
-//  */
-// export const getStudentAttendance = async (
-//   studentId: string,
-//   startDate?: string,
-//   endDate?: string,
-//   page: number = 1,
-//   limit: number = 10
-// ): Promise<{
-//   journals: IJournal[];
-//   total: number;
-//   page: number;
-//   pages: number;
-// }> => {
-//   const query: any = {
-//     "attendanceRecords.studentId": new Types.ObjectId(studentId),
-//   };
-
-//   if (startDate || endDate) {
-//     query.date = {};
-//     if (startDate) {
-//       query.date.$gte = new Date(startDate);
-//     }
-//     if (endDate) {
-//       query.date.$lte = new Date(endDate);
-//     }
-//   }
-
-//   const skip = (page - 1) * limit;
-//   const total = await JournalModel.countDocuments(query);
-//   const pages = Math.ceil(total / limit);
-
-//   const journals = await JournalModel.find(query)
-//     .sort({ date: -1 })
-//     .skip(skip)
-//     .limit(limit)
-//     .populate("teacherId", "name email username")
-//     .exec();
-
-//   return {
-//     journals,
-//     total,
-//     page,
-//     pages,
-//   };
-// };

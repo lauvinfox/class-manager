@@ -6,6 +6,7 @@ import AuthRouter from "@routes/auth.route";
 import NotificationRouter from "@routes/notification.route";
 import ClassRouter from "@routes/class.route";
 import AssignmentRouter from "@routes/assignment.route";
+import JournalRouter from "@routes/journal.route";
 
 import authenticate from "@middleware/authenticate";
 
@@ -26,5 +27,8 @@ router.use("/api/v1/notifications", NotificationRouter);
 router.use("/api/v1/class", authenticate, ClassRouter);
 
 router.use("/api/v1/assignments", authenticate, AssignmentRouter);
+
+// Journal API
+router.use("/api/v1/journals", authenticate, JournalRouter);
 
 export default router;

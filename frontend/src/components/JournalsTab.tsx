@@ -1,203 +1,207 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { ClassInfo } from "../types/types";
+
 import {
-  createAssignmentByClassId,
-  getAssignmentById,
-  getAssignmentsByClass,
-  giveScores,
+  createJournal,
+  getJournalById,
+  getJournalsByClassId,
+  getJournalsBySubject,
+  giveAttendancesAndNotes,
 } from "../lib/api";
 import { useState } from "react";
-import { getThisMonthRange, getThisWeekRange } from "../utils/date";
 import { FiChevronDown, FiPlus } from "react-icons/fi";
 import { MdSort } from "react-icons/md";
-import { Assignment, ClassInfo } from "../types/types";
-import Spinner from "./Spinner";
-import { FaSortAlphaUp, FaSortAlphaDownAlt } from "react-icons/fa";
+import { getThisMonthRange, getThisWeekRange } from "../utils/date";
+import { FaSortAlphaDownAlt, FaSortAlphaUp } from "react-icons/fa";
 
-interface Grade {
-  studentId: {
+interface Journal {
+  id?: string;
+  journalId?: string;
+  createdBy?: string;
+  createdByName?: string;
+  classId?: string;
+  title?: string;
+  description?: string;
+  journalDate?: string;
+  startTime?: string;
+  endTime?: string;
+  subject: string;
+  journals?: {
+    studentId: string;
+    status: "present" | "absent" | "late" | "sick" | "excused" | "pending";
+    note?: string;
+  }[];
+}
+interface JournalInfo {
+  _id: string;
+  createdBy: {
     _id: string;
     name: string;
   };
-  notes?: string;
-  score: number;
-}
-
-interface AssignmentInfo {
-  _id: string;
-  assignedBy: { _id: string; name: string };
-  assignmentDate: Date;
-  assignmentType: "homework" | "quiz" | "exam" | "project" | "finalExam";
   classId: string;
-  createdAt: Date;
-  description: string;
-  endTime: string;
-  grades: Grade[];
-  startTime: string;
   subject: string;
   title: string;
+  journals: {
+    studentId: {
+      _id: string;
+      name: string;
+    };
+    status: "present" | "absent" | "late" | "sick" | "excused" | "pending";
+    note?: string;
+  }[];
+  description?: string;
+  journalDate: string;
+  startTime: string;
+  endTime: string;
 }
 
-const AssignmentsTab = ({
+const Journals = ({
   classId,
   classInfo,
-  handleRefresh,
 }: {
   classId: string | undefined;
   classInfo: ClassInfo | null;
-  handleRefresh: () => void;
 }) => {
-  // Assignments
-  const { data: assignmentsData } = useQuery({
-    queryKey: ["assignmentsClass"],
+  const [selectedSubject, setSelectedSubject] = useState("");
+  const [subjectDropdown, setSubjectDropdown] = useState(false);
+
+  const subjects = classInfo?.subjects || [];
+
+  const [sortDropdown, setSortDropdown] = useState(false);
+  const [sortOption, setSortOption] = useState<"all" | "week" | "month">("all");
+
+  const [form, setForm] = useState({
+    title: "",
+    description: "",
+    journalDate: "",
+    startTime: "",
+    endTime: "",
+  });
+
+  const queryClient = useQueryClient();
+
+  const [showCreateJournalModal, setShowCreateJournalModal] = useState(false);
+
+  const { data: journalsData } = useQuery({
+    queryKey: ["journalsData", classId],
     queryFn: async () => {
-      const res = await getAssignmentsByClass(classId as string);
+      if (!classId) return [];
+      const res = await getJournalsByClassId(classId);
+      return res.data;
+    },
+    refetchOnWindowFocus: false,
+  });
+
+  const { mutateAsync: getJournal } = useMutation({
+    mutationFn: async (journalId: string) => {
+      if (!classId) return null;
+      const res = await getJournalById(classId, journalId);
       return res.data;
     },
   });
 
-  const subjects = classInfo?.subjects || [];
+  console.log("Journals Data:", journalsData);
 
-  const [selectedSubject, setSelectedSubject] = useState("");
-  const [subjectDropdown, setSubjectDropdown] = useState(false);
+  const { mutate: createJournals } = useMutation({
+    mutationFn: async (newJournal: {
+      title: string;
+      description?: string;
+      journalDate: string;
+      startTime: string;
+      endTime: string;
+    }) => {
+      const res = await createJournal({
+        classId: classId as string,
+        title: newJournal.title,
+        description: newJournal.description,
+        journalDate: newJournal.journalDate,
+        startTime: newJournal.startTime,
+        endTime: newJournal.endTime,
+      });
 
-  // Add missing sort dropdown state
-  const [sortDropdown, setSortDropdown] = useState(false);
-  const [sortOption, setSortOption] = useState<"all" | "week" | "month">("all");
+      return res.data;
+    },
+    onSuccess: () => {
+      // Refetch journals after successful creation
+      queryClient.invalidateQueries({ queryKey: ["journalsData", classId] });
+      queryClient.invalidateQueries({
+        queryKey: ["journalsSubject", classId],
+      });
+    },
+  });
+
+  const { data: journalsBySubject } = useQuery({
+    queryKey: ["journalsSubject", classId],
+    queryFn: async () => {
+      const res = await getJournalsBySubject(classId as string);
+      return res.data;
+    },
+    enabled: !!classId,
+    refetchOnWindowFocus: false,
+  });
 
   const { weekStart, weekEnd } = getThisWeekRange();
 
   const { monthStart, monthEnd } = getThisMonthRange();
 
-  const { mutateAsync: getAssignment, isPending } = useMutation({
-    mutationFn: async ({
-      classId,
-      assignmentId,
-    }: {
+  const { mutate: giveNotesAndAttendances } = useMutation({
+    mutationFn: async (data: {
       classId: string;
-      assignmentId: string;
+      journalId: string;
+      journals: { studentId: string; status: string; note?: string }[];
     }) => {
-      const res = await getAssignmentById(classId, assignmentId);
+      const res = await giveAttendancesAndNotes({
+        classId: data.classId,
+        journalId: data.journalId,
+        journals: data.journals,
+      });
+
       return res.data;
     },
   });
 
-  const { mutateAsync: createAssignment } = useMutation({
-    mutationFn: async ({
-      classId,
-      assignment,
-    }: {
-      classId: string;
-      assignment: {
-        title: string;
-        description: string;
-        assignmentDate: string;
-        assignmentType: "homework" | "quiz" | "exam" | "project" | "finalExam";
-        startTime: string;
-        endTime: string;
-      };
-    }) => {
-      const res = await createAssignmentByClassId(classId, assignment);
-      return res.data;
-    },
-  });
-
-  const { mutate: giveScore } = useMutation({
-    mutationFn: async ({
-      classId,
-      assignmentId,
-      scoresData,
-    }: {
-      classId: string;
-      assignmentId: string;
-      scoresData: {
-        studentId: string;
-        score: number;
-        notes?: string;
-      }[];
-    }) => {
-      const res = await giveScores(classId, assignmentId, scoresData);
-      return res.data;
-    },
-  });
-
-  const [selectedAssignment, setSelectedAssignment] =
-    useState<AssignmentInfo | null>(null);
-  const [showAssignmentModal, setShowAssignmentModal] = useState(false);
-
-  const memberSubject =
-    classInfo?.instructors && classInfo.instructors.length > 0
-      ? classInfo.instructors[0].subject
-      : "";
-
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [form, setForm] = useState({
-    title: "",
-    description: "",
-    assignmentDate: "",
-    assignmentType: "homework" as
-      | "homework"
-      | "quiz"
-      | "exam"
-      | "project"
-      | "finalExam",
-    startTime: "",
-    endTime: "",
-  });
-
-  const handleCreateAssignment = async (
-    e: React.FormEvent,
-    classId: string,
-    assignment: {
+  const handleCreateJournal = async ({
+    e,
+    classId,
+    journal,
+  }: {
+    e: React.FormEvent;
+    classId: string;
+    journal: {
       title: string;
       description: string;
-      assignmentDate: string;
-      assignmentType: "homework" | "quiz" | "exam" | "project" | "finalExam";
+      journalDate: string;
       startTime: string;
       endTime: string;
-    }
-  ) => {
+    };
+  }) => {
     e.preventDefault();
-    // TODO: panggil API create assignment di sini
-    createAssignment({
-      classId: classId as string,
-      assignment: assignment,
-    })
-      .then(() => {
-        setForm({
-          title: "",
-          description: "",
-          assignmentDate: "",
-          assignmentType: "homework" as
-            | "homework"
-            | "quiz"
-            | "exam"
-            | "project"
-            | "finalExam",
-          startTime: "",
-          endTime: "",
-        });
-      })
-      .catch((error) => {
-        console.error("Error creating assignment:", error);
+    if (!classId || !journal) return;
+
+    try {
+      createJournals({
+        title: journal.title,
+        description: journal.description,
+        journalDate: journal.journalDate,
+        startTime: journal.startTime,
+        endTime: journal.endTime,
       });
-    setShowCreateModal(false);
-    alert("Assignment created successfully!");
+    } catch (error) {
+      console.error("Error creating journal:", error);
+    }
   };
+
+  const [selectedJournal, setSelectedJournal] = useState<JournalInfo | null>(
+    null
+  );
+  const [showJournalModal, setShowJournalModal] = useState(false);
   const [studentNameSort, setStudentNameSort] = useState<"asc" | "desc">("asc");
+
   return (
     <div className="max-w-full overflow-x-auto py-4 px-4">
       <div className="flex justify-end mb-4 gap-2">
-        {classInfo?.role == "owner" && (
+        {classInfo?.role === "owner" && (
           <>
-            <button
-              type="button"
-              className="flex items-center gap-2 text-sm text-gray-700 dark:text-white bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200 font-semibold px-4 py-2 rounded-lg shadow"
-              onClick={handleRefresh}
-              title="Refresh Table"
-            >
-              {/* Icon Refresh */}
-              Refresh
-            </button>
             <button
               className="flex items-center justify-between gap-2 text-sm text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700"
               type="button"
@@ -208,16 +212,16 @@ const AssignmentsTab = ({
             </button>
           </>
         )}
-        {classInfo?.role == "member" && (
+        {classInfo?.role === "member" && (
           <>
             <button
               type="button"
               className="flex items-center gap-2 text-sm text-gray-700 dark:text-white bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200 font-semibold px-4 py-2 rounded-lg shadow"
               title="Create Assignment"
-              onClick={() => setShowCreateModal(true)}
+              onClick={() => setShowCreateJournalModal(true)}
             >
               <FiPlus />
-              Create Assignment
+              Create Journal
             </button>
             <button
               className="flex items-center justify-between gap-2 text-sm text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700"
@@ -231,7 +235,7 @@ const AssignmentsTab = ({
             </button>
           </>
         )}
-        {classInfo?.role == "owner" && subjectDropdown && (
+        {classInfo?.role === "owner" && subjectDropdown && (
           <div className="z-10 absolute mt-12 mr-42 bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700">
             <ul
               className="py-2 text-sm text-gray-700 dark:text-gray-200"
@@ -266,7 +270,6 @@ const AssignmentsTab = ({
             </ul>
           </div>
         )}
-
         <button
           type="button"
           className="flex items-center justify-between gap-2 text-sm text-gray-700 dark:text-white bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200 font-semibold px-4 py-2 w-40 rounded-lg shadow"
@@ -340,13 +343,12 @@ const AssignmentsTab = ({
       </div>
       <div className="flex flex-col gap-2">
         {classInfo?.role === "owner" &&
-          selectedSubject &&
-          assignmentsData &&
-          assignmentsData[selectedSubject] &&
-          assignmentsData[selectedSubject]
-            .filter((assignment: Assignment) => {
+          selectedSubject == "" &&
+          Array.isArray(journalsData) &&
+          journalsData
+            .filter((journal: Journal) => {
               if (sortOption === "all") return true;
-              const date = new Date(assignment.assignmentDate);
+              const date = new Date(journal.journalDate ?? "");
               if (sortOption === "week") {
                 return date >= weekStart && date <= weekEnd;
               }
@@ -355,26 +357,23 @@ const AssignmentsTab = ({
               }
               return true;
             })
-            .map((assignment: Assignment) => (
+            .map((journal: Journal) => (
               <div
-                key={assignment.assignmentId}
+                key={journal.journalId}
                 className="p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 transition-colors duration-100  hover:bg-indigo-50 dark:hover:bg-gray-700"
                 onClick={async () => {
-                  const data = await getAssignment({
-                    classId: classId as string,
-                    assignmentId: assignment.assignmentId,
-                  });
-                  setSelectedAssignment(data);
-                  setShowAssignmentModal(true);
+                  const data = await getJournal(journal.journalId ?? "");
+                  setSelectedJournal(data);
+                  setShowJournalModal(true);
                 }}
               >
                 <div className="font-semibold text-lg mb-2">
-                  {assignment.title}
+                  {journal.title}
                 </div>
                 <div className="text-sm text-gray-500 dark:text-gray-300">
-                  {assignment.assignmentDate &&
+                  {journal.journalDate &&
                     (() => {
-                      const date = new Date(assignment.assignmentDate);
+                      const date = new Date(journal.journalDate);
                       const day = date.getDate();
                       const month = date.toLocaleString("id-ID", {
                         month: "long",
@@ -387,36 +386,18 @@ const AssignmentsTab = ({
                   <div>
                     {/* Left side: you can add more info here if needed */}
                   </div>
-                  {assignment.grades.length === 0 ? (
-                    <div className="ml-auto text-right">Ungraded</div>
-                  ) : (
-                    <div className="ml-auto text-right">
-                      {
-                        assignment.grades.filter(
-                          (grade) =>
-                            grade.score !== undefined && grade.score !== null
-                        ).length
-                      }
-                      /{classInfo?.students?.length}
-                    </div>
-                  )}
                 </div>
                 {/* Optionally, show more details here */}
               </div>
             ))}
-        {classInfo?.role == "owner" &&
-          selectedSubject == "" &&
-          assignmentsData &&
-          Object.entries(assignmentsData)
-            .flatMap(([subject, assignments]) =>
-              (assignments as Assignment[]).map((assignment: Assignment) => ({
-                ...assignment,
-                subject,
-              }))
-            )
-            .filter((assignment: Assignment) => {
+        {classInfo?.role === "owner" &&
+          selectedSubject &&
+          Array.isArray(journalsData) &&
+          journalsData
+            .filter((journal: Journal) => journal.subject === selectedSubject)
+            .filter((journal: Journal) => {
               if (sortOption === "all") return true;
-              const date = new Date(assignment.assignmentDate);
+              const date = new Date(journal.journalDate ?? "");
               if (sortOption === "week") {
                 return date >= weekStart && date <= weekEnd;
               }
@@ -425,26 +406,23 @@ const AssignmentsTab = ({
               }
               return true;
             })
-            .map((assignment: Assignment) => (
+            .map((journal: Journal) => (
               <div
-                key={assignment.assignmentId}
+                key={journal.journalId}
                 className="p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 transition-colors duration-100  hover:bg-indigo-50 dark:hover:bg-gray-700"
                 onClick={async () => {
-                  const data = await getAssignment({
-                    classId: classId as string,
-                    assignmentId: assignment.assignmentId,
-                  });
-                  setSelectedAssignment(data);
-                  setShowAssignmentModal(true);
+                  const data = await getJournal(journal.journalId ?? "");
+                  setSelectedJournal(data);
+                  setShowJournalModal(true);
                 }}
               >
                 <div className="font-semibold text-lg mb-2">
-                  {assignment.title}
+                  {journal.title}
                 </div>
                 <div className="text-sm text-gray-500 dark:text-gray-300">
-                  {assignment.assignmentDate &&
+                  {journal.journalDate &&
                     (() => {
-                      const date = new Date(assignment.assignmentDate);
+                      const date = new Date(journal.journalDate);
                       const day = date.getDate();
                       const month = date.toLocaleString("id-ID", {
                         month: "long",
@@ -453,16 +431,14 @@ const AssignmentsTab = ({
                       return `${month} ${day}, ${year}`;
                     })()}
                 </div>
-                {/* Optionally, show more details here */}
               </div>
             ))}
         {classInfo?.role === "member" &&
-          assignmentsData &&
-          assignmentsData[memberSubject] &&
-          assignmentsData[memberSubject]
-            .filter((assignment: Assignment) => {
+          Array.isArray(journalsBySubject) &&
+          journalsBySubject
+            .filter((journal: Journal) => {
               if (sortOption === "all") return true;
-              const date = new Date(assignment.assignmentDate);
+              const date = new Date(journal.journalDate ?? "");
               if (sortOption === "week") {
                 return date >= weekStart && date <= weekEnd;
               }
@@ -471,26 +447,29 @@ const AssignmentsTab = ({
               }
               return true;
             })
-            .map((assignment: Assignment) => (
+            .map((journal: Journal) => (
               <div
-                key={assignment.assignmentId}
+                key={journal.id}
                 className="p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 transition-colors duration-100  hover:bg-indigo-50 dark:hover:bg-gray-700"
                 onClick={async () => {
-                  const data = await getAssignment({
-                    classId: classId as string,
-                    assignmentId: assignment.assignmentId,
-                  });
-                  setSelectedAssignment(data);
-                  setShowAssignmentModal(true);
+                  const data = await getJournal(journal.id ?? "");
+                  setSelectedJournal(data);
+                  setShowJournalModal(true);
+                  if (data) {
+                    setSelectedJournal(data);
+                    setShowJournalModal(true);
+                  } else {
+                    alert("Failed to load journal detail");
+                  }
                 }}
               >
                 <div className="font-semibold text-lg mb-2">
-                  {assignment.title}
+                  {journal.title}
                 </div>
                 <div className="text-sm text-gray-500 dark:text-gray-300">
-                  {assignment.assignmentDate &&
+                  {journal.journalDate &&
                     (() => {
-                      const date = new Date(assignment.assignmentDate);
+                      const date = new Date(journal.journalDate ?? "");
                       const day = date.getDate();
                       const month = date.toLocaleString("id-ID", {
                         month: "long",
@@ -499,36 +478,33 @@ const AssignmentsTab = ({
                       return `${month} ${day}, ${year}`;
                     })()}
                 </div>
+                <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-300">
+                  <div>
+                    {/* Left side: you can add more info here if needed */}
+                  </div>
+                </div>
+                {/* Optionally, show more details here */}
               </div>
             ))}
       </div>
-      {isPending && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="flex items-center justify-center h-full w-full">
-            <Spinner />
-          </div>
-        </div>
-      )}
-      {showAssignmentModal && selectedAssignment && (
+      {showJournalModal && selectedJournal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 w-[960px] h-[560px] relative">
             <button
               className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 dark:hover:text-white text-xl"
               onClick={() => {
-                setShowAssignmentModal(false);
-                setSelectedAssignment(null);
+                setShowJournalModal(false);
+                setSelectedJournal(null);
               }}
               aria-label="Close"
             >
               &times;
             </button>
-            <h2 className="text-xl font-bold mb-2">
-              {selectedAssignment.title}
-            </h2>
+            <h2 className="text-xl font-bold mb-2">{selectedJournal.title}</h2>
             <div className="mb-2 text-gray-500 dark:text-gray-300">
-              {selectedAssignment.assignmentDate &&
+              {selectedJournal.journalDate &&
                 (() => {
-                  const date = new Date(selectedAssignment.assignmentDate);
+                  const date = new Date(selectedJournal.journalDate);
                   const day = date.getDate();
                   const month = date.toLocaleString("id-ID", { month: "long" });
                   const year = date.getFullYear();
@@ -537,33 +513,29 @@ const AssignmentsTab = ({
             </div>
             <div className="mb-2 text-sm text-gray-600 dark:text-gray-400 flex flex-wrap gap-4">
               <div>
-                <span className="font-semibold">Assigned By:</span>{" "}
-                {selectedAssignment.assignedBy.name}
-              </div>
-              <div>
-                <span className="font-semibold">Type:</span>{" "}
-                {selectedAssignment.assignmentType}
+                <span className="font-semibold">Created By:</span>{" "}
+                {selectedJournal.createdBy.name}
               </div>
               <div>
                 <span className="font-semibold">Start Time:</span>{" "}
-                {selectedAssignment.startTime
-                  ? new Date(selectedAssignment.startTime).toLocaleTimeString(
-                      [],
-                      { hour: "2-digit", minute: "2-digit" }
-                    )
+                {selectedJournal.startTime
+                  ? new Date(selectedJournal.startTime).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
                   : ""}
               </div>
               <div>
                 <span className="font-semibold">End Time:</span>{" "}
-                {selectedAssignment.endTime
-                  ? new Date(selectedAssignment.endTime).toLocaleTimeString(
-                      [],
-                      { hour: "2-digit", minute: "2-digit" }
-                    )
+                {selectedJournal.endTime
+                  ? new Date(selectedJournal.endTime).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
                   : ""}
               </div>
             </div>
-            <div className="mb-2">{selectedAssignment.description}</div>
+            <div className="mb-2">{selectedJournal.description}</div>
             <div className="mt-5 overflow-hidden rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
               <div className="max-h-76 overflow-y-auto">
                 {classInfo?.role === "owner" && (
@@ -587,14 +559,14 @@ const AssignmentsTab = ({
                             )}
                           </span>
                         </th>
-                        <th className="px-6 py-4">Score</th>
+                        <th className="px-6 py-4">Attendance</th>
                         <th className="px-6 py-4">Notes</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {selectedAssignment.grades &&
-                      selectedAssignment.grades.length > 0 ? (
-                        [...selectedAssignment.grades]
+                      {selectedJournal.journals &&
+                      selectedJournal.journals.length > 0 ? (
+                        [...selectedJournal.journals]
                           .sort((a, b) => {
                             const nameA = a.studentId.name.toLowerCase();
                             const nameB = b.studentId.name.toLowerCase();
@@ -604,46 +576,48 @@ const AssignmentsTab = ({
                               return nameB.localeCompare(nameA);
                             }
                           })
-                          .map((grade, idx) => (
+                          .map((journal, idx) => (
                             <tr
-                              key={grade.studentId._id}
+                              key={journal.studentId._id}
                               className={`${
                                 idx % 2 === 0
                                   ? "bg-white dark:bg-gray-900"
                                   : "bg-gray-50 dark:bg-gray-800"
                               } hover:bg-gray-100 dark:hover:bg-gray-700 transition`}
                             >
-                              <td
-                                className="px-6 py-4 font-medium text-gray-900 dark:text-white"
-                                onClick={() => {
-                                  console.log("Clicked on student name");
-                                }}
-                              >
-                                {typeof grade.studentId === "object" &&
-                                  grade.studentId !== null &&
-                                  "name" in grade.studentId &&
+                              <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
+                                {typeof journal.studentId === "object" &&
+                                  journal.studentId !== null &&
+                                  "name" in journal.studentId &&
                                   (
-                                    grade.studentId as {
+                                    journal.studentId as {
                                       _id: string;
                                       name: string;
                                     }
                                   ).name}
                               </td>
-                              <td
-                                className="px-6 py-4"
-                                onClick={() => {
-                                  console.log("Clicked on student score");
-                                }}
-                              >
-                                {grade.score !== undefined ? grade.score : ""}
+                              <td className="px-6 py-4">
+                                {(() => {
+                                  switch (journal.status) {
+                                    case "present":
+                                      return "Present";
+                                    case "absent":
+                                      return "Absent";
+                                    case "late":
+                                      return "Late";
+                                    case "sick":
+                                      return "Sick";
+                                    case "excused":
+                                      return "Excused";
+                                    case "pending":
+                                      return "Pending";
+                                    default:
+                                      return "";
+                                  }
+                                })()}
                               </td>
-                              <td
-                                className="px-6 py-4"
-                                onClick={() => {
-                                  console.log("Clicked on student notes");
-                                }}
-                              >
-                                {grade.notes ? grade.notes : ""}
+                              <td className="px-6 py-4">
+                                {journal.note ? journal.note : ""}
                               </td>
                             </tr>
                           ))
@@ -653,7 +627,7 @@ const AssignmentsTab = ({
                             colSpan={3}
                             className="px-6 py-4 text-center text-gray-400"
                           >
-                            No grades available.
+                            No attendances or notes available.
                           </td>
                         </tr>
                       )}
@@ -681,14 +655,14 @@ const AssignmentsTab = ({
                             )}
                           </span>
                         </th>
-                        <th className="px-6 py-4">Score</th>
+                        <th className="px-6 py-4">Attendance</th>
                         <th className="px-6 py-4">Notes</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {selectedAssignment.grades &&
-                        selectedAssignment.grades.length > 0 &&
-                        [...selectedAssignment.grades]
+                      {selectedJournal.journals &&
+                        selectedJournal.journals.length > 0 &&
+                        [...selectedJournal.journals]
                           .sort((a, b) => {
                             const nameA = a.studentId.name.toLowerCase();
                             const nameB = b.studentId.name.toLowerCase();
@@ -698,75 +672,82 @@ const AssignmentsTab = ({
                               return nameB.localeCompare(nameA);
                             }
                           })
-                          .map((grade, idx) => (
+                          .map((journal, idx) => (
                             <tr
-                              key={grade.studentId._id}
+                              key={journal.studentId._id}
                               className={`${
                                 idx % 2 === 0
                                   ? "bg-white dark:bg-gray-900"
                                   : "bg-gray-50 dark:bg-gray-800"
                               } hover:bg-gray-100 dark:hover:bg-gray-700 transition`}
                             >
-                              <td
-                                className="px-6 py-4 font-medium text-gray-900 dark:text-white"
-                                onClick={() => {
-                                  console.log("Clicked on student name");
-                                }}
-                              >
-                                {typeof grade.studentId === "object" &&
-                                  grade.studentId !== null &&
-                                  "name" in grade.studentId &&
+                              <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
+                                {typeof journal.studentId === "object" &&
+                                  journal.studentId !== null &&
+                                  "name" in journal.studentId &&
                                   (
-                                    grade.studentId as {
+                                    journal.studentId as {
                                       _id: string;
                                       name: string;
                                     }
                                   ).name}
                               </td>
                               <td className="px-6 py-4">
-                                <input
-                                  type="number"
-                                  className="border border-transparent rounded px-2 py-1 w-20"
-                                  value={
-                                    grade.score !== undefined ? grade.score : ""
-                                  }
-                                  min={0}
-                                  max={100}
-                                  onChange={(e) => {
-                                    // Update score locally (you may want to handle API update here)
-                                    const newScore = Number(e.target.value);
-                                    setSelectedAssignment((prev) => {
-                                      if (!prev) return prev;
-                                      return {
-                                        ...prev,
-                                        grades: prev.grades.map((g) =>
-                                          g.studentId._id ===
-                                          grade.studentId._id
-                                            ? { ...g, score: newScore }
-                                            : g
-                                        ),
-                                      };
-                                    });
-                                  }}
-                                />
+                                <div className="relative">
+                                  <select
+                                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg pr-8 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 appearance-none"
+                                    value={journal.status}
+                                    onChange={(e) => {
+                                      const newStatus = e.target.value as
+                                        | "present"
+                                        | "absent"
+                                        | "late"
+                                        | "sick"
+                                        | "excused"
+                                        | "pending";
+                                      setSelectedJournal((prev) => {
+                                        if (!prev) return prev;
+                                        return {
+                                          ...prev,
+                                          journals: prev.journals.map((j) =>
+                                            j.studentId._id ===
+                                            journal.studentId._id
+                                              ? { ...j, status: newStatus }
+                                              : j
+                                          ),
+                                        };
+                                      });
+                                    }}
+                                  >
+                                    <option value="present">Present</option>
+                                    <option value="absent">Absent</option>
+                                    <option value="late">Late</option>
+                                    <option value="sick">Sick</option>
+                                    <option value="excused">Excused</option>
+                                    <option value="pending">Pending</option>
+                                  </select>
+                                  <span className="absolute inset-y-0 right-2 flex items-center pointer-events-none">
+                                    <FiChevronDown className="text-gray-400" />
+                                  </span>
+                                </div>
                               </td>
                               <td className="px-6 py-4">
                                 <input
                                   type="text"
-                                  className="rounded px-2 py-1 w-32"
-                                  value={grade.notes || ""}
+                                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 appearance-none"
+                                  value={journal.note || ""}
                                   onChange={(e) => {
                                     // Update notes locally (you may want to handle API update here)
                                     const newNotes = e.target.value;
-                                    setSelectedAssignment((prev) => {
+                                    setSelectedJournal((prev) => {
                                       if (!prev) return prev;
                                       return {
                                         ...prev,
-                                        grades: prev.grades.map((g) =>
-                                          g.studentId._id ===
-                                          grade.studentId._id
-                                            ? { ...g, notes: newNotes }
-                                            : g
+                                        journals: prev.journals.map((j) =>
+                                          j.studentId._id ===
+                                          journal.studentId._id
+                                            ? { ...j, note: newNotes }
+                                            : j
                                         ),
                                       };
                                     });
@@ -785,21 +766,18 @@ const AssignmentsTab = ({
                 <button
                   className="mt-8 ml-auto px-4 py-2 rounded-md bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition"
                   onClick={() => {
-                    if (selectedAssignment && selectedAssignment.grades) {
-                      const newScoresData = selectedAssignment.grades.map(
-                        (grade) => ({
-                          studentId: grade.studentId._id,
-                          score:
-                            grade.score === undefined || grade.score === null
-                              ? 0
-                              : grade.score,
-                          notes: grade.notes || "",
+                    if (selectedJournal && selectedJournal.journals) {
+                      const newJournalsData = selectedJournal.journals.map(
+                        (journal) => ({
+                          studentId: journal.studentId._id,
+                          status: journal.status || "",
+                          note: journal.note || "",
                         })
                       );
-                      giveScore({
+                      giveNotesAndAttendances({
                         classId: classId as string,
-                        assignmentId: selectedAssignment._id,
-                        scoresData: newScoresData, // gunakan data baru ini!
+                        journalId: selectedJournal._id,
+                        journals: newJournalsData,
                       });
 
                       alert("Changes saved!");
@@ -813,21 +791,34 @@ const AssignmentsTab = ({
           </div>
         </div>
       )}
-      {showCreateModal && (
+      {showCreateJournalModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 w-[400px] relative">
             <button
               className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 dark:hover:text-white text-xl"
-              onClick={() => setShowCreateModal(false)}
+              onClick={() => setShowCreateJournalModal(false)}
               aria-label="Close"
             >
               &times;
             </button>
-            <h2 className="text-xl font-bold mb-4">Create Assignment</h2>
+            <h2 className="text-xl font-bold mb-4">Create Journal</h2>
             <form
               className="flex flex-col gap-1.5"
               onSubmit={(e) => {
-                handleCreateAssignment(e, classId as string, form);
+                handleCreateJournal({
+                  e,
+                  classId: classId as string,
+                  journal: form,
+                });
+                alert("Journal created successfully!");
+                setShowCreateJournalModal(false);
+                setForm({
+                  title: "",
+                  description: "",
+                  journalDate: "",
+                  startTime: "",
+                  endTime: "",
+                });
               }}
             >
               <div>
@@ -840,7 +831,7 @@ const AssignmentsTab = ({
                 <input
                   id="title"
                   className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                  placeholder="Assignment Title"
+                  placeholder="Journal Title"
                   value={form.title}
                   onChange={(e) =>
                     setForm((f) => ({ ...f, title: e.target.value }))
@@ -858,58 +849,27 @@ const AssignmentsTab = ({
                 <textarea
                   id="description"
                   className="border rounded-lg px-3 py-2 w-full min-h-[60px] focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                  placeholder="Assignment Description"
+                  placeholder="Journal Description"
                   value={form.description}
                   onChange={(e) =>
                     setForm((f) => ({ ...f, description: e.target.value }))
                   }
                 />
               </div>
-              <div>
-                <label
-                  className="block text-sm font-medium mb-1"
-                  htmlFor="assignmentType"
-                >
-                  Assignment Type<span className="text-red-500">*</span>
-                </label>
-                <select
-                  id="assignmentType"
-                  className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                  value={form.assignmentType || ""}
-                  onChange={(e) =>
-                    setForm((f) => ({
-                      ...f,
-                      assignmentType: e.target.value as
-                        | "homework"
-                        | "quiz"
-                        | "exam"
-                        | "project"
-                        | "finalExam",
-                    }))
-                  }
-                  required
-                >
-                  <option value="homework">Homework</option>
-                  <option value="quiz">Quiz</option>
-                  <option value="exam">Exam</option>
-                  <option value="project">Project</option>
-                  <option value="finalExam">Final Exam</option>
-                </select>
-              </div>
               <div className="flex-col">
                 <label
                   className="block text-sm font-medium mb-1"
-                  htmlFor="assignmentDate"
+                  htmlFor="journalDate"
                 >
                   Date<span className="text-red-500">*</span>
                 </label>
                 <input
-                  id="assignmentDate"
+                  id="journalDate"
                   type="date"
                   className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                  value={form.assignmentDate}
+                  value={form.journalDate}
                   onChange={(e) =>
-                    setForm((f) => ({ ...f, assignmentDate: e.target.value }))
+                    setForm((f) => ({ ...f, journalDate: e.target.value }))
                   }
                   required
                 />
@@ -956,7 +916,7 @@ const AssignmentsTab = ({
                 <button
                   type="button"
                   className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600 transition"
-                  onClick={() => setShowCreateModal(false)}
+                  onClick={() => setShowCreateJournalModal(false)}
                 >
                   Cancel
                 </button>
@@ -975,4 +935,4 @@ const AssignmentsTab = ({
   );
 };
 
-export default AssignmentsTab;
+export default Journals;

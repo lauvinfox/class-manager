@@ -39,9 +39,6 @@ export const createAssignment = async ({
   const now = new Date();
 
   if (new Date(assignmentDate) > now) {
-    // Tugas datang setelah hari ini, atur pengingat setiap jam 6 pagi WIB
-
-    // Mengatur jadwal pengingat dengan cron (jam 6 pagi WIB)
     const timezone = "Asia/Jakarta"; // WIB timezone
     cron.schedule(
       "0 6 * * *",

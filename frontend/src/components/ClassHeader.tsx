@@ -11,6 +11,7 @@ export const ClassHeader = ({
     "Instructors",
     "Students",
     "Assignments",
+    "Journals",
     "Subjects",
   ];
   return (

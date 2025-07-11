@@ -293,3 +293,55 @@ export const getClassWeightBySubject = async (
 ) => {
   return await API.get(`/api/v1/class/${classId}/weights/${subject}`);
 };
+
+// Journal
+export const createJournal = async ({
+  classId,
+  title,
+  description,
+  journalDate,
+  startTime,
+  endTime,
+}: {
+  classId: string;
+  title: string;
+  description: string | undefined;
+  journalDate: string;
+  startTime: string;
+  endTime: string;
+}) => {
+  return await API.post(`/api/v1/journals/${classId}`, {
+    title,
+    description,
+    journalDate,
+    startTime,
+    endTime,
+  });
+};
+
+export const getJournalsByClassId = async (classId: string) => {
+  return await API.get(`/api/v1/journals/${classId}`);
+};
+
+export const getJournalsBySubject = async (classId: string) => {
+  return await API.get(`/api/v1/journals/${classId}/subject/`);
+};
+
+export const getJournalById = async (classId: string, journalId: string) => {
+  return await API.post(`/api/v1/journals/${classId}/get`, { journalId });
+};
+
+export const giveAttendancesAndNotes = async ({
+  classId,
+  journalId,
+  journals,
+}: {
+  classId: string;
+  journalId: string;
+  journals: { studentId: string; status: string; note?: string }[];
+}) => {
+  return await API.patch(`/api/v1/journals/${classId}/givenotes`, {
+    journalId,
+    journals,
+  });
+};

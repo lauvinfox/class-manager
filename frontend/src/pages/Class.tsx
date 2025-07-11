@@ -15,6 +15,7 @@ import { ClassHeader } from "../components/ClassHeader";
 import AssignmentsTab from "../components/AssignmentsTab";
 import SubjectsTab from "../components/SubjectsTab";
 import StudentsTab from "../components/StudentsTab";
+import JournalsTab from "../components/JournalsTab";
 
 const ClassPage = () => {
   const { darkMode } = useTheme();
@@ -42,6 +43,13 @@ const ClassPage = () => {
     } catch (error) {
       console.error(error);
       return null;
+    }
+  };
+
+  const handleRefresh = async () => {
+    if (classId) {
+      const classData = await fetchClassInfo(classId);
+      if (classData) setClassInfo(classData);
     }
   };
 
@@ -78,13 +86,6 @@ const ClassPage = () => {
     };
     fetchData();
   }, []);
-
-  const handleRefresh = async () => {
-    if (classId) {
-      const classData = await fetchClassInfo(classId);
-      if (classData) setClassInfo(classData);
-    }
-  };
 
   return (
     <AuthProvider>
@@ -124,6 +125,9 @@ const ClassPage = () => {
                 classInfo={classInfo}
                 handleRefresh={handleRefresh}
               />
+            )}
+            {activeTab == "Journals" && (
+              <JournalsTab classId={classId as string} classInfo={classInfo} />
             )}
             {activeTab == "Subjects" && (
               <SubjectsTab

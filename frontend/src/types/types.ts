@@ -60,3 +60,15 @@ export interface Assignment {
     notes?: string;
   }[];
 }
+
+export interface Journal {
+  journalId: string;
+  title: string;
+  description?: string;
+  journalDate: string;
+  journals: {
+    studentId: string;
+    status: "present" | "absent" | "late" | "sick" | "excused" | "pending";
+    note?: string;
+  };
+}
