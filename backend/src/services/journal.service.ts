@@ -120,6 +120,21 @@ export const addAttendancesAndNotes = async ({
   return journal;
 };
 
+export const getJournalByClassAndStudent = async (
+  classId: string,
+  studentId: string
+) => {
+  const journalDocs = await JournalModel.find({
+    classId,
+    "journals.studentId": studentId,
+  })
+    .select("title subject journalDate journals")
+    .populate("journals.studentId", "name")
+    .lean();
+
+  return journalDocs;
+};
+
 export const getJournalsByClassId = async (classId: string) => {
   const journalsDocs = await JournalModel.find({ classId })
     .populate("journals.studentId", "name")

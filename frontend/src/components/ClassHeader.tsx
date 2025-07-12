@@ -7,7 +7,6 @@ export const ClassHeader = ({
 }: ClassHeaderProps) => {
   const tabs = [
     "Overview",
-    "Statistics",
     "Instructors",
     "Students",
     "Assignments",
@@ -15,7 +14,7 @@ export const ClassHeader = ({
     "Subjects",
   ];
   return (
-    <div className="relative top-0 z-40 flex flex-col gap-1 justify-between bg-primary border-b border-slate-200 px-6 dark:bg-gray-900 dark:border-gray-800 min-w-0">
+    <div className="sticky top-0 z-40 flex flex-col gap-1 justify-between bg-primary border-b border-slate-200 px-6 dark:bg-gray-900 dark:border-gray-800 min-w-0">
       <span className="flex py-4 text-lg font-semibold text-font-primary dark:text-white select-none">
         {title}
       </span>

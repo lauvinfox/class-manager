@@ -16,6 +16,7 @@ import AssignmentsTab from "../components/AssignmentsTab";
 import SubjectsTab from "../components/SubjectsTab";
 import StudentsTab from "../components/StudentsTab";
 import JournalsTab from "../components/JournalsTab";
+import StatisticsTab from "../components/StatisticsTab";
 
 const ClassPage = () => {
   const { darkMode } = useTheme();
@@ -134,6 +135,12 @@ const ClassPage = () => {
                 classId={classId as string}
                 classInfo={classInfo}
                 handleRefresh={handleRefresh}
+              />
+            )}
+            {activeTab == "Overview" && (
+              <StatisticsTab
+                classId={classId as string}
+                classInfo={classInfo}
               />
             )}
           </div>

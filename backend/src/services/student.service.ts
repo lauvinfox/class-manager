@@ -2,6 +2,7 @@ import StudentModel from "@models/student.model";
 import { IStudent } from "@models/student.model";
 
 import * as ClassService from "@services/class.service";
+import * as JournalService from "@services/journal.service";
 import * as AssignmentService from "@services/assignment.service";
 import { Schema } from "mongoose";
 
@@ -133,4 +134,66 @@ export const deleteAllStudentsByClassId = async (classId: string) => {
   await ClassService.removeStudentsFromClass(classId);
   await AssignmentService.deleteStudentsByClassId(classId);
   return result;
+};
+
+export const studentReport = async (classId: string, studentId: string) => {
+  // Get student info
+  const student = await StudentModel.findById(studentId).lean();
+  if (!student) throw new Error("Student not found");
+
+  // Get assignments for this student in this class
+  const assignments = await AssignmentService.getAssignmentByClassAndStudent(
+    classId,
+    studentId
+  );
+
+  // Filter grades for this student
+  const assignmentResults = assignments.map((assignment: any) => {
+    const grade = (assignment.grades || []).find(
+      (g: any) => g.studentId?._id?.toString() === studentId
+    );
+    return {
+      assignmentId: assignment._id,
+      title: assignment.title,
+      subject: assignment.subject,
+      assignmentType: assignment.assignmentType,
+      assignmentDate: assignment.assignmentDate,
+      score: grade?.score ?? null,
+      notes: grade?.notes ?? "",
+    };
+  });
+
+  // Get journals for this student in this class
+  const journals = await JournalService.getJournalByClassAndStudent(
+    classId,
+    studentId
+  );
+
+  // Filter attendance for this student
+  const journalResults = journals.map((journal: any) => {
+    const attendance = (journal.journals || []).find(
+      (j: any) => j.studentId?._id?.toString() === studentId
+    );
+    return {
+      journalId: journal._id,
+      title: journal.title,
+      subject: journal.subject,
+      journalDate: journal.journalDate,
+      attendance: attendance?.status ?? "pending",
+      note: attendance?.note ?? "",
+    };
+  });
+
+  return {
+    studentId,
+    name: student.name,
+    assignments: assignmentResults,
+    journals: journalResults,
+  };
+};
+
+export const studentsStatistics = async (classId: string) => {
+  const students = await StudentModel.find({ classId }).select(
+    "-__v -updatedAt -classId"
+  );
 };

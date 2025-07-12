@@ -1,7 +1,9 @@
 import { NOT_FOUND } from "@constants/statusCodes";
 import AssignmentModel from "@models/assignment.model";
+
 import * as NotificationService from "@services/notification.service";
 import * as StudentService from "@services/student.service";
+import * as ClassService from "@services/class.service";
 
 import UserModel from "@models/user.model";
 import appAssert from "@utils/appAssert";
@@ -76,6 +78,8 @@ export const createAssignment = async ({
     assignmentType,
   });
 
+  await ClassService.addAssignmentToClass(classId, assignmentDocs._id);
+
   return assignmentDocs;
 };
 
@@ -99,6 +103,20 @@ type AssignmentsBySubject = {
       notes?: string;
     }[];
   }[];
+};
+
+export const getAssignmentByClassAndStudent = async (
+  classId: string,
+  studentId: string
+) => {
+  const assignmentsDocs = await AssignmentModel.find({
+    classId,
+    "grades.studentId": studentId,
+  })
+    .select("title subject assignmentType assignmentDate grades")
+    .populate("grades.studentId", "name")
+    .lean();
+  return assignmentsDocs;
 };
 
 export const getAssignmentsBySubject = async (
@@ -240,9 +258,17 @@ export const getAssignmentById = async (assignmentId: string) => {
 export const getAssignmentsByClass = async (classId: string) => {
   const assignmentsDocs = await AssignmentModel.find(
     { classId },
-    { title: 1, subject: 1, grades: 1, assignmentDate: 1 }
+    {
+      title: 1,
+      subject: 1,
+      grades: 1,
+      assignmentDate: 1,
+      assignmentType: 1,
+      assignedBy: 1,
+    }
   )
     .populate("grades.studentId", "name")
+    .populate("assignedBy", "name")
     .lean();
 
   // Mengelompokkan berdasarkan subject
@@ -259,6 +285,7 @@ export const getAssignmentsByClass = async (classId: string) => {
         title: assignment.title,
         assignmentDate: assignment.assignmentDate,
         assignmentType: assignment.assignmentType,
+        assignedBy: assignment.assignedBy.name, // Ambil nama pengajar
         grades: (assignment.grades || []).map((g: any) => ({
           studentId: g.studentId._id,
           name: g.studentId.name,

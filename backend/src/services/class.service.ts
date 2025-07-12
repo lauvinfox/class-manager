@@ -311,6 +311,19 @@ export const updateInstructorStatus = async (
   }
 };
 
+export const addAssignmentToClass = async (
+  classId: string,
+  assignmentId: Types.ObjectId
+) => {
+  const classDoc = await ClassModel.findOneAndUpdate(
+    { classId },
+    { $addToSet: { assignments: assignmentId } },
+    { new: true, runValidators: true }
+  ).populate("assignments", "title description dueDate");
+
+  return classDoc;
+};
+
 /**
  * Add a student to a class
  * @param classId - Class ID
@@ -572,4 +585,15 @@ export const deleteClass = async (userId: string, classId: string) => {
   const result = await ClassModel.deleteOne({ classId });
 
   return result;
+};
+
+/**
+ * Students statistics by subject
+ * @param classId - Class ID to delete
+ * @param subject
+ * @returns Array of students with their statistics
+ */
+export const getStatisticsByClass = async (classId: string) => {
+  const classDoc = await ClassModel.find({ classId });
+  return classDoc;
 };

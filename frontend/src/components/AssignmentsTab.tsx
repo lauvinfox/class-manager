@@ -184,6 +184,7 @@ const AssignmentsTab = ({
     alert("Assignment created successfully!");
   };
   const [studentNameSort, setStudentNameSort] = useState<"asc" | "desc">("asc");
+
   return (
     <div className="max-w-full overflow-x-auto py-4 px-4">
       <div className="flex justify-end mb-4 gap-2">
@@ -384,22 +385,19 @@ const AssignmentsTab = ({
                     })()}
                 </div>
                 <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-300">
-                  <div>
-                    {/* Left side: you can add more info here if needed */}
+                  <div className="ml-auto text-right">
+                    {assignment.assignmentType === "homework" ? (
+                      <div className="text-green-800">Homework</div>
+                    ) : assignment.assignmentType === "quiz" ? (
+                      <div className="text-blue-800">Quiz</div>
+                    ) : assignment.assignmentType === "exam" ? (
+                      <div className="text-orange-800">Exam</div>
+                    ) : assignment.assignmentType === "project" ? (
+                      <div className="text-yellow-800">Project</div>
+                    ) : (
+                      <div className="text-red-800">Final Exam</div>
+                    )}
                   </div>
-                  {assignment.grades.length === 0 ? (
-                    <div className="ml-auto text-right">Ungraded</div>
-                  ) : (
-                    <div className="ml-auto text-right">
-                      {
-                        assignment.grades.filter(
-                          (grade) =>
-                            grade.score !== undefined && grade.score !== null
-                        ).length
-                      }
-                      /{classInfo?.students?.length}
-                    </div>
-                  )}
                 </div>
                 {/* Optionally, show more details here */}
               </div>
@@ -453,7 +451,24 @@ const AssignmentsTab = ({
                       return `${month} ${day}, ${year}`;
                     })()}
                 </div>
-                {/* Optionally, show more details here */}
+                <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-300">
+                  <div className="text-gray-600 dark:text-gray-400 mt-1">
+                    {assignment.assignedBy}
+                  </div>
+                  <div className="ml-auto text-right">
+                    {assignment.assignmentType === "homework" ? (
+                      <div className="text-green-800">Homework</div>
+                    ) : assignment.assignmentType === "quiz" ? (
+                      <div className="text-blue-800">Quiz</div>
+                    ) : assignment.assignmentType === "exam" ? (
+                      <div className="text-orange-800">Exam</div>
+                    ) : assignment.assignmentType === "project" ? (
+                      <div className="text-yellow-800">Project</div>
+                    ) : (
+                      <div className="text-red-800">Final Exam</div>
+                    )}
+                  </div>
+                </div>
               </div>
             ))}
         {classInfo?.role === "member" &&

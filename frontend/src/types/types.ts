@@ -53,6 +53,8 @@ export interface Assignment {
   assignmentId: string;
   title: string;
   assignmentDate: Date;
+  assignedBy: string;
+  assignmentType: "homework" | "quiz" | "exam" | "project" | "finalExam";
   grades: {
     studentId: string;
     name: string;
