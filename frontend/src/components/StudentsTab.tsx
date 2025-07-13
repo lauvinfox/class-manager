@@ -1,7 +1,11 @@
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { IoPersonAddOutline, IoSearchOutline } from "react-icons/io5";
-import { addStudentsToClass, deleteStudentsByClassId } from "../lib/api";
+import {
+  addStudentsToClass,
+  addStudentToClass,
+  deleteStudentsByClassId,
+} from "../lib/api";
 import Dropzone from "./Dropzone";
 import { ClassInfo } from "../types/types";
 import { MdDelete } from "react-icons/md";
@@ -59,6 +63,30 @@ const StudentsTab = ({
     onError: (error) => {
       console.error("Failed to delete students:", error);
       alert("Failed to delete students.");
+    },
+  });
+
+  const { mutate: addStudent } = useMutation({
+    mutationFn: async (studentData: {
+      studentId: number;
+      name: string;
+      birthDate: string;
+      birthPlace: string;
+      contact: string;
+      address: string;
+    }) => {
+      if (!classId) throw new Error("Class ID not found");
+      const res = await addStudentToClass(classId, studentData);
+      return res.data;
+    },
+    onSuccess: () => {
+      handleRefresh();
+      setShowAddStudentModal(false);
+      alert("Student added successfully.");
+    },
+    onError: (error) => {
+      console.error("Failed to add student:", error);
+      alert("Failed to add student.");
     },
   });
 
@@ -177,7 +205,7 @@ const StudentsTab = ({
                 <th className="px-6 py-4">Name</th>
                 <th className="px-6 py-4">Student ID</th>
                 <th className="px-6 py-4">Birth Date</th>
-                <th className="px-6 py-4 text-center">Subject</th>
+                <th className="px-6 py-4 text-center">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -270,7 +298,56 @@ const StudentsTab = ({
               </button>
             </div>
             {addStudentTab === "single" ? (
-              <form className="flex flex-col gap-2 h-90">
+              <form
+                className="flex flex-col gap-2 h-90"
+                onClick={(e) => {
+                  e.preventDefault();
+                  // State untuk input form
+                  // const [studentForm, setStudentForm] = useState({
+                  //   studentId: "",
+                  //   name: "",
+                  //   birthDate: "",
+                  //   birthPlace: "",
+                  //   contact: "",
+                  //   address: "",
+                  // });
+
+                  // // Handler untuk perubahan input
+                  // const handleInputChange = (
+                  //   e: React.ChangeEvent<HTMLInputElement>
+                  // ) => {
+                  //   const { name, value } = e.target;
+                  //   setStudentForm((prev) => ({
+                  //     ...prev,
+                  //     [name]: value,
+                  //   }));
+                  // };
+
+                  // // Handler submit form
+                  // const handleAddStudentSubmit = (e: React.FormEvent) => {
+                  //   e.preventDefault();
+                  //   if (
+                  //     !studentForm.studentId ||
+                  //     !studentForm.name ||
+                  //     !studentForm.birthDate ||
+                  //     !studentForm.birthPlace ||
+                  //     !studentForm.contact ||
+                  //     !studentForm.address
+                  //   ) {
+                  //     alert("Please fill all fields.");
+                  //     return;
+                  //   }
+                  //   addStudent({
+                  //     studentId: Number(studentForm.studentId),
+                  //     name: studentForm.name,
+                  //     birthDate: studentForm.birthDate,
+                  //     birthPlace: studentForm.birthPlace,
+                  //     contact: studentForm.contact,
+                  //     address: studentForm.address,
+                  //   });
+                  // };
+                }}
+              >
                 {/* Form input satu-satu student */}
                 <input
                   className="border rounded px-3 py-2"

@@ -6,6 +6,7 @@ import {
   getJournalById,
   getJournalsByClassId,
   getJournalsBySubject,
+  getSubjectByClassId,
   giveAttendancesAndNotes,
 } from "../lib/api";
 import { useState } from "react";
@@ -13,6 +14,7 @@ import { FiChevronDown, FiPlus } from "react-icons/fi";
 import { MdSort } from "react-icons/md";
 import { getThisMonthRange, getThisWeekRange } from "../utils/date";
 import { FaSortAlphaDownAlt, FaSortAlphaUp } from "react-icons/fa";
+import Spinner from "./Spinner";
 
 interface Journal {
   id?: string;
@@ -92,7 +94,7 @@ const Journals = ({
     refetchOnWindowFocus: false,
   });
 
-  const { mutateAsync: getJournal } = useMutation({
+  const { mutateAsync: getJournal, isPending } = useMutation({
     mutationFn: async (journalId: string) => {
       if (!classId) return null;
       const res = await getJournalById(classId, journalId);
@@ -127,6 +129,15 @@ const Journals = ({
       queryClient.invalidateQueries({
         queryKey: ["journalsSubject", classId],
       });
+    },
+  });
+
+  const { data: memberSubject } = useQuery({
+    queryKey: ["memberSubject", classId],
+    queryFn: async () => {
+      if (!classId) return "";
+      const res = await getSubjectByClassId(classId);
+      return res.data;
     },
   });
 
@@ -227,11 +238,7 @@ const Journals = ({
               className="flex items-center justify-between gap-2 text-sm text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700"
               type="button"
             >
-              <span>
-                {classInfo.instructors && classInfo.instructors.length > 0
-                  ? classInfo.instructors[0].subject
-                  : ""}
-              </span>
+              <span>{memberSubject}</span>
             </button>
           </>
         )}
@@ -487,6 +494,13 @@ const Journals = ({
               </div>
             ))}
       </div>
+      {isPending && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="flex items-center justify-center h-full w-full">
+            <Spinner />
+          </div>
+        </div>
+      )}
       {showJournalModal && selectedJournal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 w-[960px] h-[560px] relative">

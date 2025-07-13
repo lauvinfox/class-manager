@@ -120,7 +120,7 @@ export const getAssignmentsByClass: RequestHandler = catchError(
   }
 );
 
-export const getScoreBySubject: RequestHandler = catchError(
+export const getAssignmentsBySubject: RequestHandler = catchError(
   async (req, res) => {
     const userId = req.userId as string;
     const { classId } = req.params;
@@ -159,3 +159,24 @@ export const getStudentScore: RequestHandler = catchError(async (req, res) => {
     data: assignments,
   });
 });
+
+export const deleteAssignmentById: RequestHandler = catchError(
+  async (req, res) => {
+    const userId = req.userId as string;
+    const { classId, assignmentId } = req.params;
+
+    const isInstructor = await ClassService.checkInstructor(classId, userId);
+    appAssert(isInstructor, NOT_FOUND, "Instructors Not Found");
+
+    const assignment = await AssignmentService.deleteAssignmentById(
+      classId,
+      assignmentId
+    );
+    appAssert(assignment, NOT_FOUND, "Assignment not found!");
+
+    return res.status(OK).json({
+      message: "Assignment deleted successfully!",
+      data: assignment,
+    });
+  }
+);

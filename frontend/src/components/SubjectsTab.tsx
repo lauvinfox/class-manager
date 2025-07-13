@@ -2,6 +2,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   getClassWeightBySubject,
   getClassWeights,
+  getSubjectByClassId,
   giveSubjectWeights,
 } from "../lib/api";
 import { ClassInfo } from "../types/types";
@@ -54,10 +55,14 @@ const SubjectsTab = ({
     },
   });
 
-  const memberSubject =
-    classInfo?.instructors && classInfo.instructors.length > 0
-      ? classInfo.instructors[0].subject
-      : "";
+  const { data: memberSubject } = useQuery({
+    queryKey: ["memberSubject", classId],
+    queryFn: async () => {
+      if (!classId) return "";
+      const res = await getSubjectByClassId(classId);
+      return res.data;
+    },
+  });
 
   const { data: classWeightBySubject } = useQuery({
     queryKey: ["classWeightBySubject", classId, memberSubject],

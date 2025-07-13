@@ -87,7 +87,7 @@ const AssignmentSchema = new Schema<IAssignment>(
     ],
     assignmentType: {
       type: String,
-      enum: ["homework", "quiz", "exam", "project", "final exam"],
+      enum: ["homework", "quiz", "exam", "project", "finalExam"],
       required: true,
     },
   },

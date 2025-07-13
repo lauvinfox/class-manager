@@ -20,11 +20,17 @@ router.post("/:classId/get-assignment", AssignmentController.getAssignmentById);
 
 router.get(
   "/:classId/subject-assignments/get",
-  AssignmentController.getScoreBySubject
+  AssignmentController.getAssignmentsBySubject
 );
+
 router.get(
   "/:classId/score/:studentId/get",
   AssignmentController.getStudentScore
+);
+
+router.delete(
+  "/:classId/:assignmentId",
+  AssignmentController.deleteAssignmentById
 );
 
 export default router;

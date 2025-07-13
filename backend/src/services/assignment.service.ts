@@ -386,3 +386,16 @@ export const deleteAssignmentsByClassId = async (classId: string) => {
   }
   return result;
 };
+
+export const deleteAssignmentById = async (
+  classId: string,
+  assignmentId: string
+) => {
+  const result = await AssignmentModel.findOneAndDelete({
+    _id: assignmentId,
+  });
+
+  await ClassService.removeAssignmentFromClass(classId, assignmentId);
+
+  return result;
+};

@@ -17,7 +17,7 @@ type Student = {
 };
 
 export const addStudent = async (student: Student) => {
-  const studentData = {
+  const studentData: Student = {
     name: student.name,
     studentId: student.studentId,
     classId: student.classId,
@@ -27,19 +27,13 @@ export const addStudent = async (student: Student) => {
     address: student.address,
   };
 
-  const newStudent = new StudentModel(studentData);
-  const resultDoc = await newStudent.save();
-  const studentId = resultDoc._id as Schema.Types.ObjectId;
+  const studentDoc = await StudentModel.create(studentData);
 
-  try {
-    await ClassService.addStudentsToClass(studentData.classId, [studentId]);
-  } catch (err) {
-    // log error dan throw error spesifik
-    console.error("Error adding student to class:", err);
-    throw new Error("Failed to add student to class");
-  }
+  const studentId = studentDoc._id as Schema.Types.ObjectId;
 
-  return resultDoc;
+  await ClassService.addStudentsToClass(studentData.classId, [studentId]);
+
+  return studentDoc;
 };
 
 export const addStudents = async (students: Student[]) => {

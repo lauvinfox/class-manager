@@ -310,3 +310,16 @@ export const deleteClass: RequestHandler = catchError(async (req, res) => {
     result,
   });
 });
+
+export const getSubject: RequestHandler = catchError(async (req, res) => {
+  const userId = req.userId as string;
+  const { classId } = req.params;
+
+  const subject = await ClassService.getSubjectByClassUserId(userId, classId);
+  appAssert(subject, BAD_REQUEST, "You are not a member of this class");
+
+  return res.json({
+    message: "Subject retrieved successfully",
+    data: subject,
+  });
+});

@@ -1,8 +1,10 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   createAssignmentByClassId,
+  deleteAssignmentById,
   getAssignmentById,
   getAssignmentsByClass,
+  getSubjectByClassId,
   giveScores,
 } from "../lib/api";
 import { useState } from "react";
@@ -124,10 +126,14 @@ const AssignmentsTab = ({
     useState<AssignmentInfo | null>(null);
   const [showAssignmentModal, setShowAssignmentModal] = useState(false);
 
-  const memberSubject =
-    classInfo?.instructors && classInfo.instructors.length > 0
-      ? classInfo.instructors[0].subject
-      : "";
+  const { data: memberSubject } = useQuery({
+    queryKey: ["memberSubject", classId],
+    queryFn: async () => {
+      if (!classId) return "";
+      const res = await getSubjectByClassId(classId);
+      return res.data;
+    },
+  });
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [form, setForm] = useState({
@@ -183,8 +189,20 @@ const AssignmentsTab = ({
     setShowCreateModal(false);
     alert("Assignment created successfully!");
   };
-  const [studentNameSort, setStudentNameSort] = useState<"asc" | "desc">("asc");
+  const [studentNameSort, setStudentNameSort] = useState<"asc" | "desc" | "">(
+    "asc"
+  );
+  const [scoreSort, setScoreSort] = useState<"asc" | "desc" | "">("");
 
+  const { mutate: deleteAssignment } = useMutation({
+    mutationFn: async ({ assignmentId }: { assignmentId: string }) => {
+      if (!classId) throw new Error("Class ID is required");
+      const res = await deleteAssignmentById(classId, assignmentId);
+      return res.data;
+    },
+  });
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   return (
     <div className="max-w-full overflow-x-auto py-4 px-4">
       <div className="flex justify-end mb-4 gap-2">
@@ -224,11 +242,7 @@ const AssignmentsTab = ({
               className="flex items-center justify-between gap-2 text-sm text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700"
               type="button"
             >
-              <span>
-                {classInfo.instructors && classInfo.instructors.length > 0
-                  ? classInfo.instructors[0].subject
-                  : ""}
-              </span>
+              <span>{memberSubject}</span>
             </button>
           </>
         )}
@@ -514,6 +528,21 @@ const AssignmentsTab = ({
                       return `${month} ${day}, ${year}`;
                     })()}
                 </div>
+                <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-300">
+                  <div className="ml-auto text-right">
+                    {assignment.assignmentType === "homework" ? (
+                      <div className="text-green-800">Homework</div>
+                    ) : assignment.assignmentType === "quiz" ? (
+                      <div className="text-blue-800">Quiz</div>
+                    ) : assignment.assignmentType === "exam" ? (
+                      <div className="text-orange-800">Exam</div>
+                    ) : assignment.assignmentType === "project" ? (
+                      <div className="text-yellow-800">Project</div>
+                    ) : (
+                      <div className="text-red-800">Final Exam</div>
+                    )}
+                  </div>
+                </div>
               </div>
             ))}
       </div>
@@ -557,7 +586,15 @@ const AssignmentsTab = ({
               </div>
               <div>
                 <span className="font-semibold">Type:</span>{" "}
-                {selectedAssignment.assignmentType}
+                {selectedAssignment.assignmentType === "homework"
+                  ? "Homework"
+                  : selectedAssignment.assignmentType === "quiz"
+                  ? "Quiz"
+                  : selectedAssignment.assignmentType === "exam"
+                  ? "Exam"
+                  : selectedAssignment.assignmentType === "project"
+                  ? "Project"
+                  : "Final Exam"}
               </div>
               <div>
                 <span className="font-semibold">Start Time:</span>{" "}
@@ -577,8 +614,12 @@ const AssignmentsTab = ({
                     )
                   : ""}
               </div>
+              <div>
+                <span className="font-semibold">Description: </span>{" "}
+                {selectedAssignment.description || "No description provided"}
+              </div>
             </div>
-            <div className="mb-2">{selectedAssignment.description}</div>
+
             <div className="mt-5 overflow-hidden rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
               <div className="max-h-76 overflow-y-auto">
                 {classInfo?.role === "owner" && (
@@ -588,9 +629,15 @@ const AssignmentsTab = ({
                         <th
                           className="px-6 py-4"
                           onClick={() => {
-                            setStudentNameSort((prev) =>
-                              prev === "asc" ? "desc" : "asc"
-                            );
+                            if (studentNameSort === "") {
+                              setStudentNameSort("asc");
+                              setScoreSort("");
+                            } else {
+                              setStudentNameSort((prev) =>
+                                prev === "asc" ? "desc" : "asc"
+                              );
+                              setScoreSort("");
+                            }
                           }}
                         >
                           <span className="flex items-center gap-0.5">
@@ -602,7 +649,31 @@ const AssignmentsTab = ({
                             )}
                           </span>
                         </th>
-                        <th className="px-6 py-4">Score</th>
+                        <th
+                          className="px-6 py-4 cursor-pointer"
+                          onClick={() => {
+                            if (scoreSort === "") {
+                              setScoreSort((prev) =>
+                                prev === "" ? "asc" : "desc"
+                              );
+                              setStudentNameSort("");
+                            } else {
+                              setScoreSort((prev) =>
+                                prev === "asc" ? "desc" : "asc"
+                              );
+                              setStudentNameSort("");
+                            }
+                          }}
+                        >
+                          <span className="flex items-center gap-0.5">
+                            Score{" "}
+                            {scoreSort === "" || scoreSort === "asc" ? (
+                              <FaSortAlphaUp />
+                            ) : (
+                              <FaSortAlphaDownAlt />
+                            )}
+                          </span>
+                        </th>
                         <th className="px-6 py-4">Notes</th>
                       </tr>
                     </thead>
@@ -611,6 +682,15 @@ const AssignmentsTab = ({
                       selectedAssignment.grades.length > 0 ? (
                         [...selectedAssignment.grades]
                           .sort((a, b) => {
+                            // Sort by score if scoreSort is toggled, else by name
+                            if (scoreSort !== "") {
+                              if (scoreSort === "asc") {
+                                return (a.score ?? 0) - (b.score ?? 0);
+                              } else {
+                                return (b.score ?? 0) - (a.score ?? 0);
+                              }
+                            }
+                            // fallback ke sort nama jika scoreSort tidak ada
                             const nameA = a.studentId.name.toLowerCase();
                             const nameB = b.studentId.name.toLowerCase();
                             if (studentNameSort === "asc") {
@@ -682,9 +762,15 @@ const AssignmentsTab = ({
                         <th
                           className="px-6 py-4"
                           onClick={() => {
-                            setStudentNameSort((prev) =>
-                              prev === "asc" ? "desc" : "asc"
-                            );
+                            if (studentNameSort === "") {
+                              setStudentNameSort("asc");
+                              setScoreSort("");
+                            } else {
+                              setStudentNameSort((prev) =>
+                                prev === "asc" ? "desc" : "asc"
+                              );
+                              setScoreSort("");
+                            }
                           }}
                         >
                           <span className="flex items-center gap-0.5">
@@ -748,8 +834,10 @@ const AssignmentsTab = ({
                                   min={0}
                                   max={100}
                                   onChange={(e) => {
-                                    // Update score locally (you may want to handle API update here)
-                                    const newScore = Number(e.target.value);
+                                    let newScore = Number(e.target.value);
+                                    if (isNaN(newScore)) newScore = 0;
+                                    if (newScore < 0) newScore = 0;
+                                    if (newScore > 100) newScore = 100;
                                     setSelectedAssignment((prev) => {
                                       if (!prev) return prev;
                                       return {
@@ -758,6 +846,23 @@ const AssignmentsTab = ({
                                           g.studentId._id ===
                                           grade.studentId._id
                                             ? { ...g, score: newScore }
+                                            : g
+                                        ),
+                                      };
+                                    });
+                                  }}
+                                  onBlur={(e) => {
+                                    let val = Number(e.target.value);
+                                    if (isNaN(val) || val < 0) val = 0;
+                                    if (val > 100) val = 100;
+                                    setSelectedAssignment((prev) => {
+                                      if (!prev) return prev;
+                                      return {
+                                        ...prev,
+                                        grades: prev.grades.map((g) =>
+                                          g.studentId._id ===
+                                          grade.studentId._id
+                                            ? { ...g, score: val }
                                             : g
                                         ),
                                       };
@@ -796,9 +901,15 @@ const AssignmentsTab = ({
               </div>
             </div>
             {classInfo?.role === "member" && (
-              <div className="mt-4 flex items-center gap-4">
+              <div className="mt-4 flex items-center justify-end gap-4">
                 <button
-                  className="mt-8 ml-auto px-4 py-2 rounded-md bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition"
+                  className="mt-8 px-4 py-2 rounded-md bg-red-700 text-white font-semibold hover:bg-red-700 transition"
+                  onClick={() => setShowDeleteModal(true)}
+                >
+                  Delete Assignment
+                </button>
+                <button
+                  className="mt-8 px-4 py-2 rounded-md bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition"
                   onClick={() => {
                     if (selectedAssignment && selectedAssignment.grades) {
                       const newScoresData = selectedAssignment.grades.map(
@@ -814,7 +925,7 @@ const AssignmentsTab = ({
                       giveScore({
                         classId: classId as string,
                         assignmentId: selectedAssignment._id,
-                        scoresData: newScoresData, // gunakan data baru ini!
+                        scoresData: newScoresData,
                       });
 
                       alert("Changes saved!");
@@ -823,6 +934,87 @@ const AssignmentsTab = ({
                 >
                   Save Changes
                 </button>
+              </div>
+            )}
+            {showDeleteModal && (
+              // Modal style mirip Sign Out Modal di Sidebar
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                <div
+                  className="relative z-50"
+                  aria-labelledby="modal-title"
+                  role="dialog"
+                  aria-modal="true"
+                >
+                  {/* Backdrop */}
+                  <div
+                    className="fixed inset-0 bg-gray-500/75 transition-opacity"
+                    aria-hidden="true"
+                  ></div>
+                  <div className="fixed inset-0 z-50 w-screen overflow-y-auto translate-y-[-25px]">
+                    <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                      <div className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                        <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                          <div className="sm:flex sm:items-start">
+                            <div className="mx-auto flex size-12 shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:size-10">
+                              <svg
+                                className="size-6 text-red-600"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={1.5}
+                                stroke="currentColor"
+                                aria-hidden="true"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
+                                />
+                              </svg>
+                            </div>
+                            <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                              <h3
+                                className="text-base font-semibold text-gray-900"
+                                id="modal-title"
+                              >
+                                Delete Assignment
+                              </h3>
+                              <div className="mt-2">
+                                <p className="text-sm text-gray-500">
+                                  Are you sure you want to delete this
+                                  assignment? This action cannot be undone.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                          <button
+                            type="button"
+                            className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-red-500 sm:ml-3 sm:w-auto"
+                            onClick={() => {
+                              deleteAssignment({
+                                assignmentId: selectedAssignment._id,
+                              });
+                              setShowDeleteModal(false);
+                              setShowAssignmentModal(false);
+                              setSelectedAssignment(null);
+                              alert("Assignment deleted!");
+                            }}
+                          >
+                            Delete
+                          </button>
+                          <button
+                            type="button"
+                            className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                            onClick={() => setShowDeleteModal(false)}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>

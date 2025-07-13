@@ -114,6 +114,9 @@ export const getClassesByClassOwner = async () => {
   return response;
 };
 
+export const getSubjectByClassId = async (classId: string) => {
+  return await API.get(`/api/v1/class/${classId}/subject/get`);
+};
 export const getClasses = async () => {
   return await API.get("/api/v1/users/class/get");
 };
@@ -184,7 +187,7 @@ export const deleteStudentsByClassId = async (classId: string) => {
   return await API.delete(`/api/v1/students/${classId}/delete`);
 };
 
-export const deleteClass = async (classId: string) => {
+export const deleteClassByClassId = async (classId: string) => {
   return await API.delete(`/api/v1/class/${classId}`);
 };
 
@@ -212,6 +215,12 @@ export const giveSubjectToInstructor = async (
 
 export const getAssignmentsByClass = async (classId: string) => {
   return await API.get(`/api/v1/assignments/${classId}/get-assignments`);
+};
+
+export const getAssignmentsBySubject = async (classId: string) => {
+  return await API.get(
+    `/api/v1/assignments/${classId}/subject-assignments/get`
+  );
 };
 
 export const getAssignmentById = async (
@@ -281,6 +290,13 @@ export const giveSubjectWeights = async ({
     subject,
     assignmentWeight,
   });
+};
+
+export const deleteAssignmentById = async (
+  classId: string,
+  assignmentId: string
+) => {
+  return await API.delete(`/api/v1/assignments/${classId}/${assignmentId}`);
 };
 
 export const getClassWeights = async (classId: string) => {

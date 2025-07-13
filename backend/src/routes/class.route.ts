@@ -61,6 +61,9 @@ router.get(
   ClassController.getClassWeightBySubject
 );
 
+// Get subject
+router.get("/:classId/subject/get", ClassController.getSubject);
+
 // Delete class
 router.delete("/:classId", ClassController.deleteClass);
 

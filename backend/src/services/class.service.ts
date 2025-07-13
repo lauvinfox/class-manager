@@ -106,6 +106,33 @@ export const getClassesInfoByIds = async (ids: string[]) => {
   return classDocs;
 };
 
+export const removeAssignmentFromClass = async (
+  classId: string,
+  assignmentId: string
+) => {
+  // Validate classId and assignmentId
+  appAssert(
+    typeof classId === "string" && classId.length > 0,
+    BAD_REQUEST,
+    "classId is required"
+  );
+  appAssert(
+    Types.ObjectId.isValid(assignmentId),
+    BAD_REQUEST,
+    "Invalid assignment ID"
+  );
+
+  // Find class and remove assignment
+  const classDoc = await ClassModel.findOneAndUpdate(
+    { classId },
+    { $pull: { assignments: new Types.ObjectId(assignmentId) } },
+    { new: true, runValidators: true }
+  ).populate("assignments", "title description dueDate");
+
+  appAssert(classDoc, NOT_FOUND, "Class not found");
+  return classDoc;
+};
+
 /**
  * Get subject name by Class ID and User ID
  * @param instructorId - User ID of instructor
@@ -597,3 +624,5 @@ export const getStatisticsByClass = async (classId: string) => {
   const classDoc = await ClassModel.find({ classId });
   return classDoc;
 };
+
+export const studentsAttendance = async (classId: string) => {};
