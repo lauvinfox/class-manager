@@ -67,9 +67,16 @@ router.get("/:classId/subject/get", ClassController.getSubject);
 // Delete class
 router.delete("/:classId", ClassController.deleteClass);
 
+// Get full student report
 router.post(
   "/:classId/student-report/:studentId",
   ClassController.getStudentReport
+);
+
+// Get student report by date range
+router.post(
+  "/:classId/student-report/:studentId/date-range",
+  ClassController.getStudentReportByDateRange
 );
 
 export default router;

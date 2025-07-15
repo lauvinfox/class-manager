@@ -440,3 +440,22 @@ export const getFullStudentReport = async (
     { note }
   );
 };
+
+export const getStudentReportByDateRange = async ({
+  classId,
+  studentId,
+  startDate,
+  endDate,
+  note,
+}: {
+  classId: string;
+  studentId: string;
+  startDate: string;
+  endDate: string;
+  note: string;
+}) => {
+  return await API.post(
+    `/api/v1/class/${classId}/student-report/${studentId}/date-range`,
+    { startDate: startDate, endDate: endDate, note: note }
+  );
+};

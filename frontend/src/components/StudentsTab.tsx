@@ -7,6 +7,7 @@ import {
   deleteStudentFromClass,
   deleteStudentsByClassId,
   getFullStudentReport,
+  getStudentReportByDateRange,
 } from "../lib/api";
 import Dropzone from "./Dropzone";
 import { ClassInfo } from "../types/types";
@@ -171,7 +172,8 @@ const StudentsTab = ({
       note: string;
     }) => {
       if (!classId) throw new Error("Class ID not found");
-      return await getFullStudentReport(classId, studentId, note);
+      const res = await getFullStudentReport(classId, studentId, note);
+      return res.data;
     },
     onSuccess: () => {
       setShowCreateReportModal(null);
@@ -181,6 +183,41 @@ const StudentsTab = ({
     onError: (error) => {
       console.error("Failed to create full report:", error);
       alert("Failed to create full report.");
+    },
+  });
+
+  const { mutateAsync: createReportByTime } = useMutation({
+    mutationFn: async ({
+      studentId,
+      startDate,
+      endDate,
+      note,
+    }: {
+      studentId: string;
+      startDate: string;
+      endDate: string;
+      note: string;
+    }) => {
+      if (!classId) throw new Error("Class ID not found");
+      const res = await getStudentReportByDateRange({
+        classId,
+        studentId,
+        note,
+        startDate,
+        endDate,
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      setShowCreateReportModal(null);
+      setByTimeReportNote("");
+      setStartDate("");
+      setEndDate("");
+      alert("Report by time created successfully!");
+    },
+    onError: (error) => {
+      console.error("Failed to create report by time:", error);
+      alert("Failed to create report by time.");
     },
   });
 
@@ -396,13 +433,11 @@ const StudentsTab = ({
                                       className="flex flex-col gap-2"
                                       onSubmit={async (e) => {
                                         e.preventDefault();
-                                        const response = await createFullReport(
-                                          {
+                                        const studentData =
+                                          await createFullReport({
                                             studentId: student.id,
                                             note: fullReportNote,
-                                          }
-                                        );
-                                        const studentData = response.data;
+                                          });
                                         const rows =
                                           studentDataToPDFRows(studentData);
                                         generatePDF({
@@ -449,9 +484,22 @@ const StudentsTab = ({
                                   ) : (
                                     <form
                                       className="flex flex-col gap-2"
-                                      onSubmit={(e) => {
+                                      onSubmit={async (e) => {
                                         e.preventDefault();
-                                        // TODO: handle create report by time logic here
+                                        const studentData =
+                                          await createReportByTime({
+                                            studentId: student.id,
+                                            note: byTimeReportNote,
+                                            startDate: startDate,
+                                            endDate: endDate,
+                                          });
+                                        const rows =
+                                          studentDataToPDFRows(studentData);
+                                        generatePDF({
+                                          title: "Student Report",
+                                          rows,
+                                          data: studentData,
+                                        });
                                         setShowCreateReportModal(null);
                                         alert("Report by time created!");
                                       }}

@@ -6,6 +6,7 @@ import { BAD_REQUEST, CREATED } from "@constants/statusCodes";
 import * as ClassService from "@services/class.service";
 import * as UserService from "@services/user.service";
 import appAssert from "@utils/appAssert";
+import { start } from "node:repl";
 
 /**
  * Get all classes by class owner ID
@@ -339,3 +340,23 @@ export const getStudentReport: RequestHandler = catchError(async (req, res) => {
     data: report,
   });
 });
+
+export const getStudentReportByDateRange: RequestHandler = catchError(
+  async (req, res) => {
+    const { classId, studentId } = req.params;
+    const { startDate, endDate, note } = req.body;
+
+    const report = await ClassService.createStudentReportInTimeRange(
+      classId,
+      studentId,
+      startDate,
+      endDate,
+      note
+    );
+
+    return res.json({
+      message: "Student report by date range retrieved successfully",
+      data: report,
+    });
+  }
+);
