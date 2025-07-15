@@ -76,6 +76,23 @@ export const getIdByClassId = async (classId: string) => {
   return classDoc._id as Schema.Types.ObjectId;
 };
 
+export const getClassByClassId = async (classId: string) => {
+  return await ClassModel.findOne({ classId }).exec();
+};
+
+export const addJournalToClass = async (
+  classId: string,
+  journalId: Types.ObjectId
+) => {
+  const classDoc = await ClassModel.findOneAndUpdate(
+    { classId },
+    { $addToSet: { journals: journalId } },
+    { new: true, runValidators: true }
+  ).populate("journals", "title journalDate");
+
+  return classDoc;
+};
+
 /**
  * Get class by IDs
  * @param id - Class IDs
@@ -130,6 +147,16 @@ export const removeAssignmentFromClass = async (
   ).populate("assignments", "title description dueDate");
 
   appAssert(classDoc, NOT_FOUND, "Class not found");
+  return classDoc;
+};
+
+export const removeStudentFromClass = async (classId: string, id: string) => {
+  // Find class and remove student
+  const classDoc = await ClassModel.findOneAndUpdate(
+    { classId },
+    { $pull: { students: new Types.ObjectId(id) } },
+    { new: true, runValidators: true }
+  ).populate("students", "name studentId");
   return classDoc;
 };
 
@@ -625,4 +652,30 @@ export const getStatisticsByClass = async (classId: string) => {
   return classDoc;
 };
 
-export const studentsAttendance = async (classId: string) => {};
+// export const studentsAttendance = async (classId: string) => {
+//   // Ambil semua journal untuk classId
+//   const JournalModel = require("@models/journal.model").default;
+//   const journals = await JournalModel.find({ classId }).lean();
+
+//   const students = await StudentService.getStudentsIdsByClassId(classId);
+//   // Inisialisasi counter untuk setiap status
+//   const statusCount = {
+//     present: 0,
+//     absent: 0,
+//     late: 0,
+//     sick: 0,
+//     excused: 0,
+//     pending: 0,
+//   };
+
+//   // Loop semua journals dan hitung status
+//   for (const journal of journals) {
+//     for (const j of journal.journals || []) {
+//       if (j.status && statusCount.hasOwnProperty(j.status)) {
+//         statusCount[j.status]++;
+//       }
+//     }
+//   }
+
+//   return statusCount;
+// };

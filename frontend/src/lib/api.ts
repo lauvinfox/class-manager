@@ -1,10 +1,25 @@
 import API from "../config/apiClient";
-
+/** Sign In Authentication
+ * This function is used to log in a user by sending their email and password to the API.
+ * @param email - User's email
+ * @param password - User's password
+ * @returns Promise resolving to the API response
+ */
 export const loginUser = async (email: string, password: string) => {
-  const response = await API.post("/auth/signin", { email, password });
-  return response;
+  return await API.post("/auth/signin", { email, password });
 };
 
+/** Sign Up Authentication
+ * This function is used to register a new user by sending their details to the API.
+ * @param firstName - User's first name
+ * @param lastName - User's last name
+ * @param email - User's email
+ * @param username - User's username
+ * @param password - User's password
+ * @param confirmPassword - Confirmation of the user's password
+ * @param dateOfBirth - User's date of birth
+ * @returns Promise resolving to the API response
+ */
 export const registerUser = async (
   firstName: string,
   lastName: string,
@@ -14,7 +29,7 @@ export const registerUser = async (
   confirmPassword: string,
   dateOfBirth: string
 ) => {
-  const response = await API.post("/auth/signup", {
+  return await API.post("/auth/signup", {
     firstName,
     lastName,
     email,
@@ -23,23 +38,56 @@ export const registerUser = async (
     confirmPassword,
     dateOfBirth,
   });
-  return response;
 };
+
+/** Get Current User Information
+ * This function retrieves the current user's information from the API.
+ * @returns Promise resolving to the API response for fetching the current user's information.
+ */
 
 export const getMe = async () => {
   return await API.get("/api/v1/users/me");
 };
 
+/** Sign Out Authentication
+ * This function is used to log out the current user by sending a request to the API.
+ * @returns Promise resolving to the API response for signing out.
+ */
+export const signOut = async () => {
+  return await API.get("/auth/signout");
+};
+
+/** Verify Email
+ * This function verifies a user's email using a verification code.
+ * @param verificationCode - The code sent to the user's email for verification.
+ * @returns Promise resolving to the API response for email verification.
+ */
+export const verifyEmail = async (verificationCode: string) => {
+  return await API.get(`/auth/email/verify/${verificationCode}`);
+};
+
+/** Get User Information
+ * This function retrieves the information of the currently logged-in user.
+ * @returns Promise resolving to the API response for fetching user information.
+ */
 export const getUserInfo = async () => {
-  const response = await API.get(`/api/v1/users/info`);
-  return response;
+  return await API.get(`/api/v1/users/info`);
 };
 
+/** Get Users Information by Username
+ * This function retrieves user information based on the provided username.
+ * @param username - The username of the user to retrieve information for.
+ * @returns Promise resolving to the API response for fetching user information by username.
+ */
 export const getUsersByUsername = async (username: string) => {
-  const response = await API.post(`/api/v1/users/username`, { username });
-  return response;
+  return await API.post(`/api/v1/users/username`, { username });
 };
 
+/**
+ *
+ * @param
+ * @returns
+ */
 export const changeUsername = async ({
   password,
   newUsername,
@@ -47,11 +95,24 @@ export const changeUsername = async ({
   password: string;
   newUsername: string;
 }) => {
-  const response = await API.put(`/api/v1/users/username/change`, {
+  return await API.put(`/api/v1/users/username/change`, {
     password,
     newUsername,
   });
-  return response;
+};
+
+export const forgotPassword = async (email: string) => {
+  return await API.post("/auth/password/forgot", { email });
+};
+
+export const resetPassword = async (
+  password: string,
+  verificationCode: string
+) => {
+  return await API.post("/auth/password/reset", {
+    password,
+    verificationCode,
+  });
 };
 
 export const getUserNotifications = async () => {
@@ -65,31 +126,6 @@ export const markAllNotificationsAsRead = async () => {
 
 export const getFullUserInfo = async (username: string) => {
   const response = await API.get(`/api/v1/users/info-by-username/${username}`);
-  return response;
-};
-
-export const signOut = async () => {
-  return await API.get("/auth/signout");
-};
-
-export const verifyEmail = async (verificationCode: string) => {
-  const response = await API.get(`/auth/email/verify/${verificationCode}`);
-  return response;
-};
-
-export const forgotPassword = async (email: string) => {
-  const response = await API.post("/auth/password/forgot", { email });
-  return response;
-};
-
-export const resetPassword = async (
-  password: string,
-  verificationCode: string
-) => {
-  const response = await API.post("/auth/password/reset", {
-    password,
-    verificationCode,
-  });
   return response;
 };
 
@@ -183,6 +219,30 @@ export const addStudentsToClass = async (classId: string, file: File) => {
   });
 };
 
+export const deleteStudentFromClass = async (classId: string, id: string) => {
+  return await API.delete(`/api/v1/students/${classId}/delete-student`, {
+    data: { id },
+  });
+};
+
+export const getSubjectAttendanceSummary = async (classId: string) => {
+  return await API.get(
+    `/api/v1/journals/${classId}/attendance-summary/subject`
+  );
+};
+
+export const getClassAttendanceSummary = async (classId: string) => {
+  return await API.get(
+    `/api/v1/journals/${classId}/attendance-summary/subjects`
+  );
+};
+
+export const getSubjectAssignmentSummary = async (classId: string) => {
+  return await API.get(
+    `/api/v1/assignments/${classId}/subject-assignment-summary`
+  );
+};
+
 export const deleteStudentsByClassId = async (classId: string) => {
   return await API.delete(`/api/v1/students/${classId}/delete`);
 };
@@ -221,6 +281,14 @@ export const getAssignmentsBySubject = async (classId: string) => {
   return await API.get(
     `/api/v1/assignments/${classId}/subject-assignments/get`
   );
+};
+
+export const getAssignmentsSummaryBySubject = async (classId: string) => {
+  return await API.get(`/api/v1/assignments/${classId}/get-score-by-subject`);
+};
+
+export const getAssignmentsSummaryBySubjects = async (classId: string) => {
+  return await API.get(`/api/v1/assignments/${classId}/get-score-by-subjects`);
 };
 
 export const getAssignmentById = async (

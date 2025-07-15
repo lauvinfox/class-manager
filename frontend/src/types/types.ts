@@ -1,3 +1,5 @@
+import { StudentAttendanceSummary } from "./types";
+
 export interface Instructor {
   instructorId: string;
   name: string;
@@ -73,4 +75,21 @@ export interface Journal {
     status: "present" | "absent" | "late" | "sick" | "excused" | "pending";
     note?: string;
   };
+}
+export interface StudentAttendanceSummary {
+  studentId: string;
+  name: string;
+  attendances: {
+    present: number;
+    absent: number;
+    late: number;
+    sick: number;
+    excused: number;
+    pending: number;
+  };
+}
+export interface ClassAttendanceSummary {
+  subject: string;
+  totalJournals: number;
+  attendancesSummary: StudentAttendanceSummary[];
 }

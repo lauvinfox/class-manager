@@ -33,4 +33,16 @@ router.delete(
   AssignmentController.deleteAssignmentById
 );
 
+// Get assignment score summary by subject
+router.get(
+  "/:classId/get-score-by-subject",
+  AssignmentController.getAssignmentsSummaryBySubject
+);
+
+// Get assignment score summary by subjects
+router.get(
+  "/:classId/get-score-by-subjects",
+  AssignmentController.getAssignmentsSummaryBySubjects
+);
+
 export default router;

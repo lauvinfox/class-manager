@@ -7,6 +7,7 @@ import JournalModel from "@models/journal.model";
 
 import * as StudentService from "@services/student.service";
 import * as NotificationService from "@services/notification.service";
+import * as ClassService from "@services/class.service";
 
 enum AttendanceStatus {
   PRESENT = "present",
@@ -77,6 +78,8 @@ export const createJournal = async ({
     startTime: startTimeString,
     endTime: endTimeString,
   });
+
+  await ClassService.addJournalToClass(classId, journalDocs._id);
 
   return journalDocs;
 };
@@ -162,6 +165,154 @@ export const getJournalsByClassId = async (classId: string) => {
   return result;
 };
 
+export const getJournalsAttendanceSummary = async (classId: string) => {
+  const journalsDocs = await JournalModel.find({ classId })
+    .select("journals")
+    .populate("journals.studentId", "name")
+    .lean();
+
+  // Map studentId => { present: n, absent: n, ... }
+  const studentSummary: Record<string, Record<string, number>> = {};
+
+  journalsDocs.forEach((journal) => {
+    if (Array.isArray(journal.journals)) {
+      journal.journals.forEach((entry) => {
+        const studentId =
+          entry.studentId._id?.toString?.() || String(entry.studentId);
+        if (!studentSummary[studentId]) {
+          studentSummary[studentId] = {
+            present: 0,
+            absent: 0,
+            late: 0,
+            sick: 0,
+            excused: 0,
+            pending: 0,
+          };
+        }
+        if (studentSummary[studentId][entry.status] !== undefined) {
+          studentSummary[studentId][entry.status]++;
+        }
+      });
+    }
+  });
+
+  return studentSummary;
+};
+
+export const getJournalsAttendanceSummaryBySubject = async (
+  classId: string,
+  subject: string
+) => {
+  const journalsDocs = await JournalModel.find({ classId, subject })
+    .select("journals subject")
+    .populate("journals.studentId", "name")
+    .lean();
+
+  // Map studentId => { name, studentId, attendances: { present, ... } }
+  const studentAttendance: Record<
+    string,
+    { name: string; studentId: any; attendances: Record<string, number> }
+  > = {};
+  for (const journal of journalsDocs) {
+    for (const entry of journal.journals || []) {
+      const studentObj = entry.studentId;
+      const studentId = studentObj._id?.toString?.() || String(studentObj);
+      const name =
+        typeof studentObj === "object" && "name" in studentObj
+          ? (studentObj as any).name
+          : "";
+      if (!studentAttendance[studentId]) {
+        studentAttendance[studentId] = {
+          name,
+          studentId: studentObj._id || studentObj,
+          attendances: {
+            present: 0,
+            absent: 0,
+            late: 0,
+            sick: 0,
+            excused: 0,
+            pending: 0,
+          },
+        };
+      }
+      if (
+        studentAttendance[studentId].attendances[entry.status] !== undefined
+      ) {
+        studentAttendance[studentId].attendances[entry.status]++;
+      }
+    }
+  }
+
+  return {
+    subject,
+    totalJournals: journalsDocs.length,
+    attendancesSummary: Object.values(studentAttendance),
+  };
+};
+
+export const getJournalsAttendanceSummaryBySubjects = async (
+  classId: string,
+  subjects: string[]
+) => {
+  // Ambil semua journals untuk classId dan subjects
+  const journalsDocs = await JournalModel.find({
+    classId,
+    subject: { $in: subjects },
+  })
+    .select("journals subject")
+    .populate("journals.studentId", "name")
+    .lean();
+
+  // Kelompokkan journals per subject
+  const subjectMap: Record<string, any[]> = {};
+  for (const journal of journalsDocs) {
+    if (!subjectMap[journal.subject]) subjectMap[journal.subject] = [];
+    subjectMap[journal.subject].push(journal);
+  }
+
+  // Susun hasil akhir
+  const result = Object.entries(subjectMap).map(([subject, journals]) => {
+    // Map studentId => { name, studentId, attendances: { present, ... } }
+    const studentAttendance: Record<
+      string,
+      { name: string; studentId: any; attendances: Record<string, number> }
+    > = {};
+    for (const journal of journals) {
+      for (const entry of journal.journals || []) {
+        const studentObj = entry.studentId;
+        const studentId = studentObj._id?.toString?.() || String(studentObj);
+        const name = studentObj.name || "";
+        if (!studentAttendance[studentId]) {
+          studentAttendance[studentId] = {
+            name,
+            studentId: studentObj._id || studentObj,
+            attendances: {
+              present: 0,
+              absent: 0,
+              late: 0,
+              sick: 0,
+              excused: 0,
+              pending: 0,
+            },
+          };
+        }
+        if (
+          studentAttendance[studentId].attendances[entry.status] !== undefined
+        ) {
+          studentAttendance[studentId].attendances[entry.status]++;
+        }
+      }
+    }
+    return {
+      subject,
+      totalJournals: journals.length,
+      attendancesSummary: Object.values(studentAttendance),
+    };
+  });
+
+  return result;
+};
+
 export const getJournalsBySubject = async ({
   classId,
   subject,
@@ -175,5 +326,14 @@ export const getJournalsBySubject = async ({
   }).sort({ createdAt: -1 });
 
   appAssert(journalsDocs, NOT_FOUND, "Journals not found!");
+  return journalsDocs;
+};
+
+export const removeStudentFromJournal = async (classId: string, id: string) => {
+  const journalsDocs = await JournalModel.updateMany(
+    { classId, "journals.studentId": id },
+    { $pull: { journals: { studentId: id } } }
+  );
+
   return journalsDocs;
 };

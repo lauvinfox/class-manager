@@ -10,7 +10,7 @@ const router = Router();
 router.post("/:classId/create", StudentsController.createStudent);
 
 // GET ALL
-router.get("/:classId/get", authenticate, StudentsController.getStudentsClass);
+router.get("/:classId/get", StudentsController.getStudentsClass);
 
 // GET BY STUDENTID
 router.get("/:id", StudentsController.getStudent);
@@ -36,5 +36,8 @@ router.post(
 
 // Delete multiple students by ClassId
 router.delete("/:classId/delete", StudentsController.deleteStudents);
+
+// Delete a student by ClassId and Student _id
+router.delete("/:classId/delete-student", StudentsController.deleteStudent);
 
 export default router;

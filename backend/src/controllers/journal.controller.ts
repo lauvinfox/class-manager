@@ -111,3 +111,72 @@ export const getJournalById: RequestHandler = catchError(async (req, res) => {
     data: journal,
   });
 });
+
+export const getAttendanceSummary: RequestHandler = catchError(
+  async (req, res) => {
+    const userId = req.userId as string;
+    const { classId } = req.params;
+
+    const isOwner = await ClassService.checkClassOwner(classId, userId);
+    appAssert(isOwner, UNAUTHORIZED, "You are not the owner of this class");
+
+    const attendanceSummary =
+      await JournalService.getJournalsAttendanceSummary(classId);
+
+    return res.status(200).json({
+      message: "Attendance summary retrieved successfully",
+      data: attendanceSummary,
+    });
+  }
+);
+
+export const getAttendanceSummaryBySubject: RequestHandler = catchError(
+  async (req, res) => {
+    const userId = req.userId as string;
+    const { classId } = req.params;
+
+    const isInstructor = await ClassService.checkInstructor(classId, userId);
+    appAssert(
+      isInstructor,
+      UNAUTHORIZED,
+      "You are not an instructor of this class"
+    );
+
+    const subject = await ClassService.getSubjectByClassUserId(userId, classId);
+    appAssert(subject, NOT_FOUND, "Subject not found for this class");
+
+    const attendanceSummary =
+      await JournalService.getJournalsAttendanceSummaryBySubject(
+        classId,
+        subject
+      );
+
+    return res.status(200).json({
+      message: "Attendance summary by subject retrieved successfully",
+      data: attendanceSummary,
+    });
+  }
+);
+
+export const getAttendanceSummaryBySubjects: RequestHandler = catchError(
+  async (req, res) => {
+    const userId = req.userId as string;
+    const { classId } = req.params;
+
+    const isOwner = await ClassService.checkClassOwner(classId, userId);
+    appAssert(isOwner, UNAUTHORIZED, "You are not the owner of this class");
+
+    const subjects = await ClassService.getClassSubjects(classId);
+
+    const attendanceSummary =
+      await JournalService.getJournalsAttendanceSummaryBySubjects(
+        classId,
+        subjects
+      );
+
+    return res.status(200).json({
+      message: "Attendance summary by subject retrieved successfully",
+      data: attendanceSummary,
+    });
+  }
+);

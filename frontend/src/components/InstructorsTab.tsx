@@ -2,27 +2,22 @@ import { IoPersonAddOutline, IoSearchOutline } from "react-icons/io5";
 import { ClassInfo, Instructor } from "../types/types";
 import { useEffect, useRef, useState } from "react";
 import { FiTrash2 } from "react-icons/fi";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   addSubjectsToClass,
+  getUserInfo,
   getUsersByUsername,
   giveSubjectToInstructor,
   inviteInstructors,
 } from "../lib/api";
 import Spinner from "./Spinner";
 
-interface CurrentUser {
-  username: string;
-}
-
 const InstructorsTab = ({
   classInfo,
-  currentUser,
   classId,
   handleRefresh,
 }: {
   classInfo: ClassInfo | null;
-  currentUser: CurrentUser | null;
   classId: string | undefined;
   handleRefresh: () => void;
 }) => {
@@ -37,6 +32,21 @@ const InstructorsTab = ({
   const [searchInstructorTerm, setSearchInstructorTerm] = useState("");
 
   const searchTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  // Get username
+  const [currentUser, setCurrentUser] = useState<{
+    username: string;
+  } | null>(null);
+  const { data: userInfo } = useQuery({
+    queryKey: ["userInfo"],
+    queryFn: getUserInfo,
+    enabled: !!classId,
+  });
+  useEffect(() => {
+    if (userInfo) {
+      setCurrentUser(userInfo?.data ?? null);
+    }
+  }, [userInfo]);
 
   const { mutate: inviteInstructorsMutation } = useMutation({
     mutationFn: async (instructors: { username: string; id: string }[]) => {
@@ -288,7 +298,7 @@ const InstructorsTab = ({
         )}
       </div>
       <div className="overflow-hidden rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
-        <div className="max-h-76 overflow-y-auto">
+        <div className="max-h-102 overflow-y-auto">
           <table className="min-w-full text-sm text-left text-gray-600 dark:text-gray-300">
             <thead className="bg-gray-100 dark:bg-gray-800 text-xs uppercase tracking-wider sticky top-0 z-10">
               <tr>

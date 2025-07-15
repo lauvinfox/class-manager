@@ -83,6 +83,18 @@ export const createAssignment = async ({
   return assignmentDocs;
 };
 
+export const removeStudentFromAssignment = async (
+  classId: string,
+  id: string
+) => {
+  const assignmentDocs = await AssignmentModel.updateMany(
+    { classId },
+    { $pull: { grades: { studentId: id } } }
+  );
+
+  return assignmentDocs;
+};
+
 export const getAssignmentsByClassId = async (classId: string) => {
   const assignmentsDocs = await AssignmentModel.find({ classId }).lean();
   appAssert(assignmentsDocs, NOT_FOUND, "Assignments not found!");
@@ -398,4 +410,155 @@ export const deleteAssignmentById = async (
   await ClassService.removeAssignmentFromClass(classId, assignmentId);
 
   return result;
+};
+
+export const getAssignmentsScoreSummaryBySubject = async (
+  classId: string,
+  subject: string
+) => {
+  // Ambil semua assignment untuk classId dan subject
+  const assignments = await AssignmentModel.find({ classId, subject })
+    .populate("grades.studentId", "name")
+    .lean();
+
+  // Map: subject -> studentName -> assignmentType -> array of assignments
+  const subjectMap: Record<
+    string,
+    Record<
+      string,
+      Record<
+        string,
+        Array<{ assignmentId: string; score: number | null; notes: string }>
+      >
+    >
+  > = {};
+
+  for (const assignment of assignments) {
+    const assignmentType = assignment.assignmentType;
+    const assignmentId = assignment._id?.toString();
+    for (const grade of assignment.grades || []) {
+      const studentName =
+        typeof grade.studentId === "object" && "name" in grade.studentId
+          ? (grade.studentId as { name: string }).name
+          : "Unknown";
+      if (!subjectMap[subject]) {
+        subjectMap[subject] = {};
+      }
+      if (!subjectMap[subject][studentName]) {
+        subjectMap[subject][studentName] = {
+          homework: [],
+          quiz: [],
+          exam: [],
+          project: [],
+          finalExam: [],
+        };
+      }
+      if (!subjectMap[subject][studentName][assignmentType]) {
+        subjectMap[subject][studentName][assignmentType] = [];
+      }
+      subjectMap[subject][studentName][assignmentType].push({
+        assignmentId,
+        score: grade.score ?? null,
+        notes: grade.notes ?? "",
+      });
+    }
+  }
+
+  return subjectMap;
+};
+
+export const getAssignmentsScoreSummaryBySubjects = async (
+  classId: string,
+  subjects: string[]
+) => {
+  // Ambil semua assignment untuk classId dan subjects
+  const assignments = await AssignmentModel.find({
+    classId,
+    subject: { $in: subjects },
+  })
+    .populate("grades.studentId", "name")
+    .lean();
+
+  // Kelompokkan assignment berdasarkan subject
+  const grouped = subjects.map((subject) => {
+    const subjectAssignments = assignments.filter(
+      (a: any) => a.subject === subject
+    );
+    return {
+      subject,
+      totalAssignments: subjectAssignments.length,
+      assignmentsSummary: subjectAssignments.map((assignment: any) => ({
+        assignmentId: assignment._id,
+        assignmentType: assignment.assignmentType,
+        scores: (assignment.grades || []).map((g: any) => ({
+          [g.studentId?.name || "Unknown"]: {
+            score: g.score ?? null,
+            notes: g.notes ?? "",
+          },
+        })),
+      })),
+    };
+  });
+
+  return grouped;
+};
+
+export const getAssignmentSummaryStudentBased = async (
+  classId: string,
+  subjects: string[]
+) => {
+  // Ambil semua assignment untuk classId dan subjects
+  const assignments = await AssignmentModel.find({
+    classId,
+    subject: { $in: subjects },
+  })
+    .populate("grades.studentId", "name")
+    .lean();
+
+  // Map: subject -> studentName -> assignmentType -> array of assignments
+  const subjectMap: Record<
+    string,
+    Record<
+      string,
+      Record<
+        string,
+        Array<{ assignmentId: string; score: number | null; notes: string }>
+      >
+    >
+  > = {};
+
+  for (const assignment of assignments) {
+    const subject = assignment.subject;
+    const assignmentType = assignment.assignmentType;
+    const assignmentId = assignment._id?.toString();
+    for (const grade of assignment.grades || []) {
+      const studentName =
+        typeof grade.studentId === "object" && "name" in grade.studentId
+          ? (grade.studentId as { name: string }).name
+          : "Unknown";
+      if (!subjectMap[subject]) {
+        subjectMap[subject] = {};
+      }
+      if (!subjectMap[subject][studentName]) {
+        subjectMap[subject][studentName] = {
+          homework: [],
+          quiz: [],
+          exam: [],
+          project: [],
+          finalExam: [],
+        };
+      }
+      if (!subjectMap[subject][studentName][assignmentType]) {
+        subjectMap[subject][studentName][assignmentType] = [];
+      }
+      subjectMap[subject][studentName][assignmentType].push({
+        assignmentId,
+        score: grade.score ?? null,
+        notes: grade.notes ?? "",
+      });
+    }
+  }
+
+  // Format output: object per subject
+  return subjectMap;
 };

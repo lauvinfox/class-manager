@@ -4,6 +4,7 @@ import * as AssignmentService from "@services/assignment.service";
 import { CREATED, UNAUTHORIZED, OK, NOT_FOUND } from "@constants/statusCodes";
 import appAssert from "@utils/appAssert";
 import { RequestHandler } from "express";
+import app from "app";
 
 export const createAssignmentByClassId = catchError(async (req, res) => {
   const userId = req.userId as string;
@@ -180,3 +181,73 @@ export const deleteAssignmentById: RequestHandler = catchError(
     });
   }
 );
+
+export const getAssignmentsSummaryBySubject: RequestHandler = catchError(
+  async (req, res) => {
+    const userId = req.userId as string;
+    const { classId } = req.params;
+
+    const isInstructor = await ClassService.checkInstructor(classId, userId);
+    appAssert(isInstructor, NOT_FOUND, "Instructors Not Found");
+
+    const subject = (await ClassService.getSubjectByClassUserId(
+      userId,
+      classId
+    )) as string;
+
+    const assignmentsSummary =
+      await AssignmentService.getAssignmentsScoreSummaryBySubject(
+        classId,
+        subject
+      );
+
+    return res.status(OK).json({
+      message: "Data retrieved successfully!",
+      data: assignmentsSummary,
+    });
+  }
+);
+
+export const getAssignmentsSummaryBySubjects: RequestHandler = catchError(
+  async (req, res) => {
+    const userId = req.userId as string;
+    const { classId } = req.params;
+
+    const isOwner = await ClassService.checkClassOwner(classId, userId);
+    const isInstructor = await ClassService.checkInstructor(classId, userId);
+    appAssert(isInstructor || isOwner, NOT_FOUND, "Instructors Not Found");
+
+    const subjects = await ClassService.getClassSubjects(classId);
+
+    const assignmentsSummary =
+      await AssignmentService.getAssignmentSummaryStudentBased(
+        classId,
+        subjects
+      );
+
+    return res.status(OK).json({
+      message: "Data retrieved successfully!",
+      data: assignmentsSummary,
+    });
+  }
+);
+
+// export const getAssignmentsSummaryBasedOnStudent: RequestHandler = catchError(
+//   async (req, res) => {
+//     const userId = req.userId as string;
+//     const { classId } = req.params;
+
+//     const isInstructor = await ClassService.checkClassOwner(classId, userId);
+//     appAssert(isInstructor, NOT_FOUND, "Instructors Not Found");
+
+//     const assignmentsSummary =
+//       await AssignmentService.getAssignmentSummaryStudentBased(
+//         classId,
+
+//       );
+
+//     return res.status(OK).json({
+//       message: "Data retrieved successfully!",
+//       data: assignmentsSummary,
+//     });
+//   }

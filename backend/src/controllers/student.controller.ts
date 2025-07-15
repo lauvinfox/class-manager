@@ -1,8 +1,10 @@
 import { RequestHandler } from "express";
 import appAssert from "@utils/appAssert";
-import { BAD_REQUEST } from "@constants/statusCodes";
+import { BAD_REQUEST, UNAUTHORIZED } from "@constants/statusCodes";
 import catchError from "@utils/error";
+
 import * as StudentService from "@services/student.service";
+import * as ClassService from "@services/class.service";
 import * as csv from "csv-parse";
 
 export const getStudentsClass: RequestHandler = catchError(async (req, res) => {
@@ -50,15 +52,18 @@ export const updateStudent: RequestHandler = catchError(async (req, res) => {
 });
 
 export const deleteStudent: RequestHandler = catchError(async (req, res) => {
-  const { id } = req.params;
+  const userId = req.userId as string;
+  const { classId } = req.params;
+  const { id } = req.body;
 
-  const deletedStudent = await StudentService.deleteStudentById(id);
-  if (!deletedStudent) {
-    return res.status(404).json({ message: "Student not found" });
-  }
+  const isOwner = await ClassService.checkClassOwner(classId, userId);
+  appAssert(isOwner, BAD_REQUEST, "You are not the owner of this class");
+
+  const result = await StudentService.deleteStudentById(classId, id);
+
   return res.status(200).json({
     message: "Student deleted successfully",
-    data: deletedStudent,
+    data: result,
   });
 });
 

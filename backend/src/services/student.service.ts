@@ -82,6 +82,11 @@ export const getStudentsByClassId = async (classId: string) => {
   );
 };
 
+export const getStudentsIdsByClassId = async (classId: string) => {
+  const students = await StudentModel.find({ classId }).select("studentId");
+  return students.map((student) => student.studentId);
+};
+
 export const getStudentById = async (id: string) => {
   return await StudentModel.findById(id);
 };
@@ -97,8 +102,12 @@ export const updateStudentById = async (
   return await StudentModel.findByIdAndUpdate(id, data, { new: true });
 };
 
-export const deleteStudentById = async (id: string) => {
-  return await StudentModel.findByIdAndDelete({ id });
+export const deleteStudentById = async (classId: string, id: string) => {
+  await ClassService.removeStudentFromClass(classId, id);
+  await AssignmentService.removeStudentFromAssignment(classId, id);
+  await JournalService.removeStudentFromJournal(classId, id);
+
+  return await StudentModel.findByIdAndDelete(id);
 };
 
 // Assignment

@@ -14,6 +14,7 @@ import { MdSort } from "react-icons/md";
 import { Assignment, ClassInfo } from "../types/types";
 import Spinner from "./Spinner";
 import { FaSortAlphaUp, FaSortAlphaDownAlt } from "react-icons/fa";
+import queryClient from "../config/queryClient";
 
 interface Grade {
   studentId: {
@@ -100,6 +101,11 @@ const AssignmentsTab = ({
     }) => {
       const res = await createAssignmentByClassId(classId, assignment);
       return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["assignmentsClass"],
+      });
     },
   });
 
@@ -199,6 +205,11 @@ const AssignmentsTab = ({
       if (!classId) throw new Error("Class ID is required");
       const res = await deleteAssignmentById(classId, assignmentId);
       return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["assignmentsClass"],
+      });
     },
   });
 

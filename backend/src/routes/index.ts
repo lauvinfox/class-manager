@@ -19,7 +19,7 @@ router.use("/auth", AuthRouter);
 router.use("/api/v1/users", authenticate, UserRouter);
 
 // Student API
-router.use("/api/v1/students", StudentRouter);
+router.use("/api/v1/students", authenticate, StudentRouter);
 
 // Student API
 router.use("/api/v1/notifications", NotificationRouter);

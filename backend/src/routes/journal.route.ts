@@ -19,4 +19,22 @@ router.get("/:classId", JournalController.getJournalByClassId);
 // Get journals by subject and class
 router.get("/:classId/subject", JournalController.getJournalsBySubject);
 
+// Get attendance summary for a class
+router.get(
+  "/:classId/attendance-summary",
+  JournalController.getAttendanceSummary
+);
+
+// Get attendance summary by subjects
+router.get(
+  "/:classId/attendance-summary/subjects",
+  JournalController.getAttendanceSummaryBySubjects
+);
+
+// Get attendance summary by subject
+router.get(
+  "/:classId/attendance-summary/subject",
+  JournalController.getAttendanceSummaryBySubject
+);
+
 export default router;
