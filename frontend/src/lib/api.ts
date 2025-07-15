@@ -429,3 +429,14 @@ export const giveAttendancesAndNotes = async ({
     journals,
   });
 };
+
+export const getFullStudentReport = async (
+  classId: string,
+  studentId: string,
+  note: string
+) => {
+  return await API.post(
+    `/api/v1/class/${classId}/student-report/${studentId}`,
+    { note }
+  );
+};

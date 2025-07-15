@@ -45,4 +45,9 @@ router.get(
   AssignmentController.getAssignmentsSummaryBySubjects
 );
 
+router.get(
+  "/:classId/get-assignments-by-student/:studentId",
+  AssignmentController.getGradeByStudentId
+);
+
 export default router;

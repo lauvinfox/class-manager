@@ -232,6 +232,23 @@ export const getAssignmentsSummaryBySubjects: RequestHandler = catchError(
   }
 );
 
+export const getGradeByStudentId: RequestHandler = catchError(
+  async (req, res) => {
+    const userId = req.userId as string;
+    const { classId, studentId } = req.params;
+
+    const grades = await AssignmentService.getScoresAndWeightsByStudentId(
+      classId,
+      studentId
+    );
+
+    return res.status(OK).json({
+      message: "Data retrieved successfully!",
+      data: grades,
+    });
+  }
+);
+
 // export const getAssignmentsSummaryBasedOnStudent: RequestHandler = catchError(
 //   async (req, res) => {
 //     const userId = req.userId as string;

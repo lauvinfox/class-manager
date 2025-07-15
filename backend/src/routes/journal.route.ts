@@ -37,4 +37,10 @@ router.get(
   JournalController.getAttendanceSummaryBySubject
 );
 
+// Get attendance summary by student
+router.get(
+  "/:classId/attendance-summary/:studentId",
+  JournalController.getStudentAttendanceReport
+);
+
 export default router;

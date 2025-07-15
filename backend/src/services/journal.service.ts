@@ -337,3 +337,52 @@ export const removeStudentFromJournal = async (classId: string, id: string) => {
 
   return journalsDocs;
 };
+
+export const getAttendanceByStudentId = async (
+  classId: string,
+  studentId: string
+) => {
+  // Fetch all journals for the class and student
+  const journalsDocs = await JournalModel.find({
+    classId,
+    "journals.studentId": studentId,
+  })
+    .select("subject journals")
+    .lean();
+
+  // Group attendance by subject
+  const subjectMap: Record<string, Record<string, number>> = {};
+  for (const journal of journalsDocs) {
+    const subject = journal.subject;
+    if (!subjectMap[subject]) {
+      subjectMap[subject] = {
+        present: 0,
+        absent: 0,
+        late: 0,
+        sick: 0,
+        excused: 0,
+        pending: 0,
+      };
+    }
+    for (const entry of journal.journals || []) {
+      const entryStudentId =
+        entry.studentId?._id?.toString?.() ||
+        entry.studentId?.toString?.() ||
+        String(entry.studentId);
+      if (
+        entryStudentId === studentId &&
+        subjectMap[subject][entry.status] !== undefined
+      ) {
+        subjectMap[subject][entry.status]++;
+      }
+    }
+  }
+
+  // Build result array
+  const result = Object.entries(subjectMap).map(([subject, attendance]) => ({
+    subject,
+    attendance,
+  }));
+
+  return result;
+};

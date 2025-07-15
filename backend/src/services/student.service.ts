@@ -139,6 +139,17 @@ export const deleteAllStudentsByClassId = async (classId: string) => {
   return result;
 };
 
+export const getStudentNameAndId = async (studentId: string) => {
+  const student = await StudentModel.findById(studentId)
+    .select("name studentId")
+    .lean();
+
+  return {
+    name: student?.name || "",
+    studentId: student?.studentId || "",
+  };
+};
+
 export const studentReport = async (classId: string, studentId: string) => {
   // Get student info
   const student = await StudentModel.findById(studentId).lean();

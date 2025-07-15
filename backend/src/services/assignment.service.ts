@@ -117,6 +117,184 @@ type AssignmentsBySubject = {
   }[];
 };
 
+export const getClassAssignmentGradesByStudentId = async (
+  classId: string,
+  studentId: string
+) => {
+  // Find all assignments for the class that include this student
+  const assignments = await AssignmentModel.find({
+    classId,
+    "grades.studentId": studentId,
+  })
+    .select("_id assignmentType grades subject")
+    .populate("grades.studentId", "name")
+    .lean();
+
+  // Find student name from one of the assignments
+  let studentName = "";
+  for (const assignment of assignments) {
+    const grade = assignment.grades.find(
+      (g: any) =>
+        (g.studentId?._id?.toString?.() || g.studentId?.toString?.()) ===
+        studentId
+    );
+    if (
+      grade &&
+      grade.studentId &&
+      typeof grade.studentId === "object" &&
+      "name" in grade.studentId
+    ) {
+      studentName = (grade.studentId as { name: string }).name;
+      break;
+    }
+  }
+
+  // Build grades array with subject
+  const grades = [];
+  for (const assignment of assignments) {
+    const grade = assignment.grades.find(
+      (g: any) =>
+        (g.studentId?._id?.toString?.() || g.studentId?.toString?.()) ===
+        studentId
+    );
+    if (grade) {
+      grades.push({
+        assignmentId: assignment._id?.toString(),
+        assignmentType: assignment.assignmentType,
+        score: grade.score ?? 0,
+        subject: assignment.subject ?? "",
+      });
+    }
+  }
+
+  return {
+    id: studentId,
+    name: studentName,
+    grades,
+  };
+};
+
+export const getScoresAndWeightsByStudentId = async (
+  classId: string,
+  studentId: string
+): Promise<{
+  studentId: string;
+  name: string;
+  grades: {
+    subject: string;
+    scores: {
+      homework: number[];
+      quiz: number[];
+      exam: number[];
+      project: number[];
+      finalExam: number[];
+    };
+    weights: {
+      homework: number;
+      quiz: number;
+      exam: number;
+      project: number;
+      finalExam: number;
+    };
+  }[];
+}> => {
+  // Fetch all assignments for the class that include this student
+  const assignments = await AssignmentModel.find({
+    classId,
+    "grades.studentId": studentId,
+  })
+    .select("subject assignmentType grades")
+    .populate("grades.studentId", "name")
+    .lean();
+
+  // Find student name from one of the assignments
+  let studentName = "";
+  for (const assignment of assignments) {
+    const grade = assignment.grades.find(
+      (g: any) =>
+        (g.studentId?._id?.toString?.() || g.studentId?.toString?.()) ===
+        studentId
+    );
+    if (
+      grade &&
+      grade.studentId &&
+      typeof grade.studentId === "object" &&
+      "name" in grade.studentId
+    ) {
+      studentName = (grade.studentId as { name: string }).name;
+      break;
+    }
+  }
+
+  // Group assignments by subject
+  const subjectMap: Record<string, any> = {};
+  for (const assignment of assignments) {
+    const subject = assignment.subject;
+    if (!subjectMap[subject]) {
+      subjectMap[subject] = {
+        scores: {
+          homework: [],
+          quiz: [],
+          exam: [],
+          project: [],
+          finalExam: [],
+        },
+        weights: {},
+      };
+    }
+    // Find student's score for this assignment
+    const grade = assignment.grades.find(
+      (g: any) =>
+        (g.studentId?._id?.toString?.() || g.studentId?.toString?.()) ===
+        studentId
+    );
+    if (grade) {
+      const type = assignment.assignmentType;
+      if (subjectMap[subject].scores[type]) {
+        subjectMap[subject].scores[type].push(grade.score ?? 0);
+      }
+    }
+  }
+
+  // Fetch weights for each subject from ClassService
+  // Assume ClassService.getClassWeights returns [{ subject, weights: { homework, quiz, exam, project, finalExam } }]
+  let classWeights: Array<{
+    subject: string;
+    weights: Record<string, number>;
+  }> = [];
+  if (typeof ClassService.getClassWeights === "function") {
+    classWeights = await ClassService.getClassWeights(classId);
+  }
+  for (const subject in subjectMap) {
+    const found = classWeights.find((cw) => cw.subject === subject);
+    if (found) {
+      subjectMap[subject].weights = found.weights;
+    } else {
+      // Default weights if not found
+      subjectMap[subject].weights = {
+        homework: 0,
+        quiz: 0,
+        exam: 0,
+        project: 0,
+        finalExam: 0,
+      };
+    }
+  }
+
+  // Build grades array
+  const grades = Object.entries(subjectMap).map(([subject, data]) => ({
+    subject,
+    scores: data.scores,
+    weights: data.weights,
+  }));
+
+  return {
+    studentId,
+    name: studentName,
+    grades,
+  };
+};
+
 export const getAssignmentByClassAndStudent = async (
   classId: string,
   studentId: string

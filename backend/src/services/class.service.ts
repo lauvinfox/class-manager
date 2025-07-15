@@ -14,6 +14,7 @@ import * as NotificationService from "@services/notification.service";
 import * as UserService from "@services/user.service";
 import * as StudentService from "@services/student.service";
 import * as AssignmentService from "@services/assignment.service";
+import * as JournalService from "@services/journal.service";
 
 /**
  * Get all classes
@@ -547,14 +548,31 @@ export const updateClassWeights = async (
  * @param classId - Class ID
  * @returns Array of class weights
  */
-export const getClassWeights = async (classId: string) => {
+export const getClassWeights = async (
+  classId: string
+): Promise<
+  {
+    subject: string;
+    weights: Record<string, number>;
+  }[]
+> => {
   const classDoc = await ClassModel.findOne({ classId }, { weights: 1 })
-    .populate("weights.userId", "name username email")
     .lean()
     .exec();
   appAssert(classDoc, NOT_FOUND, "Class not found");
 
-  return classDoc.weights || [];
+  // Map to desired structure
+  const weightsArr = (classDoc.weights || []).map((w: any) => ({
+    subject: w.subject,
+    weights: w.assignmentWeight || {
+      homework: 0,
+      quiz: 0,
+      exam: 0,
+      project: 0,
+      finalExam: 0,
+    },
+  }));
+  return weightsArr;
 };
 
 /**
@@ -679,3 +697,237 @@ export const getStatisticsByClass = async (classId: string) => {
 
 //   return statusCount;
 // };
+
+export const getFinalScore = async (classId: string, studentId: string) => {
+  const scoresObj = await AssignmentService.getScoresAndWeightsByStudentId(
+    classId,
+    studentId
+  );
+
+  const finalScores: Record<string, number>[] = [];
+
+  for (const grade of scoresObj.grades) {
+    const subjectScores = grade.scores;
+    const subjectWeights = grade.weights;
+
+    const homeworkScore =
+      subjectScores.homework.length > 0
+        ? ((subjectScores.homework.reduce((a, b) => a + b, 0) /
+            subjectScores.homework.length) *
+            subjectWeights.homework) /
+          100
+        : 0;
+    const quizScore =
+      subjectScores.quiz.length > 0
+        ? ((subjectScores.quiz.reduce((a, b) => a + b, 0) /
+            subjectScores.quiz.length) *
+            subjectWeights.quiz) /
+          100
+        : 0;
+    const examScore =
+      subjectScores.exam.length > 0
+        ? ((subjectScores.exam.reduce((a, b) => a + b, 0) /
+            subjectScores.exam.length) *
+            subjectWeights.exam) /
+          100
+        : 0;
+    const projectScore =
+      subjectScores.project.length > 0
+        ? ((subjectScores.project.reduce((a, b) => a + b, 0) /
+            subjectScores.project.length) *
+            subjectWeights.project) /
+          100
+        : 0;
+    const finalExamScore =
+      subjectScores.finalExam.length > 0
+        ? ((subjectScores.finalExam.reduce((a, b) => a + b, 0) /
+            subjectScores.finalExam.length) *
+            subjectWeights.finalExam) /
+          100
+        : 0;
+
+    const subjectFinalScore =
+      homeworkScore + quizScore + examScore + projectScore + finalExamScore;
+
+    finalScores.push({ [grade.subject]: subjectFinalScore });
+  }
+
+  return finalScores;
+};
+
+export const getAverageScorePerSubject = async (
+  classId: string,
+  studentId: string
+): Promise<
+  Record<
+    string,
+    {
+      homework: number;
+      quiz: number;
+      exam: number;
+      project: number;
+      finalExam: number;
+    }
+  >[]
+> => {
+  const scoresObj = await AssignmentService.getScoresAndWeightsByStudentId(
+    classId,
+    studentId
+  );
+
+  const subjectAvgScores: Record<
+    string,
+    {
+      homework: number;
+      quiz: number;
+      exam: number;
+      project: number;
+      finalExam: number;
+    }
+  >[] = [];
+
+  for (const grade of scoresObj.grades) {
+    const scores = grade.scores;
+
+    const homeworkAvg =
+      scores.homework.length > 0
+        ? scores.homework.reduce((a, b) => a + b, 0) / scores.homework.length
+        : 0;
+    const quizAvg =
+      scores.quiz.length > 0
+        ? scores.quiz.reduce((a, b) => a + b, 0) / scores.quiz.length
+        : 0;
+    const examAvg =
+      scores.exam.length > 0
+        ? scores.exam.reduce((a, b) => a + b, 0) / scores.exam.length
+        : 0;
+    const projectAvg =
+      scores.project.length > 0
+        ? scores.project.reduce((a, b) => a + b, 0) / scores.project.length
+        : 0;
+    const finalExamAvg =
+      scores.finalExam.length > 0
+        ? scores.finalExam.reduce((a, b) => a + b, 0) / scores.finalExam.length
+        : 0;
+
+    const avgScores = {
+      homework: homeworkAvg,
+      quiz: quizAvg,
+      exam: examAvg,
+      project: projectAvg,
+      finalExam: finalExamAvg,
+    };
+
+    subjectAvgScores.push({ [grade.subject]: avgScores });
+  }
+
+  return subjectAvgScores;
+};
+
+export const createStudentReport = async (
+  classId: string,
+  studentId: string,
+  note: string = ""
+) => {
+  // Get class info and student info
+  const classDoc = await ClassModel.findOne({ classId })
+    .populate("classOwner", "name")
+    .populate("students", "name studentId")
+    .lean();
+
+  // Find student in class
+  const student = await StudentService.getStudentNameAndId(studentId);
+
+  const studentName = student?.name || "";
+  const studentIdValue = student?.studentId || "";
+
+  const className = classDoc?.name || "";
+  const homeroom =
+    typeof classDoc?.classOwner === "object" &&
+    "name" in (classDoc.classOwner || {})
+      ? (classDoc.classOwner as { name?: string }).name || ""
+      : "";
+
+  // Get attendances per subject
+  const attendancesRaw = await JournalService.getAttendanceByStudentId(
+    classId,
+    studentId
+  );
+
+  // Get weights, grades, and scores
+  const weights = await getClassWeights(classId);
+  const finalScores = await getFinalScore(classId, studentId);
+  const averageScores = await getAverageScorePerSubject(classId, studentId);
+
+  // Gabungkan finalScores dan averageScores ke dalam satu array dengan struktur yang diinginkan
+  const grades = weights.map((w, idx) => {
+    const subject = w.subject;
+    const avgScoreObj = averageScores[idx]?.[subject] || {
+      homework: 0,
+      quiz: 0,
+      exam: 0,
+      project: 0,
+      finalExam: 0,
+    };
+    const finalScoreObj = finalScores[idx]?.[subject] ?? 0;
+
+    return {
+      subject,
+      homework: avgScoreObj.homework,
+      quiz: avgScoreObj.quiz,
+      exam: avgScoreObj.exam,
+      project: avgScoreObj.project,
+      finalExam: avgScoreObj.finalExam,
+      finalScore: finalScoreObj,
+    };
+  });
+
+  // Attendances per subject
+  const attendances = weights.map((w) => {
+    // Find attendance for subject, fallback to default
+    const att = Array.isArray(attendancesRaw)
+      ? attendancesRaw.find((a: any) => a.subject === w.subject)
+      : undefined;
+    return {
+      subject: w.subject,
+      attendance: att?.attendance || {
+        present: 0,
+        absent: 0,
+        late: 0,
+        sick: 0,
+        excused: 0,
+        pending: 0,
+      },
+    };
+  });
+
+  // Weights per subject
+  const weightsArr = weights.map((w) => ({
+    subject: w.subject,
+    weight: w.weights,
+  }));
+
+  // Average score (rata-rata finalScore semua subject)
+  const averageScore =
+    grades.length > 0
+      ? Math.round(
+          (grades.reduce((sum, g) => sum + (g.finalScore || 0), 0) /
+            grades.length) *
+            100
+        ) / 100
+      : 0;
+
+  // Build report object
+  return {
+    [studentName]: {
+      studentId: studentIdValue,
+      className,
+      homeroom,
+      grades,
+      attendances,
+      weights: weightsArr,
+      averageScore,
+      note,
+    },
+  };
+};

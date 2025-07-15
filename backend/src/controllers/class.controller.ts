@@ -323,3 +323,19 @@ export const getSubject: RequestHandler = catchError(async (req, res) => {
     data: subject,
   });
 });
+
+export const getStudentReport: RequestHandler = catchError(async (req, res) => {
+  const { classId, studentId } = req.params;
+  const { note } = req.body;
+
+  const report = await ClassService.createStudentReport(
+    classId,
+    studentId,
+    note
+  );
+
+  return res.json({
+    message: "Student report retrieved successfully",
+    data: report,
+  });
+});

@@ -180,3 +180,23 @@ export const getAttendanceSummaryBySubjects: RequestHandler = catchError(
     });
   }
 );
+
+export const getStudentAttendanceReport: RequestHandler = catchError(
+  async (req, res) => {
+    const userId = req.userId as string;
+    const { classId, studentId } = req.params;
+
+    const isOwner = await ClassService.checkClassOwner(classId, userId);
+    appAssert(isOwner, UNAUTHORIZED, "You are not the owner of this class");
+
+    const report = await JournalService.getAttendanceByStudentId(
+      classId,
+      studentId
+    );
+
+    return res.status(200).json({
+      message: "Student attendance report retrieved successfully",
+      data: report,
+    });
+  }
+);
