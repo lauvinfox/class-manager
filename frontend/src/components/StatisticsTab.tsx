@@ -73,21 +73,21 @@ const studentData = {
       {
         subject: "IPA",
         weight: {
-          homework: 50,
-          quiz: 80,
-          exam: 90,
-          project: 0,
-          finalExam: 80,
+          homework: 20,
+          quiz: 10,
+          exam: 20,
+          project: 20,
+          finalExam: 30,
         },
       },
       {
         subject: "Matematika",
         weight: {
-          homework: 50,
-          quiz: 80,
-          exam: 90,
-          project: 0,
-          finalExam: 80,
+          homework: 20,
+          quiz: 10,
+          exam: 20,
+          project: 20,
+          finalExam: 30,
         },
       },
     ],
@@ -205,6 +205,18 @@ const StatisticsTab = ({
 
         {classInfo?.role == "owner" && (
           <div className="flex gap-2">
+            <button
+              onClick={() => {
+                const rows = studentDataToPDFRows(studentData);
+                generatePDF({
+                  title: "Student Report",
+                  rows,
+                  data: studentData,
+                });
+              }}
+            >
+              <span className="text-sm text-gray-700 dark:text-white bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200 font-semibold px-4 py-2 rounded-lg shadow"></span>
+            </button>
             <button
               onClick={() => {
                 const rows = studentDataToPDFRows(studentData);

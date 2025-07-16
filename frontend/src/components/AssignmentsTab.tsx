@@ -1,7 +1,9 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   createAssignmentByClassId,
+  createAssistance,
   deleteAssignmentById,
+  getAssignmentAdvice,
   getAssignmentById,
   getAssignmentsByClass,
   getSubjectByClassId,
@@ -55,6 +57,39 @@ const AssignmentsTab = ({
     queryFn: async () => {
       const res = await getAssignmentsByClass(classId as string);
       return res.data;
+    },
+  });
+
+  // OpenAI
+  const {
+    mutate: studentAssignmentAdvice,
+    isPending: assignmentAdvicePending,
+  } = useMutation({
+    mutationFn: async ({
+      studentName,
+      studentScore,
+      averageScore,
+      description,
+      note,
+    }: {
+      studentName: string;
+      studentScore: number;
+      averageScore: number;
+      description: string;
+      note?: string;
+    }) => {
+      const res = await getAssignmentAdvice(
+        studentName,
+        studentScore,
+        averageScore,
+        description,
+        note
+      );
+      return res.data;
+    },
+    onSuccess: (data) => {
+      setAssignmentAdviceText(data);
+      setShowAssistanceModal(true);
     },
   });
 
@@ -214,6 +249,60 @@ const AssignmentsTab = ({
   });
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  // Show assistance modal
+  const [showAssistanceModal, setShowAssistanceModal] = useState(false);
+  const [assignmentAdviceText, setAssignmentAdviceText] = useState("");
+
+  const handleCreateStudentAssistance = async ({
+    e,
+    classId,
+    subject,
+    studentName,
+    assignmentId,
+    assignmentName,
+    assignmentDescription,
+    assistantResponse,
+  }: {
+    e: React.FormEvent;
+    classId: string;
+    subject: string;
+    studentName: string;
+    assignmentId: string;
+    assignmentName: string;
+    assignmentDescription: string;
+    assistantResponse: string;
+  }) => {
+    e.preventDefault();
+    try {
+      await createAssistance({
+        studentName,
+        classId,
+        subject,
+        assignmentId,
+        assignmentName,
+        assignmentDescription,
+        assistantResponse,
+      });
+      console.log("Assistance:", {
+        studentName,
+        classId,
+        subject,
+        assignmentId,
+        assignmentName,
+        assignmentDescription,
+        assistantResponse,
+      });
+      alert("Assistance created successfully!");
+      setShowAssistanceModal(false);
+    } catch (error) {
+      console.error("Error creating student assistance:", error);
+    }
+  };
+
+  const [selectedStudentForAssistance, setSelectedStudentForAssistance] =
+    useState<Grade | null>(null);
+
   return (
     <div className="max-w-full overflow-x-auto py-4 px-4">
       <div className="flex justify-end mb-4 gap-2">
@@ -565,7 +654,7 @@ const AssignmentsTab = ({
         </div>
       )}
       {showAssignmentModal && selectedAssignment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+        <div className="fixed inset-0 z-49 flex items-center justify-center bg-black/40">
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 w-[960px] h-[560px] relative">
             <button
               className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 dark:hover:text-white text-xl"
@@ -793,8 +882,9 @@ const AssignmentsTab = ({
                             )}
                           </span>
                         </th>
-                        <th className="px-6 py-4">Score</th>
-                        <th className="px-6 py-4">Notes</th>
+                        <th className="px-6 py-4 text-center">Action</th>
+                        <th className="px-6 py-4 text-center">Score</th>
+                        <th className="px-6 py-4 text-center">Notes</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -835,10 +925,107 @@ const AssignmentsTab = ({
                                     }
                                   ).name}
                               </td>
+                              <td className="px-6 py-4 text-center">
+                                <button
+                                  className="px-3 py-2 rounded bg-slate-500 text-white font-semibold hover:bg-slate-800"
+                                  onClick={() => {
+                                    setSelectedStudentForAssistance(grade);
+                                    // Hitung nilai rata-rata dari semua siswa
+                                    const scores =
+                                      selectedAssignment.grades.map(
+                                        (g) => g.score ?? 0
+                                      );
+                                    const averageScore =
+                                      scores.length > 0
+                                        ? scores.reduce((a, b) => a + b, 0) /
+                                          scores.length
+                                        : 0;
+                                    studentAssignmentAdvice({
+                                      studentName: grade.studentId.name,
+                                      studentScore: grade.score,
+                                      averageScore,
+                                      description:
+                                        selectedAssignment.description,
+                                      note: grade.notes,
+                                    });
+                                  }}
+                                >
+                                  Get Assistance
+                                </button>
+                                {showAssistanceModal && (
+                                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/2.5">
+                                    <div className="bg-white dark:bg-gray-900 rounded-lg p-6 w-[400px] relative ">
+                                      <button
+                                        className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 dark:hover:text-white text-xl"
+                                        onClick={() =>
+                                          setShowAssistanceModal(false)
+                                        }
+                                        aria-label="Close"
+                                      >
+                                        &times;
+                                      </button>
+                                      <h2 className="text-xl font-bold mb-4">
+                                        Create Assistance
+                                      </h2>
+                                      <form
+                                        className="flex flex-col gap-1.5"
+                                        onSubmit={(e) => {
+                                          handleCreateStudentAssistance({
+                                            e,
+                                            classId: classId as string,
+                                            subject: memberSubject,
+                                            studentName:
+                                              selectedStudentForAssistance
+                                                ?.studentId.name || "",
+                                            assignmentId:
+                                              selectedAssignment?._id || "",
+                                            assignmentName:
+                                              selectedAssignment?.title || "",
+                                            assignmentDescription:
+                                              selectedAssignment?.description ||
+                                              "",
+                                            assistantResponse:
+                                              assignmentAdviceText,
+                                          });
+                                        }}
+                                      >
+                                        <div>
+                                          <label
+                                            className="block text-sm text-left font-medium mb-1"
+                                            htmlFor="description"
+                                          >
+                                            Description
+                                          </label>
+                                          <textarea
+                                            id="description"
+                                            className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 w-full min-h-[250px] resize-none"
+                                            placeholder="Assignment Description"
+                                            value={assignmentAdviceText}
+                                            onChange={(e) =>
+                                              setAssignmentAdviceText(
+                                                e.target.value
+                                              )
+                                            }
+                                          />
+                                        </div>
+
+                                        <div className="flex justify-end gap-2 mt-4">
+                                          <button
+                                            type="submit"
+                                            className="px-4 py-2 rounded bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition"
+                                          >
+                                            Save
+                                          </button>
+                                        </div>
+                                      </form>
+                                    </div>
+                                  </div>
+                                )}
+                              </td>
                               <td className="px-6 py-4">
                                 <input
                                   type="number"
-                                  className="border border-transparent rounded px-2 py-1 w-20"
+                                  className="active:border-0 rounded px-2 py-1 w-15 translate-x-9"
                                   value={
                                     grade.score !== undefined ? grade.score : ""
                                   }
@@ -884,7 +1071,7 @@ const AssignmentsTab = ({
                               <td className="px-6 py-4">
                                 <input
                                   type="text"
-                                  className="rounded px-2 py-1 w-32"
+                                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                   value={grade.notes || ""}
                                   onChange={(e) => {
                                     // Update notes locally (you may want to handle API update here)
@@ -1028,6 +1215,14 @@ const AssignmentsTab = ({
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+      {/* Assignment Advice */}
+      {assignmentAdvicePending && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="flex items-center justify-center h-full w-full">
+            <Spinner />
           </div>
         </div>
       )}

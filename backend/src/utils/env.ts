@@ -9,4 +9,5 @@ export default cleanEnv(process.env, {
   RESEND_API_KEY: str(),
   APP_ORIGIN: str(),
   EMAIL_SENDER: str(),
+  OPENAI_API_KEY: str(),
 });

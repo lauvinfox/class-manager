@@ -12,6 +12,8 @@ export const ClassHeader = ({
     "Assignments",
     "Journals",
     "Subjects",
+    "Assistances",
+    "Learning Plans",
   ];
   return (
     <div className="sticky top-0 z-40 flex flex-col gap-1 justify-between bg-primary border-b border-slate-200 px-6 dark:bg-gray-900 dark:border-gray-800 min-w-0">

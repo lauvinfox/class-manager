@@ -172,7 +172,9 @@ export function generatePDF({
       },
     });
     // Get the Y position after the first table
-    nextY = (doc as any).lastAutoTable.finalY + 10;
+    nextY =
+      (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable
+        .finalY + 10;
   }
 
   // Split columns for finalScore and attendance
@@ -233,7 +235,9 @@ export function generatePDF({
         fillColor: [230, 240, 255],
       },
     });
-    nextY = (doc as any).lastAutoTable.finalY + 10;
+    nextY =
+      (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable
+        .finalY + 10;
   }
 
   // Table for attendance
@@ -259,14 +263,18 @@ export function generatePDF({
         fillColor: [230, 240, 255],
       },
     });
-    nextY = (doc as any).lastAutoTable.finalY + 10;
+    nextY =
+      (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable
+        .finalY + 10;
   }
 
   // Add a second table below with only the 'note' column (one per student)
   let lastY = 56;
   if (rows.length > 0) {
     // Find the last Y position after the previous table
-    lastY = (doc as any).lastAutoTable.finalY || 56;
+    lastY =
+      (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable
+        .finalY || 56;
     // Get unique notes per student
     const studentNotes: { name: string; note: string }[] = [];
     const seenNames = new Set<string>();
@@ -357,8 +365,19 @@ export function generatePDF({
     // Table 1: Weights (horizontal layout, per subject)
     // Move to page 2 for weights table
     doc.addPage();
+    // Add description text above the weights table (English, wrapped)
+    doc.setFontSize(12);
+    doc.setTextColor(40, 40, 40);
+    const weightsDescription =
+      "The table below shows the grading weights for each assignment type in every subject. These weights are used as the basis for calculating the final score.";
+    // Wrap text to fit within page width
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const marginLeft = 14;
+    const maxTextWidth = pageWidth - marginLeft * 2;
+    const lines = doc.splitTextToSize(weightsDescription, maxTextWidth);
+    doc.text(lines, marginLeft, 16);
     // Get weights array from studentObj
-    const weightsArr = (studentObj as any).weights as Array<{
+    const weightsArr = studentObj.weights as Array<{
       subject: string;
       weight: {
         homework: number;
@@ -378,7 +397,7 @@ export function generatePDF({
         w.weight.project ?? 0,
         w.weight.finalExam ?? 0,
       ]),
-      startY: 20,
+      startY: 24,
       margin: { left: 14 },
       tableWidth: "auto",
       theme: "grid",

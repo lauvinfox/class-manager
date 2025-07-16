@@ -7,6 +7,8 @@ import NotificationRouter from "@routes/notification.route";
 import ClassRouter from "@routes/class.route";
 import AssignmentRouter from "@routes/assignment.route";
 import JournalRouter from "@routes/journal.route";
+import OpenAIRouter from "@routes/openai.route";
+import AssistanceRouter from "@routes/assistance.route";
 
 import authenticate from "@middleware/authenticate";
 
@@ -30,5 +32,11 @@ router.use("/api/v1/assignments", authenticate, AssignmentRouter);
 
 // Journal API
 router.use("/api/v1/journals", authenticate, JournalRouter);
+
+// OPENAI API
+router.use("/api/v1/openai", OpenAIRouter);
+
+// Assistance API
+router.use("/api/v1/assistances", authenticate, AssistanceRouter);
 
 export default router;

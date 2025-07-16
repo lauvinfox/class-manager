@@ -459,3 +459,58 @@ export const getStudentReportByDateRange = async ({
     { startDate: startDate, endDate: endDate, note: note }
   );
 };
+
+// OpenAI
+export const getAssignmentAdvice = async (
+  studentName: string,
+  studentScore: number,
+  averageScore: number,
+  description: string,
+  note?: string
+) => {
+  return await API.post("/api/v1/openai/student-assignment-advice", {
+    studentName,
+    studentScore,
+    averageScore,
+    description,
+    note,
+  });
+};
+
+// Assistance
+export const createAssistance = async ({
+  studentName,
+  classId,
+  subject,
+  assignmentId,
+  assignmentName,
+  assignmentDescription,
+  assistantResponse,
+}: {
+  studentName: string;
+  classId: string;
+  subject: string;
+  assignmentId: string;
+  assignmentName: string;
+  assignmentDescription: string;
+  assistantResponse: string;
+}) => {
+  return await API.post(`/api/v1/assistances/${classId}/create`, {
+    studentName,
+    subject,
+    assignmentId,
+    assignmentName,
+    assignmentDescription,
+    assistantResponse,
+  });
+};
+export const getAssistanceByClassId = async (classId: string) => {
+  return await API.get(`/api/v1/assistances/${classId}`);
+};
+
+export const getAssistanceByClassAndSubject = async (
+  classId: string,
+  subject: string
+) => {
+  return await API.post(`/api/v1/assistances/${classId}/subject`, { subject });
+};
