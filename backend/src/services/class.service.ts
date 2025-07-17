@@ -306,7 +306,11 @@ export const inviteClassInstructor = async (
 
 export const getClassInstructors = async (classId: string) => {
   // Validasi classId
-  appAssert(Types.ObjectId.isValid(classId), BAD_REQUEST, "Invalid class ID");
+  appAssert(
+    typeof classId === "string" && classId.length > 0,
+    BAD_REQUEST,
+    "Invalid class ID"
+  );
   const classDoc = await ClassModel.findOne({ classId });
   appAssert(classDoc, NOT_FOUND, "Class not found");
   // Populate instructors with their user info
@@ -471,7 +475,7 @@ export const giveInstructorSubjects = async (
   subject: string
 ) => {
   // Update subject pada instructor tertentu di array instructors
-  const classDoc = await ClassModel.findOneAndUpdate(
+  await ClassModel.findOneAndUpdate(
     { classId, "instructors.instructorId": instructorId },
     {
       $set: { "instructors.$.subject": subject },
@@ -490,6 +494,7 @@ export const giveInstructorSubjects = async (
       },
     }
   );
+  const classDoc = await ClassModel.findOne({ classId }).lean();
 
   return classDoc;
 };
