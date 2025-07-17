@@ -158,7 +158,11 @@ export const respondInviteInstructor: RequestHandler = catchError(
       return res.status(400).json({ message: "Invalid response" });
     }
 
-    await ClassService.updateInstructorStatus(classId, userId, inviteResponse);
+    await ClassService.updateInstructorStatus({
+      classId,
+      instructorId: userId,
+      status: inviteResponse,
+    });
 
     // Tambahkan class ke user
     const updatedUser = await UserService.addClassToUser(userId, classId);

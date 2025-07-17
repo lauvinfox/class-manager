@@ -4,6 +4,7 @@ import { AuthProvider } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getUserNotifications, respondInviteInstructor } from "../lib/api";
+import { FaRegCheckCircle, FaRegTimesCircle } from "react-icons/fa";
 
 interface Notification {
   _id: string;
@@ -14,7 +15,7 @@ interface Notification {
   type: "invite" | "reminder" | "info" | "other";
   createdAt: string;
   updatedAt: string;
-  inviteResponse?: "accepted" | "denied" | "pending";
+  status: "accepted" | "denied" | "pending";
 }
 
 const Notifications = () => {
@@ -33,13 +34,13 @@ const Notifications = () => {
   const queryClient = useQueryClient();
   const { mutate: respondInvite } = useMutation({
     mutationFn: ({
-      classId,
+      notificationId,
       inviteResponse,
     }: {
-      classId: string;
+      notificationId: string;
       inviteResponse: string;
     }) => {
-      return respondInviteInstructor({ classId, inviteResponse });
+      return respondInviteInstructor({ notificationId, inviteResponse });
     },
     onSuccess: () => {
       // Refresh notifikasi setelah menerima atau menolak undangan
@@ -48,14 +49,13 @@ const Notifications = () => {
   });
 
   const handleAcceptInvite = (notif: Notification) => {
-    // Panggil API untuk menerima undangan
-    const classId = notif.classId as string;
-    respondInvite({ classId, inviteResponse: "accepted" });
+    const notificationId = notif._id;
+    respondInvite({ notificationId, inviteResponse: "accepted" });
   };
 
   const handleDenyInvite = (notif: Notification) => {
-    const classId = notif.classId as string;
-    respondInvite({ classId, inviteResponse: "denied" });
+    const notificationId = notif._id;
+    respondInvite({ notificationId, inviteResponse: "denied" });
   };
 
   return (
@@ -70,24 +70,26 @@ const Notifications = () => {
           <div className="flex-1">
             <Header title="Class Manager" fontSize="text-xl" />
             <NotificationsHeader />
-            <div className="flex flex-col h-[76%] w-full items-center justify-center">
+            <div className="flex flex-col h-[617px] w-full items-center justify-center">
               {isLoading && <p>Loading...</p>}
               {error && (
                 <p className="text-red-500">Failed to load notifications.</p>
               )}
               <ul className="w-full h-full space-y-1 overflow-auto">
                 {notifs.length === 0 && !isLoading && (
-                  <li className="text-gray-500 text-center">
-                    No notifications.
-                  </li>
+                  <div className="flex items-center justify-center h-full w-full">
+                    <span className="text-gray-500 text-center translate-y-[-70px]">
+                      No notifications.
+                    </span>
+                  </div>
                 )}
                 {notifs.map((notif: Notification) => (
                   <li
                     key={notif._id}
-                    className={`w-full flex items-center justify-between p-4 rounded shadow transition-colors duration-150 cursor-pointer ${
+                    className={`group w-full flex items-center justify-between p-4 rounded shadow transition-colors duration-150 ${
                       notif.isRead
-                        ? "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
-                        : "bg-indigo-100 dark:bg-indigo-900 font-semibold hover:bg-indigo-200 dark:hover:bg-indigo-800"
+                        ? "bg-primary dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
+                        : "bg-primary dark:bg-indigo-900 font-semibold hover:bg-indigo-200 dark:hover:bg-indigo-800"
                     }`}
                   >
                     <div className="flex flex-col flex-1 min-w-0">
@@ -98,32 +100,32 @@ const Notifications = () => {
                       </span>
                     </div>
                     {notif.type === "invite" && (
-                      <div className="flex gap-2 ml-4">
-                        {notif.inviteResponse === "accepted" ? (
-                          <span className="text-green-600 font-semibold">
+                      <div className="flex ml-4">
+                        {notif.status === "accepted" ? (
+                          <span className="text-font-primary font-semibold">
                             Invite Accepted
                           </span>
-                        ) : notif.inviteResponse === "denied" ? (
-                          <span className="text-red-600 font-semibold">
+                        ) : notif.status === "denied" ? (
+                          <span className="text-font-primary-800 font-semibold">
                             Invite Denied
                           </span>
                         ) : (
                           <>
                             <button
-                              className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+                              className="w-9 h-9 flex items-center justify-center rounded-full bg-primary text-font-primary transition-colors group-hover:bg-gray-200 dark:group-hover:bg-indigo-800 group-hover:text-indigo-900 dark:group-hover:text-indigo-200 cursor-pointer hover:bg-gray-400 dark:hover:bg-indigo-700"
                               onClick={() => {
                                 handleAcceptInvite(notif);
                               }}
                             >
-                              Accept
+                              <FaRegCheckCircle />
                             </button>
                             <button
-                              className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                              className="w-9 h-9 flex items-center justify-center rounded-full bg-primary text-font-primary transition-colors group-hover:bg-gray-200 dark:group-hover:bg-indigo-800 group-hover:text-indigo-900 dark:group-hover:text-indigo-200 cursor-pointer hover:bg-gray-400 dark:hover:bg-indigo-700"
                               onClick={() => {
                                 handleDenyInvite(notif);
                               }}
                             >
-                              Deny
+                              <FaRegTimesCircle />
                             </button>
                           </>
                         )}

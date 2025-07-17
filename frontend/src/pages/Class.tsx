@@ -20,6 +20,7 @@ import StatisticsTab from "../components/StatisticsTab";
 import { useQuery } from "@tanstack/react-query";
 
 import AssistancesTab from "../components/AssistancesTab";
+import LearningPlansTab from "../components/LearningPlansTab";
 
 const ClassPage = () => {
   const { darkMode } = useTheme();
@@ -89,7 +90,7 @@ const ClassPage = () => {
             {activeTab == "Journals" && (
               <JournalsTab classId={classId as string} classInfo={classInfo} />
             )}
-            {activeTab == "Subjects" && (
+            {activeTab == "Subject Weights" && (
               <SubjectsTab
                 classId={classId as string}
                 classInfo={classInfo}
@@ -104,6 +105,12 @@ const ClassPage = () => {
             )}
             {activeTab == "Assistances" && (
               <AssistancesTab
+                classId={classId as string}
+                classInfo={classInfo}
+              />
+            )}
+            {activeTab == "Learning Plans" && (
+              <LearningPlansTab
                 classId={classId as string}
                 classInfo={classInfo}
               />

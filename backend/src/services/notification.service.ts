@@ -1,4 +1,5 @@
 import NotificationModel from "@models/notification.model";
+import * as ClassService from "@services/class.service";
 import { io } from "@server/server";
 
 interface CreateNotificationParams {
@@ -72,4 +73,31 @@ export const markAllAsRead = async (userId: string) => {
     { userId, isRead: false },
     { $set: { isRead: true } }
   );
+};
+
+export const respondToInvite = async ({
+  notificationId,
+  instructorId,
+  inviteResponse,
+}: {
+  notificationId: string;
+  instructorId: string;
+  inviteResponse: "accepted" | "denied";
+}) => {
+  const notification = await NotificationModel.findById(notificationId);
+
+  if (!notification) {
+    throw new Error("Notification not found");
+  }
+
+  await ClassService.updateInstructorStatus({
+    classId: notification.classId as string,
+    instructorId,
+    status: inviteResponse,
+  });
+
+  notification.status = inviteResponse;
+  await notification.save();
+
+  return notification;
 };

@@ -4,15 +4,9 @@ import { RequestHandler } from "express";
 
 export const createClassLearningPlan: RequestHandler = catchError(
   async (req, res) => {
-    const {
-      classId,
-      subject,
-      topic,
-      level,
-      duration,
-      learningStyle,
-      learningPlan,
-    } = req.body;
+    const { classId } = req.params;
+    const { subject, topic, level, duration, learningStyle, learningPlan } =
+      req.body;
     const learning_plan = await LearningPlanService.createLearningPlan(
       classId,
       subject,
@@ -23,7 +17,7 @@ export const createClassLearningPlan: RequestHandler = catchError(
       learningPlan
     );
 
-    res.status(201).json({
+    return res.status(201).json({
       message: "Learning plan created successfully",
       data: learning_plan,
     });

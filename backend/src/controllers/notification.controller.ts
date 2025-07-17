@@ -50,3 +50,22 @@ export const markAllNotificationsAsRead: RequestHandler = catchError(
     });
   }
 );
+
+export const respondToInvite: RequestHandler = catchError(async (req, res) => {
+  const userId = req.userId as string;
+  const { notificationId } = req.params;
+  const { inviteResponse } = req.body;
+
+  appAssert(userId, UNAUTHORIZED, "UNAUTHORIZED");
+
+  const response = await NotificationService.respondToInvite({
+    notificationId,
+    instructorId: userId,
+    inviteResponse,
+  });
+
+  return res.status(200).json({
+    message: "Invite response recorded successfully",
+    data: response,
+  });
+});

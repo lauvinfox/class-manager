@@ -45,14 +45,13 @@ const AssistancesTab = ({
 
   // Student search
   const [searchStudentTerm, setSearchStudentTerm] = useState("");
+  const handleStudentSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchStudentTerm(event.target.value);
+  };
 
   const [selectedSubject, setSelectedSubject] = useState("");
   const [subjectDropdown, setSubjectDropdown] = useState(false);
   const subjects = classInfo?.subjects || [];
-
-  const handleStudentSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchStudentTerm(event.target.value);
-  };
 
   const [showAssistanceModal, setShowAssistanceModal] = useState(false);
   const [selectedAssistance, setSelectedAssistance] =

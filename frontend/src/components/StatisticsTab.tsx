@@ -18,84 +18,6 @@ import {
   getSubjectAttendanceSummary,
 } from "../lib/api";
 
-import { generatePDF, studentDataToPDFRows } from "../utils/pdf";
-
-const studentData = {
-  "Miftah Ilman": {
-    studentId: "214124",
-    className: "XII IPA 2",
-    homeroom: "Aisyah Rahman",
-    grades: [
-      {
-        subject: "IPA",
-        homework: 50,
-        quiz: 80,
-        exam: 90,
-        project: 0,
-        finalExam: 80,
-        finalScore: 80,
-      },
-      {
-        subject: "Matematika",
-        homework: 50,
-        quiz: 80,
-        exam: 90,
-        project: 0,
-        finalExam: 80,
-        finalScore: 80,
-      },
-    ],
-    attendances: [
-      {
-        subject: "IPA",
-        attendance: {
-          present: 0,
-          absent: 0,
-          late: 0,
-          sick: 0,
-          excused: 0,
-          pending: 7,
-        },
-      },
-      {
-        subject: "Matematika",
-        attendance: {
-          present: 0,
-          absent: 0,
-          late: 0,
-          sick: 0,
-          excused: 0,
-          pending: 7,
-        },
-      },
-    ],
-    weights: [
-      {
-        subject: "IPA",
-        weight: {
-          homework: 20,
-          quiz: 10,
-          exam: 20,
-          project: 20,
-          finalExam: 30,
-        },
-      },
-      {
-        subject: "Matematika",
-        weight: {
-          homework: 20,
-          quiz: 10,
-          exam: 20,
-          project: 20,
-          finalExam: 30,
-        },
-      },
-    ],
-    averageScore: 80,
-    note: "Saya anak pintar",
-  },
-};
-
 const StatisticsTab = ({
   classId,
   classInfo,
@@ -205,32 +127,6 @@ const StatisticsTab = ({
 
         {classInfo?.role == "owner" && (
           <div className="flex gap-2">
-            <button
-              onClick={() => {
-                const rows = studentDataToPDFRows(studentData);
-                generatePDF({
-                  title: "Student Report",
-                  rows,
-                  data: studentData,
-                });
-              }}
-            >
-              <span className="text-sm text-gray-700 dark:text-white bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200 font-semibold px-4 py-2 rounded-lg shadow"></span>
-            </button>
-            <button
-              onClick={() => {
-                const rows = studentDataToPDFRows(studentData);
-                generatePDF({
-                  title: "Student Report",
-                  rows,
-                  data: studentData,
-                });
-              }}
-            >
-              <span className="text-sm text-gray-700 dark:text-white bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200 font-semibold px-4 py-2 rounded-lg shadow">
-                Export PDF
-              </span>
-            </button>
             <button
               className="flex items-center justify-between gap-2 text-sm text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700"
               type="button"

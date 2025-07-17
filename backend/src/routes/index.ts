@@ -9,6 +9,7 @@ import AssignmentRouter from "@routes/assignment.route";
 import JournalRouter from "@routes/journal.route";
 import OpenAIRouter from "@routes/openai.route";
 import AssistanceRouter from "@routes/assistance.route";
+import LearningPlansRouter from "@routes/learningplan.route";
 
 import authenticate from "@middleware/authenticate";
 
@@ -24,7 +25,7 @@ router.use("/api/v1/users", authenticate, UserRouter);
 router.use("/api/v1/students", authenticate, StudentRouter);
 
 // Student API
-router.use("/api/v1/notifications", NotificationRouter);
+router.use("/api/v1/notifications", authenticate, NotificationRouter);
 
 router.use("/api/v1/class", authenticate, ClassRouter);
 
@@ -38,5 +39,7 @@ router.use("/api/v1/openai", OpenAIRouter);
 
 // Assistance API
 router.use("/api/v1/assistances", authenticate, AssistanceRouter);
+
+router.use("/api/v1/learning-plans", authenticate, LearningPlansRouter);
 
 export default router;

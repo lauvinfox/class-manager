@@ -170,15 +170,18 @@ export const inviteInstructors = async (
 };
 
 export const respondInviteInstructor = async ({
-  classId,
+  notificationId,
   inviteResponse,
 }: {
-  classId: string;
+  notificationId: string;
   inviteResponse: string;
 }) => {
-  const response = await API.post(`/api/v1/class/${classId}/invite/`, {
-    inviteResponse,
-  });
+  const response = await API.patch(
+    `/api/v1/notifications/respond-invite/${notificationId}`,
+    {
+      inviteResponse,
+    }
+  );
   return response;
 };
 
@@ -477,6 +480,31 @@ export const getAssignmentAdvice = async (
   });
 };
 
+export const getLearningPlan = async ({
+  classId,
+  subject,
+  topic,
+  level,
+  duration,
+  learningStyle,
+}: {
+  classId: string;
+  subject: string;
+  topic: string;
+  level: string;
+  duration: number;
+  learningStyle: string;
+}) => {
+  return await API.post(`/api/v1/openai/class-learning-plan`, {
+    classId,
+    subject,
+    topic,
+    level,
+    duration,
+    learningStyle,
+  });
+};
+
 // Assistance
 export const createAssistance = async ({
   studentName,
@@ -513,4 +541,45 @@ export const getAssistanceByClassAndSubject = async (
   subject: string
 ) => {
   return await API.post(`/api/v1/assistances/${classId}/subject`, { subject });
+};
+
+// Learning Plans
+export const createClassLearningPlan = async ({
+  classId,
+  subject,
+  topic,
+  level,
+  duration,
+  learningStyle,
+  learningPlan,
+}: {
+  classId: string;
+  subject: string;
+  topic: string;
+  level: string;
+  duration: number;
+  learningStyle: string;
+  learningPlan: string;
+}) => {
+  return await API.post(`/api/v1/learning-plans/${classId}/create`, {
+    subject,
+    topic,
+    level,
+    duration,
+    learningStyle,
+    learningPlan,
+  });
+};
+
+export const getLearningPlansByClass = async (classId: string) => {
+  return await API.get(`/api/v1/learning-plans/${classId}/get`);
+};
+
+export const getLearningPlansByClassAndSubject = async (
+  classId: string,
+  subject: string
+) => {
+  return await API.get(
+    `/api/v1/learning-plans/${classId}/subject/${subject}/get`
+  );
 };

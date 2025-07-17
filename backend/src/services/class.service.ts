@@ -230,16 +230,18 @@ export const createClass = async (data: CreateClassParams) => {
   const instructor = await UserModel.findById(data.classOwner);
   appAssert(instructor, NOT_FOUND, "Instructor not found");
 
-  // Check if class with same name already exists
-  const existingClass = await ClassModel.findOne({ name: data.name });
-  appAssert(!existingClass, CONFLICT, "Class with this name already exists");
-
-  // Create class
+  // Tidak perlu cek nama unik, langsung create class
   const newClass = await ClassModel.create({
     name: data.name,
     description: data.description,
     classOwner: data.classOwner,
   });
+
+  // Pastikan field classOwned pada user adalah array sebelum $addToSet
+  await UserModel.updateOne(
+    { _id: data.classOwner, classOwned: { $exists: false } },
+    { $set: { classOwned: [] } }
+  );
 
   // Update classOwner's classOwned field to include the new class
   await UserModel.findByIdAndUpdate(
@@ -331,11 +333,15 @@ export const getClassInstructors = async (classId: string) => {
   return instructorList;
 };
 
-export const updateInstructorStatus = async (
-  classId: string,
-  instructorId: string,
-  status: "accepted" | "pending" | "denied"
-) => {
+export const updateInstructorStatus = async ({
+  classId,
+  instructorId,
+  status,
+}: {
+  classId: string;
+  instructorId: string;
+  status: "accepted" | "pending" | "denied";
+}) => {
   // Cari
   const classDoc = await ClassModel.findOne({ classId });
   appAssert(classDoc, BAD_REQUEST, "Invitation not found");
