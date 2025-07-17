@@ -2,7 +2,7 @@ import { RequestHandler } from "express";
 import { Types } from "mongoose";
 
 import catchError from "@utils/error";
-import { BAD_REQUEST, CREATED } from "@constants/statusCodes";
+import { BAD_REQUEST, CREATED, FORBIDDEN } from "@constants/statusCodes";
 import * as ClassService from "@services/class.service";
 import * as UserService from "@services/user.service";
 import appAssert from "@utils/appAssert";
@@ -173,6 +173,14 @@ export const respondInviteInstructor: RequestHandler = catchError(
 export const addSubjects: RequestHandler = catchError(async (req, res) => {
   const { classId } = req.params;
   const { subjects } = req.body;
+  const userId = req.userId as string;
+
+  const isOwner = await ClassService.checkClassOwner(classId, userId);
+  appAssert(
+    isOwner,
+    FORBIDDEN,
+    "You do not have permission to add a subject to this class"
+  );
 
   if (
     !Array.isArray(subjects) ||
@@ -200,6 +208,19 @@ export const giveSubjectToInstructor: RequestHandler = catchError(
     const { classId, instructorId } = req.params;
     const { subject } = req.body;
     appAssert(subject, BAD_REQUEST, "subjectName");
+
+    // Cek status instructor harus "accepted"
+    const classDoc = await ClassService.getClassByClassId(classId);
+    const instructor = (classDoc?.instructors || []).find(
+      (inst: any) =>
+        inst.instructorId?.toString?.() === instructorId ||
+        inst.instructorId === instructorId
+    );
+    appAssert(
+      instructor && instructor.status === "accepted",
+      FORBIDDEN,
+      "Only accepted instructors can be assigned a subject"
+    );
 
     const updatedClass = await ClassService.giveInstructorSubjects(
       classId,
@@ -279,7 +300,7 @@ export const getClassWeightBySubject: RequestHandler = catchError(
     const isInstructor = await ClassService.checkInstructor(classId, userId);
     appAssert(
       isInstructor,
-      BAD_REQUEST,
+      FORBIDDEN,
       "You are not the instructor of this class"
     );
 
