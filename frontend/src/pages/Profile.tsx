@@ -109,7 +109,7 @@ const ProfilePage = () => {
                   </div>
                 </div>
               </div>
-              <div className="flex-1">Job information</div>
+              <div className="flex-1 flex items-center justify-center"></div>
             </div>
           </div>
         </div>

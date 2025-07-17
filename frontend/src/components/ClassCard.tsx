@@ -40,15 +40,19 @@ export const ClassCard = ({
       )}
       <div
         onClick={() => navigate(`/class/${classId}`)}
-        className="bg-white hover:bg-slate-100 dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden flex flex-row items-center transition h-40 w-76 justify-center gap-4 cursor-pointer"
+        className="bg-white hover:bg-slate-100 dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden flex flex-row items-center transition h-40 w-76 justify-center gap-4 cursor-pointer relative"
       >
-        <ProfilePic firstName={title} size={80} random={true} />
-        <div className="text-base font-semibold text-font-primary dark:text-white text-center">
+        {/* ProfilePic di kiri atas */}
+        <div className="absolute left-6 top-10">
+          <ProfilePic firstName={title} size={80} random={true} />
+        </div>
+        {/* Title di tengah */}
+        <div className="absolute left-30 top-17 text-base font-semibold text-font-primary dark:text-white text-center">
           {title}
         </div>
-        {/* More (titik tiga) button */}
+        {/* More (titik tiga) button di kanan atas */}
         {owned && (
-          <div className="ml-2 relative">
+          <div className="absolute right-10 top-17">
             <button
               type="button"
               className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
@@ -73,7 +77,6 @@ export const ClassCard = ({
                 >
                   Delete Class
                 </button>
-                {/* Overlay dihapus dari dalam dropdown agar button tidak tertutupi */}
               </div>
             )}
           </div>

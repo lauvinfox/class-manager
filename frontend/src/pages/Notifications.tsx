@@ -70,7 +70,7 @@ const Notifications = () => {
           <div className="flex-1">
             <Header title="Class Manager" fontSize="text-xl" />
             <NotificationsHeader />
-            <div className="flex flex-col h-[617px] w-full items-center justify-center">
+            <div className="flex flex-col h-[608px] w-full items-center justify-center">
               {isLoading && <p>Loading...</p>}
               {error && (
                 <p className="text-red-500">Failed to load notifications.</p>

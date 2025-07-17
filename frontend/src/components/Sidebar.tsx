@@ -4,13 +4,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
-import {
-  FiChevronDown,
-  FiHome,
-  FiUsers,
-  FiSettings,
-  FiHelpCircle,
-} from "react-icons/fi";
+import { FiChevronDown, FiHome, FiSettings } from "react-icons/fi";
 
 import { MdOutlineNotifications } from "react-icons/md";
 
@@ -126,23 +120,9 @@ export const Sidebar = () => {
           notifs={hasUnread}
         />
         <Option
-          Icon={FiUsers}
-          href="/classes"
-          title="Classes"
-          selected={selected}
-          setSelected={setSelected}
-        />
-        <Option
           Icon={FiSettings}
           href="/settings"
           title="Settings"
-          selected={selected}
-          setSelected={setSelected}
-        />
-        <Option
-          Icon={FiHelpCircle}
-          href="/help"
-          title="Help"
           selected={selected}
           setSelected={setSelected}
         />
