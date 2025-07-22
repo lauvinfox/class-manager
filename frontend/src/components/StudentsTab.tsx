@@ -11,9 +11,15 @@ import {
   updateStudentById,
 } from "../lib/api";
 import Dropzone from "./Dropzone";
-import { ClassInfo } from "../types/types";
+import { ClassInfo, Student } from "../types/types";
 import { MdDelete, MdDeleteOutline } from "react-icons/md";
-import { generatePDF, studentDataToPDFRows } from "../utils/pdf";
+import {
+  generatePDF,
+  PDFTableRow,
+  studentDataToPDFRows,
+  StudentRecords,
+} from "../utils/pdf";
+import jsPDF from "jspdf";
 
 const StudentsTab = ({
   classId,
@@ -93,7 +99,6 @@ const StudentsTab = ({
     onSuccess: () => {
       setShowCreateReportModal(null);
       setFullReportNote("");
-      alert("Full report created successfully!");
     },
     onError: (error) => {
       console.error("Failed to create full report:", error);
@@ -181,6 +186,31 @@ const StudentsTab = ({
       alert("Failed to update student.");
     },
   });
+
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
+  const [pdfDoc, setPdfDoc] = useState<jsPDF | null>(null);
+  const [pdfPreviewStudent, setPdfPreviewStudent] = useState<Student | null>(
+    null
+  );
+
+  const handlePreviewPDF = ({
+    rows,
+    studentData,
+    student,
+  }: {
+    rows: PDFTableRow[];
+    studentData: StudentRecords;
+    student: Student | null;
+  }) => {
+    const doc = generatePDF({
+      rows,
+      data: studentData,
+    });
+    const url = doc.output("dataurlstring");
+    setPdfPreviewUrl(url);
+    setPdfDoc(doc);
+    setPdfPreviewStudent(student);
+  };
 
   // Student management state
   const [showAddStudentModal, setShowAddStudentModal] = useState(false);
@@ -475,6 +505,42 @@ const StudentsTab = ({
                           }
                         )}
                       </td>
+                      {pdfPreviewUrl &&
+                        pdfPreviewStudent &&
+                        pdfPreviewStudent.studentId === student.studentId && (
+                          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/2.5">
+                            <div className="bg-white rounded-lg p-4 w-full max-w-3xl h-[80vh] flex flex-col">
+                              <iframe
+                                src={pdfPreviewUrl}
+                                className="flex-1 w-full"
+                              />
+                              <div className="flex gap-2 mt-2">
+                                <button
+                                  onClick={() => {
+                                    setPdfPreviewUrl(null);
+                                    setPdfDoc(null);
+                                    setPdfPreviewStudent(null);
+                                  }}
+                                  className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
+                                >
+                                  Close
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    if (pdfDoc) {
+                                      pdfDoc.save(
+                                        `student-report-${student.studentId}-${student.name}.pdf`
+                                      );
+                                    }
+                                  }}
+                                  className="px-4 py-2 rounded bg-indigo-600 text-white font-semibold hover:bg-indigo-700"
+                                >
+                                  Download PDF
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       {classInfo?.role === "owner" && (
                         <>
                           <td className="px-6 py-4 text-center">
@@ -537,11 +603,16 @@ const StudentsTab = ({
                                           });
                                         const rows =
                                           studentDataToPDFRows(studentData);
-                                        generatePDF({
-                                          title: "Student Report",
+                                        handlePreviewPDF({
                                           rows,
-                                          data: studentData,
+                                          studentData,
+                                          student,
                                         });
+                                        // generatePDF({
+                                        //   title: "Student Report",
+                                        //   rows,
+                                        //   data: studentData,
+                                        // });
                                         setShowCreateReportModal(null);
                                         setFullReportNote("");
                                       }}
@@ -592,10 +663,10 @@ const StudentsTab = ({
                                           });
                                         const rows =
                                           studentDataToPDFRows(studentData);
-                                        generatePDF({
-                                          title: "Student Report",
+                                        handlePreviewPDF({
                                           rows,
-                                          data: studentData,
+                                          studentData,
+                                          student,
                                         });
                                         setShowCreateReportModal(null);
                                         alert("Report by time created!");
@@ -686,6 +757,7 @@ const StudentsTab = ({
                               >
                                 <MdOutlineModeEdit className="text-lg" />
                               </button> */}
+
                               {showEditStudentModal && (
                                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
                                   <div className="bg-white dark:bg-gray-900 rounded-lg p-6 w-full max-w-md relative">
@@ -903,6 +975,7 @@ const StudentsTab = ({
           </table>
         </div>
       </div>
+
       {showAddStudentModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 w-full max-w-md relative">

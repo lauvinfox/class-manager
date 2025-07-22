@@ -10,39 +10,52 @@ export interface PDFTableRow {
   [key: string]: string | number;
 }
 
+// Tipe untuk nilai (grades) per mata pelajaran
+type Grade = {
+  subject: string;
+  homework: number;
+  quiz: number;
+  exam: number;
+  project: number;
+  finalExam: number;
+  finalScore: number;
+};
+
+// Tipe untuk kehadiran (attendance) per mata pelajaran
+type Attendance = {
+  subject: string;
+  attendance: Record<string, number>; // string bisa jadi tanggal atau sesi
+};
+
+// Tipe untuk bobot penilaian (weights) per mata pelajaran
+type Weight = {
+  subject: string;
+  weight: {
+    homework: number;
+    quiz: number;
+    exam: number;
+    project: number;
+    finalExam: number;
+  };
+};
+
+// Tipe utama untuk setiap siswa
+type StudentRecord = {
+  studentId: string;
+  className: string;
+  homeroom: string;
+  grades: Grade[];
+  attendances: Attendance[];
+  weights: Weight[];
+  averageScore: number;
+  note: string;
+};
+
+// Tipe koleksi semua siswa
+export type StudentRecords = Record<string, StudentRecord>;
+
 // Helper to flatten student data for PDF table
-export function studentDataToPDFRows(
-  data: Record<
-    string,
-    {
-      studentId: string;
-      className: string;
-      homeroom: string;
-      grades: {
-        subject: string;
-        homework: number;
-        quiz: number;
-        exam: number;
-        project: number;
-        finalExam: number;
-        finalScore: number;
-      }[];
-      attendances: { subject: string; attendance: Record<string, number> }[];
-      weights: {
-        subject: string;
-        weight: {
-          homework: number;
-          quiz: number;
-          exam: number;
-          project: number;
-          finalExam: number;
-        };
-      }[];
-      averageScore: number;
-      note: string;
-    }
-  >
-) {
+export function studentDataToPDFRows(data: StudentRecords) {
   const rows: PDFTableRow[] = [];
   Object.entries(data).forEach(([name, student]) => {
     // For each subject in grades, find matching attendance
@@ -83,11 +96,9 @@ export function studentDataToPDFRows(
  * @param rows Array of row data
  */
 export function generatePDF({
-  title,
   rows,
   data,
 }: {
-  title: string;
   rows: PDFTableRow[];
   data: Record<
     string,
@@ -119,7 +130,7 @@ export function generatePDF({
       note: string;
     }
   >;
-}) {
+}): jsPDF {
   const doc = new jsPDF();
 
   const columns = [
@@ -415,6 +426,5 @@ export function generatePDF({
       },
     });
   }
-
-  doc.save(`${title.replace(/\s+/g, "_")}.pdf`);
+  return doc;
 }
