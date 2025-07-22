@@ -122,39 +122,47 @@ const SubjectsTab = ({
       {classInfo?.role === "owner" && (
         <div className="mx-auto py-8 px-4">
           <h2 className="text-2xl font-semibold mb-6">Subject Weights</h2>
-          <div className="flex overflow-x-auto space-x-4 pb-4">
+          <div className="space-y-4 pb-4">
             {classWeights && classWeights.length > 0 ? (
-              classWeights.map(
-                (subjectWeight: AssignmentWeights, idx: number) => (
-                  <div
-                    key={subjectWeight.subject || idx}
-                    className="min-w-[260px] bg-white shadow rounded-lg p-6 flex-shrink-0"
-                  >
-                    <h3 className="text-lg font-bold mb-2">
-                      {subjectWeight.subject}
-                    </h3>
-                    <ul className="text-sm space-y-1">
-                      <li>
-                        <span className="font-medium">Homework:</span>{" "}
-                        {subjectWeight.assignmentWeight?.homework}%
-                      </li>
-                      <li>
-                        <span className="font-medium">Quiz:</span>{" "}
-                        {subjectWeight.assignmentWeight?.quiz}%
-                      </li>
-                      <li>
-                        <span className="font-medium">Exam:</span>{" "}
-                        {subjectWeight.assignmentWeight?.exam}%
-                      </li>
-                      <li>
-                        <span className="font-medium">Project:</span>{" "}
-                        {subjectWeight.assignmentWeight?.project}%
-                      </li>
-                      <li>
-                        <span className="font-medium">Final Exam:</span>{" "}
-                        {subjectWeight.assignmentWeight?.finalExam}%
-                      </li>
-                    </ul>
+              // Chunk classWeights into groups of 4
+              Array.from(
+                { length: Math.ceil(classWeights.length / 4) },
+                (_, rowIdx) => (
+                  <div key={rowIdx} className="flex flex-row gap-4">
+                    {classWeights
+                      .slice(rowIdx * 4, rowIdx * 4 + 4)
+                      .map((subjectWeight: AssignmentWeights, idx: number) => (
+                        <div
+                          key={subjectWeight.subject || idx}
+                          className="min-w-[260px] bg-white shadow rounded-lg p-6 flex-shrink-0"
+                        >
+                          <h3 className="text-lg font-bold mb-2">
+                            {subjectWeight.subject}
+                          </h3>
+                          <ul className="text-sm space-y-1">
+                            <li>
+                              <span className="font-medium">Homework:</span>{" "}
+                              {subjectWeight.assignmentWeight?.homework}%
+                            </li>
+                            <li>
+                              <span className="font-medium">Quiz:</span>{" "}
+                              {subjectWeight.assignmentWeight?.quiz}%
+                            </li>
+                            <li>
+                              <span className="font-medium">Exam:</span>{" "}
+                              {subjectWeight.assignmentWeight?.exam}%
+                            </li>
+                            <li>
+                              <span className="font-medium">Project:</span>{" "}
+                              {subjectWeight.assignmentWeight?.project}%
+                            </li>
+                            <li>
+                              <span className="font-medium">Final Exam:</span>{" "}
+                              {subjectWeight.assignmentWeight?.finalExam}%
+                            </li>
+                          </ul>
+                        </div>
+                      ))}
                   </div>
                 )
               )

@@ -194,17 +194,23 @@ const StudentsTab = ({
   );
 
   const handlePreviewPDF = ({
+    reportByTime = false,
     rows,
     studentData,
     student,
+    rangeTime = "",
   }: {
+    rangeTime?: string;
+    reportByTime?: boolean;
     rows: PDFTableRow[];
     studentData: StudentRecords;
     student: Student | null;
   }) => {
     const doc = generatePDF({
+      reportByTime,
       rows,
       data: studentData,
+      rangeTime,
     });
     const url = doc.output("dataurlstring");
     setPdfPreviewUrl(url);
@@ -245,6 +251,17 @@ const StudentsTab = ({
     contact: "",
     address: "",
   });
+
+  // Format dates to 'Month DD, YYYY'
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return "";
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "2-digit",
+    });
+  };
 
   const handleAddStudent = (
     e: React.FormEvent<HTMLFormElement>,
@@ -608,11 +625,6 @@ const StudentsTab = ({
                                           studentData,
                                           student,
                                         });
-                                        // generatePDF({
-                                        //   title: "Student Report",
-                                        //   rows,
-                                        //   data: studentData,
-                                        // });
                                         setShowCreateReportModal(null);
                                         setFullReportNote("");
                                       }}
@@ -663,13 +675,19 @@ const StudentsTab = ({
                                           });
                                         const rows =
                                           studentDataToPDFRows(studentData);
+
+                                        const formattedStart =
+                                          formatDate(startDate);
+                                        const formattedEnd =
+                                          formatDate(endDate);
                                         handlePreviewPDF({
+                                          reportByTime: true,
                                           rows,
                                           studentData,
                                           student,
+                                          rangeTime: `${formattedStart} to ${formattedEnd}`,
                                         });
                                         setShowCreateReportModal(null);
-                                        alert("Report by time created!");
                                       }}
                                     >
                                       <div className="flex items-center gap-2">
