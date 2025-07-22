@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import React, { useState, useEffect } from "react";
-import { FaEye, FaEyeSlash, FaGoogle } from "react-icons/fa";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getMe, loginUser } from "../lib/api";
 
@@ -61,10 +61,6 @@ const LoginPage: React.FC = () => {
 
   const handleSignUpClick = () => {
     navigate("/signup");
-  };
-
-  const handleGoogleSignIn = () => {
-    navigate("/google/signup");
   };
 
   return (
@@ -137,15 +133,6 @@ const LoginPage: React.FC = () => {
             )}
           </button>
 
-          {/* Google Login Button */}
-          <button
-            type="button"
-            onClick={handleGoogleSignIn}
-            className="w-full sm:w-2/3 py-2 px-4 bg-form-bg-focus text-form-font font-semibold rounded-md flex items-center justify-center gap-2 hover:bg-form-bg outline-1 focus:ring-2"
-          >
-            <FaGoogle className="text-form-font" /> {/* Google Icon */}
-            Continue with Google
-          </button>
           {/* Forgot Password link */}
           <div className="text-center">
             <a

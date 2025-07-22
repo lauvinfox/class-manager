@@ -296,6 +296,19 @@ const InstructorsTab = ({
             </button>
           </div>
         )}
+        {classInfo?.role === "member" && (
+          <div className="flex gap-2">
+            <button
+              type="button"
+              className="flex items-center gap-2 text-sm text-gray-700 dark:text-white bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200 font-semibold px-4 py-2 rounded-lg shadow"
+              onClick={handleRefresh}
+              title="Refresh Table"
+            >
+              {/* Icon Refresh */}
+              Refresh
+            </button>
+          </div>
+        )}
       </div>
       <div className="overflow-hidden rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
         <div className="max-h-102 overflow-y-auto">

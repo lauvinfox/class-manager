@@ -16,7 +16,7 @@ router.get("/:classId/get", StudentsController.getStudentsClass);
 router.get("/:id", StudentsController.getStudent);
 
 // UPDATE
-router.put("/:id", StudentsController.updateStudent);
+router.put("/:id/update/:classId", StudentsController.updateStudent);
 
 // DELETE
 router.delete("/:id", StudentsController.deleteStudent);
@@ -38,6 +38,6 @@ router.post(
 router.delete("/:classId/delete", StudentsController.deleteStudents);
 
 // Delete a student by ClassId and Student _id
-router.delete("/:classId/delete-student", StudentsController.deleteStudent);
+router.delete("/:classId/delete-student/:id", StudentsController.deleteStudent);
 
 export default router;

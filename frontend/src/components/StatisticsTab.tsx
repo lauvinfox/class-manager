@@ -16,6 +16,7 @@ import {
   getAssignmentsSummaryBySubjects,
   getClassAttendanceSummary,
   getSubjectAttendanceSummary,
+  getSubjectByClassId,
 } from "../lib/api";
 
 const StatisticsTab = ({
@@ -29,7 +30,14 @@ const StatisticsTab = ({
   const handleStudentSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchStudentTerm(event.target.value);
   };
-
+  const { data: memberSubject } = useQuery({
+    queryKey: ["memberSubject", classId],
+    queryFn: async () => {
+      if (!classId) return "";
+      const res = await getSubjectByClassId(classId);
+      return res.data;
+    },
+  });
   const subjects = classInfo?.subjects || [];
   const [selectedSubject, setSelectedSubject] = useState("");
   const [subjectDropdown, setSubjectDropdown] = useState(false);
@@ -283,17 +291,16 @@ const StatisticsTab = ({
 
         {classInfo?.role == "member" && (
           <div className="flex gap-2">
-            <button
-              className="flex items-center gap-2 text-sm text-white bg-blue-600 hover:bg-blue-700 font-semibold rounded-md px-4 py-2 transition-colors shadow focus:outline-none focus:ring-2 focus:ring-blue-400"
-              type="button"
-              disabled
-            >
-              <span>
-                {classInfo.instructors && classInfo.instructors.length > 0
-                  ? classInfo.instructors[0].subject
-                  : ""}
-              </span>
-            </button>
+            {memberSubject && (
+              <button
+                className="flex items-center gap-2 text-sm text-white bg-blue-600 hover:bg-blue-700 font-semibold rounded-md px-4 py-2 transition-colors shadow focus:outline-none focus:ring-2 focus:ring-blue-400"
+                type="button"
+                disabled
+              >
+                <span>{memberSubject}</span>
+              </button>
+            )}
+
             <button
               className="flex items-center justify-between gap-2 text-sm text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg px-5 py-2.5 w-35 text-center dark:bg-blue-600 dark:hover:bg-blue-700"
               type="button"
@@ -941,7 +948,7 @@ const StatisticsTab = ({
         overviewMode === "grade" &&
         (() => {
           // Ambil data untuk subject yang dipilih
-          const subjectData = classInfo?.instructors?.[0]?.subject;
+          const subjectData = memberSubject;
           if (!subjectData) {
             return (
               <div className="overflow-hidden rounded-xl shadow-md border border-gray-200 dark:border-gray-700 mt-4">
@@ -978,8 +985,7 @@ const StatisticsTab = ({
                       {/* Ambil jumlah assignment dari data sesuai selectedAssignmentType */}
                       {(() => {
                         // Only show subject data for classInfo.instructors[0].subject
-                        const subjectName =
-                          classInfo?.instructors?.[0]?.subject || "";
+                        const subjectName = memberSubject || "";
                         const subjectData =
                           assignmentsSummaryBySubjects?.[subjectName];
                         const students = subjectData
@@ -1041,8 +1047,7 @@ const StatisticsTab = ({
                     {/* Sort rows by selected column score if columnSorts is set */}
                     {(() => {
                       // Only show subject data for classInfo.instructors[0].subject
-                      const subjectName =
-                        classInfo?.instructors?.[0]?.subject || "";
+                      const subjectName = memberSubject || "";
                       const subjectDataAll =
                         assignmentsSummaryBySubjects?.[subjectName];
                       if (!subjectDataAll) return null;

@@ -200,3 +200,21 @@ export const getStudentAttendanceReport: RequestHandler = catchError(
     });
   }
 );
+
+export const deleteJournalById: RequestHandler = catchError(
+  async (req, res) => {
+    const userId = req.userId as string;
+    const { classId, journalId } = req.params;
+
+    const isInstructor = await ClassService.checkInstructor(classId, userId);
+    appAssert(isInstructor, UNAUTHORIZED, "Instructors Not Found");
+
+    const result = await JournalService.deleteJournalById(classId, journalId);
+    appAssert(result, NOT_FOUND, "Journal not found");
+
+    return res.status(200).json({
+      message: "Journal deleted successfully",
+      data: result,
+    });
+  }
+);

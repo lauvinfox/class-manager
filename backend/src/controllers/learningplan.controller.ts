@@ -24,6 +24,23 @@ export const createClassLearningPlan: RequestHandler = catchError(
   }
 );
 
+export const updateClassLearningPlan: RequestHandler = catchError(
+  async (req, res) => {
+    const { learningPlanId } = req.params;
+    const { learningPlan } = req.body;
+
+    const updatedLearningPlan = await LearningPlanService.updateLearningPlan(
+      learningPlanId,
+      learningPlan
+    );
+
+    return res.status(200).json({
+      message: "Learning plan updated successfully",
+      data: updatedLearningPlan,
+    });
+  }
+);
+
 export const getClassLearningPlans: RequestHandler = catchError(
   async (req, res) => {
     const { classId } = req.params;

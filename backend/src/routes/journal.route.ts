@@ -43,4 +43,7 @@ router.get(
   JournalController.getStudentAttendanceReport
 );
 
+// Delete a journal by class ID and journal ID
+router.delete("/:classId/:journalId", JournalController.deleteJournalById);
+
 export default router;

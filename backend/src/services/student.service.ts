@@ -97,17 +97,25 @@ export const findAllStudents = async () => {
 
 export const updateStudentById = async (
   id: string,
-  data: Partial<IStudent>
+  classId: string,
+  data: {
+    name?: string;
+    studentId?: number;
+    birthDate?: string;
+    birthPlace?: string;
+    contact?: string;
+    address?: string;
+  }
 ) => {
-  return await StudentModel.findByIdAndUpdate(id, data, { new: true });
-};
-
-export const deleteStudentById = async (classId: string, id: string) => {
-  await ClassService.removeStudentFromClass(classId, id);
-  await AssignmentService.removeStudentFromAssignment(classId, id);
-  await JournalService.removeStudentFromJournal(classId, id);
-
-  return await StudentModel.findByIdAndDelete(id);
+  return await StudentModel.findByIdAndUpdate(id, {
+    name: data.name,
+    classId: classId,
+    studentId: data.studentId,
+    birthDate: data.birthDate,
+    birthPlace: data.birthPlace,
+    contact: data.contact,
+    address: data.address,
+  });
 };
 
 // Assignment
@@ -127,7 +135,13 @@ export const addAssignmentScore = async ({
   );
   return student;
 };
+export const deleteStudentById = async (classId: string, id: string) => {
+  await ClassService.removeStudentFromClass(classId, id);
+  await AssignmentService.removeStudentFromAssignment(classId, id);
+  await JournalService.removeStudentFromJournal(classId, id);
 
+  return await StudentModel.findByIdAndDelete(id);
+};
 export const deleteAllStudentsByClassId = async (classId: string) => {
   const result = await StudentModel.deleteMany({ classId });
   if (result.deletedCount === 0) {
@@ -136,6 +150,7 @@ export const deleteAllStudentsByClassId = async (classId: string) => {
 
   await ClassService.removeStudentsFromClass(classId);
   await AssignmentService.deleteStudentsByClassId(classId);
+  await JournalService.deleteStudentsByClassId(classId);
   return result;
 };
 

@@ -52,7 +52,7 @@ export const createAccount = async (data: CreateAccountParams) => {
 
   appAssert(!existingUser, CONFLICT, "Email already in use");
 
-  const name = `${data.firstName} ${data.lastName}`;
+  const name = `${data.firstName}${data.lastName}`;
 
   // create user
   const user = await UserModel.create({

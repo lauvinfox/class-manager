@@ -37,14 +37,18 @@ export const getStudent: RequestHandler = catchError(async (req, res) => {
 });
 
 export const updateStudent: RequestHandler = catchError(async (req, res) => {
-  const { id } = req.params;
-  const updatedStudent = req.body;
+  const { id, classId } = req.params;
+  const { name, studentId, birthDate, birthPlace, contact, address } = req.body;
 
-  const result = await StudentService.updateStudentById(id, updatedStudent);
+  const result = await StudentService.updateStudentById(id, classId, {
+    name,
+    studentId,
+    birthDate,
+    birthPlace,
+    contact,
+    address,
+  });
 
-  if (!result) {
-    return res.status(404).json({ message: "Student not found" });
-  }
   return res.status(200).json({
     message: "Student updated successfully",
     data: result,
@@ -53,8 +57,7 @@ export const updateStudent: RequestHandler = catchError(async (req, res) => {
 
 export const deleteStudent: RequestHandler = catchError(async (req, res) => {
   const userId = req.userId as string;
-  const { classId } = req.params;
-  const { id } = req.body;
+  const { classId, id } = req.params;
 
   const isOwner = await ClassService.checkClassOwner(classId, userId);
   appAssert(isOwner, BAD_REQUEST, "You are not the owner of this class");

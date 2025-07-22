@@ -15,4 +15,10 @@ router.get(
   LearningPlanController.getClassSubjectLearningPlans
 );
 
+// Update a learning plan
+router.put(
+  "/:learningPlanId/update",
+  LearningPlanController.updateClassLearningPlan
+);
+
 export default router;

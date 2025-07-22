@@ -48,3 +48,15 @@ export const getAssistancesByClassAndSubject = async (
 
   return assistances;
 };
+
+export const updateAssistance = async (
+  assistanceId: string,
+  assistantResponse: string
+) => {
+  const updatedAssistance = await AssistanceModel.findByIdAndUpdate(
+    assistanceId,
+    { assistantResponse },
+    { new: true }
+  );
+  return updatedAssistance;
+};

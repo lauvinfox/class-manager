@@ -303,6 +303,8 @@ const AssignmentsTab = ({
   const [selectedStudentForAssistance, setSelectedStudentForAssistance] =
     useState<Grade | null>(null);
 
+  console.log("Selected Assignment:", selectedAssignment);
+
   return (
     <div className="max-w-full overflow-x-auto py-4 px-4">
       <div className="flex justify-end mb-4 gap-2">

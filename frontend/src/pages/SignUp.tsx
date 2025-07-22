@@ -199,17 +199,7 @@ const RegistrationPage: React.FC = () => {
             {isChecked ? <FaCheckSquare size={20} /> : <FaSquare size={20} />}
           </button>
           <label htmlFor="checkbox" className="text-sm">
-            By signing up, you agree to our
-            <a href="#" className="text-button-primary">
-              {" "}
-              Terms of Service
-            </a>{" "}
-            and
-            <a href="#" className="text-button-primary">
-              {" "}
-              Privacy Policy
-            </a>
-            .
+            By signing up, you consent to your data being recorded and stored
           </label>
         </div>
         <button

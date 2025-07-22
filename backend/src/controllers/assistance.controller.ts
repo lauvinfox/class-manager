@@ -59,3 +59,20 @@ export const getClassSubjectAssistances: RequestHandler = catchError(
     });
   }
 );
+
+export const updateClassAssistance: RequestHandler = catchError(
+  async (req, res) => {
+    const { assistanceId } = req.params;
+    const { assistantResponse } = req.body;
+
+    const updatedAssistance = await AssistanceService.updateAssistance(
+      assistanceId,
+      assistantResponse
+    );
+
+    return res.status(200).json({
+      message: "Assistance updated successfully",
+      data: updatedAssistance,
+    });
+  }
+);

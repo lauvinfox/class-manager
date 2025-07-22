@@ -1,5 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
-import { getAssistanceByClassId, getSubjectByClassId } from "../lib/api";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import {
+  getAssistanceByClassId,
+  getSubjectByClassId,
+  updateAssistance,
+} from "../lib/api";
 import { ClassInfo } from "../types/types";
 import { FiChevronDown } from "react-icons/fi";
 import { IoSearchOutline } from "react-icons/io5";
@@ -24,7 +28,7 @@ const AssistancesTab = ({
   classInfo: ClassInfo | null;
 }) => {
   // Class Assistances By Class Id
-  const { data: classAssistances } = useQuery({
+  const { data: classAssistances, refetch: refetchAssistance } = useQuery({
     queryKey: ["classAssistances"],
     queryFn: async () => {
       const res = await getAssistanceByClassId(classId);
@@ -43,6 +47,22 @@ const AssistancesTab = ({
     },
   });
 
+  const { mutate: updateAssistanceResponse } = useMutation({
+    mutationFn: async ({
+      assistanceId,
+      assistantResponse,
+    }: {
+      assistanceId: string;
+      assistantResponse: string;
+    }) => {
+      const res = await updateAssistance(assistanceId, assistantResponse);
+      return res.data;
+    },
+    onSuccess: () => {
+      refetchAssistance();
+    },
+  });
+
   // Student search
   const [searchStudentTerm, setSearchStudentTerm] = useState("");
   const handleStudentSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,6 +76,27 @@ const AssistancesTab = ({
   const [showAssistanceModal, setShowAssistanceModal] = useState(false);
   const [selectedAssistance, setSelectedAssistance] =
     useState<Assistance | null>(null);
+
+  const [isEdit, setIsEdit] = useState(false);
+  const [assistanceText, setAssistanceText] = useState("");
+
+  const handleUpdateAssistance = (assistanceId: string, assistance: string) => {
+    if (!selectedAssistance) return;
+    updateAssistanceResponse(
+      {
+        assistanceId,
+        assistantResponse: assistance,
+      },
+      {
+        onSuccess: () => {
+          setSelectedAssistance((prev) =>
+            prev ? { ...prev, assistantResponse: assistance } : prev
+          );
+          setIsEdit(false);
+        },
+      }
+    );
+  };
 
   return (
     <div className="max-w-full overflow-x-auto py-4 px-4">
@@ -289,28 +330,54 @@ const AssistancesTab = ({
                   {selectedAssistance.subject}
                 </div>
                 <div className="w-full break-words whitespace-pre-wrap max-h-86 overflow-y-auto p-2 bg-gray-100 rounded">
-                  {selectedAssistance.assistantResponse
-                    .split(/\r/)
-                    .map((line, idx) => {
-                      // Replace **text** with <b>text</b> for bold
-                      const formattedLine = line.replace(
-                        /\*\*(.+?)\*\*/g,
-                        "<b>$1</b>"
-                      );
-                      return (
-                        <div
-                          key={idx}
-                          dangerouslySetInnerHTML={{ __html: formattedLine }}
-                        />
-                      );
-                    })}
+                  {isEdit ? (
+                    <textarea
+                      id="description"
+                      className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 w-full min-h-80 resize-none"
+                      value={assistanceText}
+                      onChange={(e) => setAssistanceText(e.target.value)}
+                    />
+                  ) : (
+                    selectedAssistance.assistantResponse
+                      .split(/\r/)
+                      .map((line, idx) => {
+                        // Replace **text** with <b>text</b> for bold
+                        const formattedLine = line.replace(
+                          /\*\*(.+?)\*\*/g,
+                          "<b>$1</b>"
+                        );
+                        return (
+                          <div
+                            key={idx}
+                            dangerouslySetInnerHTML={{ __html: formattedLine }}
+                          />
+                        );
+                      })
+                  )}
                 </div>
               </div>
-              {classInfo?.role === "member" && (
+              {classInfo?.role === "member" && isEdit ? (
                 <div className="mt-4 flex items-center gap-4">
                   <button
                     className="mt-3 ml-auto px-4 py-2 rounded-md bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition w-20"
-                    onClick={() => {}}
+                    onClick={() =>
+                      handleUpdateAssistance(
+                        selectedAssistance.id,
+                        assistanceText
+                      )
+                    }
+                  >
+                    Save
+                  </button>
+                </div>
+              ) : (
+                <div className="mt-4 flex items-center gap-4">
+                  <button
+                    className="mt-3 ml-auto px-4 py-2 rounded-md bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition w-20"
+                    onClick={() => {
+                      setIsEdit(true);
+                      setAssistanceText(selectedAssistance.assistantResponse);
+                    }}
                   >
                     Edit
                   </button>

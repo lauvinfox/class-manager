@@ -8,10 +8,11 @@ import {
   deleteStudentsByClassId,
   getFullStudentReport,
   getStudentReportByDateRange,
+  updateStudentById,
 } from "../lib/api";
 import Dropzone from "./Dropzone";
 import { ClassInfo } from "../types/types";
-import { MdDelete, MdDeleteOutline, MdOutlineModeEdit } from "react-icons/md";
+import { MdDelete, MdDeleteOutline } from "react-icons/md";
 import { generatePDF, studentDataToPDFRows } from "../utils/pdf";
 
 const StudentsTab = ({
@@ -23,53 +24,6 @@ const StudentsTab = ({
   classInfo: ClassInfo | null;
   handleRefresh: () => void;
 }) => {
-  // Student management state
-  const [showAddStudentModal, setShowAddStudentModal] = useState(false);
-  const [addStudentTab, setAddStudentTab] = useState<"single" | "bulk">(
-    "single"
-  );
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const { mutate: uploadStudentsCsv } = useMutation({
-    mutationFn: async (file: File) => {
-      if (!classId) throw new Error("Class ID not found");
-      return await addStudentsToClass(classId, file);
-    },
-    onSuccess: () => {
-      handleRefresh();
-      setShowAddStudentModal(false);
-      setSelectedFile(null);
-      alert("Students uploaded successfully.");
-    },
-    onError: (error) => {
-      console.error("Failed to upload students:", error);
-      alert("Failed to upload students.");
-    },
-  });
-
-  // Search student
-  const [searchStudentTerm, setSearchStudentTerm] = useState("");
-  const handleStudentSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchStudentTerm(event.target.value);
-  };
-
-  const [deleteStudentModal, setDeleteStudentModal] = useState(false);
-
-  const { mutate: deleteStudents } = useMutation({
-    mutationFn: async () => {
-      if (!classId) throw new Error("Class ID not found");
-      return await deleteStudentsByClassId(classId);
-    },
-    onSuccess: () => {
-      handleRefresh();
-      setDeleteStudentModal(false);
-      alert("Students deleted successfully.");
-    },
-    onError: (error) => {
-      console.error("Failed to delete students:", error);
-      alert("Failed to delete students.");
-    },
-  });
-
   const { mutateAsync: addStudent } = useMutation({
     mutationFn: async (studentData: {
       studentId: number;
@@ -94,51 +48,21 @@ const StudentsTab = ({
     },
   });
 
-  const [addStudentForm, setStudentForm] = useState({
-    studentId: "",
-    name: "",
-    birthDate: "",
-    birthPlace: "",
-    contact: "",
-    address: "",
+  const { mutate: deleteStudents } = useMutation({
+    mutationFn: async () => {
+      if (!classId) throw new Error("Class ID not found");
+      return await deleteStudentsByClassId(classId);
+    },
+    onSuccess: () => {
+      handleRefresh();
+      setDeleteStudentsModal(false);
+      alert("Students deleted successfully.");
+    },
+    onError: (error) => {
+      console.error("Failed to delete students:", error);
+      alert("Failed to delete students.");
+    },
   });
-
-  const handleAddStudent = (
-    e: React.FormEvent<HTMLFormElement>,
-    student: {
-      studentId: string;
-      name: string;
-      birthDate: string;
-      birthPlace: string;
-      contact: string;
-      address: string;
-    }
-  ) => {
-    e.preventDefault();
-    addStudent({
-      studentId: parseInt(student.studentId, 10),
-      name: student.name,
-      birthDate: student.birthDate,
-      birthPlace: student.birthPlace,
-      contact: student.contact,
-      address: student.address,
-    })
-      .then(() => {
-        setStudentForm({
-          studentId: "",
-          name: "",
-          birthDate: "",
-          birthPlace: "",
-          contact: "",
-          address: "",
-        });
-      })
-      .catch((error) => {
-        console.error("Error creating assignment:", error);
-      });
-    setShowAddStudentModal(false);
-    alert("Student added successfully!");
-  };
 
   const { mutate: deleteStudent } = useMutation({
     mutationFn: async (id: string) => {
@@ -153,15 +77,6 @@ const StudentsTab = ({
       alert("Failed to delete student.");
     },
   });
-
-  const [showCreateReportModal, setShowCreateReportModal] = useState<
-    string | null
-  >(null);
-  const [reportTab, setReportTab] = useState<"full" | "byTime">("full");
-  const [fullReportNote, setFullReportNote] = useState("");
-  const [byTimeReportNote, setByTimeReportNote] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
 
   const { mutateAsync: createFullReport } = useMutation({
     mutationFn: async ({
@@ -221,6 +136,175 @@ const StudentsTab = ({
     },
   });
 
+  const { mutate: uploadStudentsCsv } = useMutation({
+    mutationFn: async (file: File) => {
+      if (!classId) throw new Error("Class ID not found");
+      return await addStudentsToClass(classId, file);
+    },
+    onSuccess: () => {
+      handleRefresh();
+      setShowAddStudentModal(false);
+      setSelectedFile(null);
+      alert("Students uploaded successfully.");
+    },
+    onError: (error) => {
+      console.error("Failed to upload students:", error);
+      alert("Failed to upload students.");
+    },
+  });
+
+  const { mutateAsync: updateStudent } = useMutation({
+    mutationFn: async ({
+      id,
+      studentData,
+    }: {
+      id: string;
+      studentData: {
+        studentId: number;
+        name: string;
+        birthDate: string;
+        birthPlace: string;
+        contact: string;
+        address: string;
+      };
+    }) => {
+      const res = await updateStudentById(id, classId, studentData);
+      return res.data;
+    },
+    onSuccess: () => {
+      handleRefresh();
+      setShowEditStudentModal(false);
+      alert("Student updated successfully.");
+    },
+    onError: (error) => {
+      console.error("Failed to update student:", error);
+      alert("Failed to update student.");
+    },
+  });
+
+  // Student management state
+  const [showAddStudentModal, setShowAddStudentModal] = useState(false);
+  const [addStudentTab, setAddStudentTab] = useState<"single" | "bulk">(
+    "single"
+  );
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  // Search student
+  const [searchStudentTerm, setSearchStudentTerm] = useState("");
+  const handleStudentSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchStudentTerm(event.target.value);
+  };
+
+  const [deleteStudentsModal, setDeleteStudentsModal] = useState(false);
+  const [deleteStudentModal, setDeleteStudentModal] = useState(false);
+
+  const [addStudentForm, setStudentForm] = useState({
+    studentId: "",
+    name: "",
+    birthDate: "",
+    birthPlace: "",
+    contact: "",
+    address: "",
+  });
+
+  const [editStudentForm, setEditStudentForm] = useState({
+    studentId: "",
+    name: "",
+    birthDate: "",
+    birthPlace: "",
+    contact: "",
+    address: "",
+  });
+
+  const handleAddStudent = (
+    e: React.FormEvent<HTMLFormElement>,
+    student: {
+      studentId: string;
+      name: string;
+      birthDate: string;
+      birthPlace: string;
+      contact: string;
+      address: string;
+    }
+  ) => {
+    e.preventDefault();
+    addStudent({
+      studentId: parseInt(student.studentId, 10),
+      name: student.name,
+      birthDate: student.birthDate,
+      birthPlace: student.birthPlace,
+      contact: student.contact,
+      address: student.address,
+    })
+      .then(() => {
+        setStudentForm({
+          studentId: "",
+          name: "",
+          birthDate: "",
+          birthPlace: "",
+          contact: "",
+          address: "",
+        });
+      })
+      .catch((error) => {
+        console.error("Error creating assignment:", error);
+      });
+    setShowAddStudentModal(false);
+    alert("Student added successfully!");
+  };
+
+  const handleEditStudent = (
+    e: React.FormEvent<HTMLFormElement>,
+    id: string,
+    student: {
+      studentId: string;
+      name: string;
+      birthDate: string;
+      birthPlace: string;
+      contact: string;
+      address: string;
+    }
+  ) => {
+    e.preventDefault();
+    updateStudent({
+      id,
+      studentData: {
+        studentId: parseInt(student.studentId, 10),
+        name: student.name,
+        birthDate: student.birthDate,
+        birthPlace: student.birthPlace,
+        contact: student.contact,
+        address: student.address,
+      },
+    })
+      .then(() => {
+        setEditStudentForm({
+          studentId: "",
+          name: "",
+          birthDate: "",
+          birthPlace: "",
+          contact: "",
+          address: "",
+        });
+      })
+      .catch((error) => {
+        console.error("Error creating assignment:", error);
+      });
+    setShowEditStudentModal(false);
+    alert("Student updated successfully!");
+  };
+
+  const [showEditStudentModal, setShowEditStudentModal] = useState(false);
+
+  const [showCreateReportModal, setShowCreateReportModal] = useState<
+    string | null
+  >(null);
+  const [reportTab, setReportTab] = useState<"full" | "byTime">("full");
+  const [fullReportNote, setFullReportNote] = useState("");
+  const [byTimeReportNote, setByTimeReportNote] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
   return (
     <div className="max-w-full overflow-x-auto py-4 px-4">
       <div className="flex justify-between mb-4">
@@ -247,12 +331,12 @@ const StudentsTab = ({
             <button
               type="button"
               className="flex items-center gap-2 text-sm text-white bg-red-600 hover:bg-red-700 transition-all duration-200 font-semibold px-4 py-2 rounded-lg shadow"
-              onClick={() => setDeleteStudentModal(true)}
+              onClick={() => setDeleteStudentsModal(true)}
             >
               <MdDelete className="text-lg" />
               Delete Students
             </button>
-            {deleteStudentModal && (
+            {deleteStudentsModal && (
               <div
                 className="relative z-50"
                 aria-labelledby="modal-title"
@@ -315,7 +399,7 @@ const StudentsTab = ({
                         <button
                           type="button"
                           className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50 sm:mt-0 sm:w-auto"
-                          onClick={() => setDeleteStudentModal(false)}
+                          onClick={() => setDeleteStudentsModal(false)}
                         >
                           Cancel
                         </button>
@@ -325,6 +409,19 @@ const StudentsTab = ({
                 </div>
               </div>
             )}
+          </div>
+        )}
+        {classInfo?.role === "member" && (
+          <div className="flex gap-2">
+            <button
+              type="button"
+              className="flex items-center gap-2 text-sm text-gray-700 dark:text-white bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200 font-semibold px-4 py-2 rounded-lg shadow"
+              onClick={handleRefresh}
+              title="Refresh Table"
+            >
+              {/* Icon Refresh */}
+              Refresh
+            </button>
           </div>
         )}
       </div>
@@ -569,13 +666,140 @@ const StudentsTab = ({
                           </td>
                           <td className="px-6 py-4 text-center">
                             <div className="flex justify-center gap-2">
-                              <button
+                              {/* <button
                                 type="button"
                                 className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
                                 title="Edit"
+                                onClick={() => {
+                                  setShowEditStudentModal(true);
+                                  setEditStudentForm({
+                                    studentId: student.studentId,
+                                    name: student.name,
+                                    birthDate: new Date(student.birthDate)
+                                      .toISOString()
+                                      .split("T")[0],
+                                    birthPlace: student.birthPlace,
+                                    contact: student.contact,
+                                    address: student.address,
+                                  });
+                                }}
                               >
                                 <MdOutlineModeEdit className="text-lg" />
-                              </button>
+                              </button> */}
+                              {showEditStudentModal && (
+                                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                                  <div className="bg-white dark:bg-gray-900 rounded-lg p-6 w-full max-w-md relative">
+                                    <button
+                                      className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 dark:hover:text-white text-xl"
+                                      onClick={() =>
+                                        setShowEditStudentModal(false)
+                                      }
+                                      aria-label="Close"
+                                    >
+                                      &times;
+                                    </button>
+                                    <h2 className="text-lg font-bold mb-4 text-font-primary dark:text-white">
+                                      Edit Student
+                                    </h2>
+                                    <form
+                                      className="flex flex-col gap-2 h-90"
+                                      onSubmit={(e) => {
+                                        handleEditStudent(
+                                          e,
+                                          student.id,
+                                          editStudentForm
+                                        );
+                                        console.log("Student Id:", student.id);
+                                      }}
+                                    >
+                                      {/* Form input satu-satu student */}
+                                      <input
+                                        className="border rounded px-3 py-2"
+                                        placeholder="Name"
+                                        value={editStudentForm.name}
+                                        onChange={(e) =>
+                                          setEditStudentForm({
+                                            ...editStudentForm,
+                                            name: e.target.value,
+                                          })
+                                        }
+                                      />
+                                      <input
+                                        className="border rounded px-3 py-2"
+                                        placeholder="Student Id"
+                                        value={editStudentForm.studentId}
+                                        onChange={(e) =>
+                                          setEditStudentForm({
+                                            ...editStudentForm,
+                                            studentId: e.target.value,
+                                          })
+                                        }
+                                      />
+                                      <input
+                                        className="border rounded px-3 py-2"
+                                        placeholder="Birth date (YYYY-MM-DD)"
+                                        value={editStudentForm.birthDate}
+                                        onChange={(e) =>
+                                          setEditStudentForm({
+                                            ...editStudentForm,
+                                            birthDate: e.target.value,
+                                          })
+                                        }
+                                      />
+                                      <input
+                                        className="border rounded px-3 py-2"
+                                        placeholder="Birth place"
+                                        value={editStudentForm.birthPlace}
+                                        onChange={(e) =>
+                                          setEditStudentForm({
+                                            ...editStudentForm,
+                                            birthPlace: e.target.value,
+                                          })
+                                        }
+                                      />
+                                      <input
+                                        className="border rounded px-3 py-2"
+                                        placeholder="Contact"
+                                        value={editStudentForm.contact}
+                                        onChange={(e) =>
+                                          setEditStudentForm({
+                                            ...editStudentForm,
+                                            contact: e.target.value,
+                                          })
+                                        }
+                                      />
+                                      <input
+                                        className="border rounded px-3 py-2"
+                                        placeholder="Address"
+                                        value={editStudentForm.address}
+                                        onChange={(e) =>
+                                          setEditStudentForm({
+                                            ...editStudentForm,
+                                            address: e.target.value,
+                                          })
+                                        }
+                                      />
+                                      <div className="flex justify-end gap-2 mt-auto">
+                                        <button
+                                          type="button"
+                                          className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600"
+                                          onClick={() =>
+                                            setShowEditStudentModal(false)
+                                          }
+                                        >
+                                          Cancel
+                                        </button>
+                                        <button
+                                          type="submit"
+                                          className="px-4 py-2 rounded bg-indigo-600 text-white font-semibold hover:bg-indigo-700"
+                                        >
+                                          Save
+                                        </button>
+                                      </div>
+                                    </form>
+                                  </div>
+                                </div>
+                              )}
                               <button
                                 type="button"
                                 className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700"

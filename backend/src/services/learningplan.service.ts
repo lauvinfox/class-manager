@@ -49,3 +49,16 @@ export const getLearningPlansByClassAndSubject = async (
 
   return learningPlans;
 };
+
+export const updateLearningPlan = async (
+  learningPlanId: string,
+  learningPlan: string
+) => {
+  const updatedLearningPlan = await LearningPlanModel.findByIdAndUpdate(
+    learningPlanId,
+    { learningPlan },
+    { new: true }
+  );
+
+  return updatedLearningPlan;
+};

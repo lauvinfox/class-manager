@@ -3,7 +3,6 @@ import * as UserService from "@services/user.service";
 import catchError from "@utils/error";
 import appAssert from "@utils/appAssert";
 import { BAD_REQUEST, UNAUTHORIZED } from "@constants/statusCodes";
-import { date } from "zod";
 
 export const getUsers: RequestHandler = catchError(async (_req, res) => {
   const users = await UserService.getAllUsers();

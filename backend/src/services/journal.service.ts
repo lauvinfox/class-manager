@@ -84,6 +84,13 @@ export const createJournal = async ({
   return journalDocs;
 };
 
+export const deleteStudentsByClassId = async (classId: string) => {
+  return await JournalModel.updateMany(
+    { classId },
+    { $pull: { journals: {} } }
+  );
+};
+
 export const getJournalById = async ({ journalId }: { journalId: string }) => {
   const journal = await JournalModel.findById(journalId)
     .populate("createdBy", "name")
@@ -440,4 +447,17 @@ export const getAttendanceByStudentIdInTimeRange = async (
   }));
 
   return result;
+};
+
+export const deleteJournalById = async (classId: string, journalId: string) => {
+  const journal = await JournalModel.findOneAndDelete({
+    classId,
+    _id: journalId,
+  });
+  appAssert(journal, NOT_FOUND, "Journal not found!");
+
+  // Remove journal from class
+  await ClassService.removeJournalFromClass(classId, journalId);
+
+  return journal;
 };

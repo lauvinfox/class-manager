@@ -1,7 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+// import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ThemeProvider } from "./contexts/ThemeContext.tsx";
 
 import "./index.css";
@@ -16,7 +16,7 @@ createRoot(document.getElementById("root")!).render(
         <ThemeProvider>
           <App />
         </ThemeProvider>
-        <ReactQueryDevtools position="right" initialIsOpen={false} />
+        {/* <ReactQueryDevtools position="right" initialIsOpen={false} /> */}
       </BrowserRouter>
     </QueryClientProvider>
   </StrictMode>

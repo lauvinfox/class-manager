@@ -223,9 +223,7 @@ export const addStudentsToClass = async (classId: string, file: File) => {
 };
 
 export const deleteStudentFromClass = async (classId: string, id: string) => {
-  return await API.delete(`/api/v1/students/${classId}/delete-student`, {
-    data: { id },
-  });
+  return await API.delete(`/api/v1/students/${classId}/delete-student/${id}`);
 };
 
 export const getSubjectAttendanceSummary = async (classId: string) => {
@@ -252,6 +250,23 @@ export const deleteStudentsByClassId = async (classId: string) => {
 
 export const deleteClassByClassId = async (classId: string) => {
   return await API.delete(`/api/v1/class/${classId}`);
+};
+
+export const updateStudentById = async (
+  id: string,
+  classId: string,
+  updatedStudent: {
+    name?: string;
+    studentId?: number;
+    birthDate?: string;
+    birthPlace?: string;
+    contact?: string;
+    address?: string;
+  }
+) => {
+  return await API.put(`/api/v1/students/${id}/update/${classId}`, {
+    ...updatedStudent,
+  });
 };
 
 export const getClassSubjects = async (classId: string) => {
@@ -368,6 +383,10 @@ export const deleteAssignmentById = async (
   assignmentId: string
 ) => {
   return await API.delete(`/api/v1/assignments/${classId}/${assignmentId}`);
+};
+
+export const deleteJournalById = async (classId: string, journalId: string) => {
+  return await API.delete(`/api/v1/journals/${classId}/${journalId}`);
 };
 
 export const getClassWeights = async (classId: string) => {
@@ -543,6 +562,15 @@ export const getAssistanceByClassAndSubject = async (
   return await API.post(`/api/v1/assistances/${classId}/subject`, { subject });
 };
 
+export const updateAssistance = async (
+  assistanceId: string,
+  assistantResponse: string
+) => {
+  return await API.put(`/api/v1/assistances/${assistanceId}/update`, {
+    assistantResponse,
+  });
+};
+
 // Learning Plans
 export const createClassLearningPlan = async ({
   classId,
@@ -582,4 +610,13 @@ export const getLearningPlansByClassAndSubject = async (
   return await API.get(
     `/api/v1/learning-plans/${classId}/subject/${subject}/get`
   );
+};
+
+export const updateLearningPlan = async (
+  learningPlanId: string,
+  learningPlan: string
+) => {
+  return await API.put(`/api/v1/learning-plans/${learningPlanId}/update`, {
+    learningPlan,
+  });
 };

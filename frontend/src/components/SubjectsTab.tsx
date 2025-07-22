@@ -45,9 +45,13 @@ const SubjectsTab = ({
     }) => {
       return await giveSubjectWeights({ classId, subject, assignmentWeight });
     },
+    onSuccess: () => {
+      refetchWeight();
+      refetchSubjectWeight();
+    },
   });
 
-  const { data: classWeights } = useQuery({
+  const { data: classWeights, refetch: refetchWeight } = useQuery({
     queryKey: ["classWeights", classId],
     queryFn: async () => {
       const response = await getClassWeights(classId);
@@ -64,13 +68,14 @@ const SubjectsTab = ({
     },
   });
 
-  const { data: classWeightBySubject } = useQuery({
-    queryKey: ["classWeightBySubject", classId, memberSubject],
-    queryFn: async () => {
-      const response = await getClassWeightBySubject(classId, memberSubject);
-      return response.data;
-    },
-  });
+  const { data: classWeightBySubject, refetch: refetchSubjectWeight } =
+    useQuery({
+      queryKey: ["classWeightBySubject", classId, memberSubject],
+      queryFn: async () => {
+        const response = await getClassWeightBySubject(classId, memberSubject);
+        return response.data;
+      },
+    });
 
   const [showUpdateWeight, setShowUpdateWeight] = useState(false);
   const [newAssignmentWeight, setNewAssignmentWeights] = useState<{
@@ -113,10 +118,10 @@ const SubjectsTab = ({
   };
 
   return (
-    <div className="mx-auto py-8 px-4">
+    <div className="mx-auto py-4 px-4">
       {classInfo?.role === "owner" && (
         <div className="mx-auto py-8 px-4">
-          <h2 className="text-2xl font-semibold mb-4">Subject Weights</h2>
+          <h2 className="text-2xl font-semibold mb-6">Subject Weights</h2>
           <div className="flex overflow-x-auto space-x-4 pb-4">
             {classWeights && classWeights.length > 0 ? (
               classWeights.map(

@@ -13,4 +13,7 @@ router.post(
   AssistanceController.getClassSubjectAssistances
 );
 
+// Update an assistance
+router.put("/:assistanceId/update", AssistanceController.updateClassAssistance);
+
 export default router;

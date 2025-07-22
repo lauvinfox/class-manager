@@ -48,7 +48,7 @@ export const getLearningPlan = async (
     model: "gpt-4o",
     instructions:
       "Kamu adalah asisten AI yang membantu untuk memberikan rencana pembelajaran yang efektif. Buat rencana pembelajaran yang sesuai dengan subjek, topik, tingkat kesulitan, durasi, dan gaya belajar yang diberikan.",
-    input: `Buat rencana pembelajaran untuk subjek ${subject}, topik ${topic}, tingkat kesulitan ${level}, durasi ${duration} jam, dengan gaya belajar ${learningStyle}.`,
+    input: `Buat rencana pembelajaran untuk subjek ${subject}, topik ${topic}, tingkat kesulitan ${level}, durasi ${duration} jam, dengan gaya belajar ${learningStyle}. Buat dalam format text, jangan menggunakan format md.`,
   });
 
   return response.output_text;

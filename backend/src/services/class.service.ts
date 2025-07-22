@@ -151,6 +151,33 @@ export const removeAssignmentFromClass = async (
   return classDoc;
 };
 
+export const removeJournalFromClass = async (
+  classId: string,
+  journalId: string
+) => {
+  // Validate classId and assignmentId
+  appAssert(
+    typeof classId === "string" && classId.length > 0,
+    BAD_REQUEST,
+    "classId is required"
+  );
+  appAssert(
+    Types.ObjectId.isValid(journalId),
+    BAD_REQUEST,
+    "Invalid journal ID"
+  );
+
+  // Find class and remove journal
+  const classDoc = await ClassModel.findOneAndUpdate(
+    { classId },
+    { $pull: { journals: new Types.ObjectId(journalId) } },
+    { new: true, runValidators: true }
+  ).populate("journals", "title journalDate");
+
+  appAssert(classDoc, NOT_FOUND, "Class not found");
+  return classDoc;
+};
+
 export const removeStudentFromClass = async (classId: string, id: string) => {
   // Find class and remove student
   const classDoc = await ClassModel.findOneAndUpdate(

@@ -4,6 +4,7 @@ import {
   getLearningPlan,
   getLearningPlansByClass,
   getSubjectByClassId,
+  updateLearningPlan,
 } from "../lib/api";
 import { ClassInfo } from "../types/types";
 import { FiChevronDown, FiPlus } from "react-icons/fi";
@@ -100,12 +101,28 @@ const LearningPlansTab = ({
     },
   });
 
-  const { data: classLearningPlans } = useQuery({
+  const { data: classLearningPlans, refetch: refetchLearningPlan } = useQuery({
     queryKey: ["classLearningPlans"], // Replace "your-class-id" with actual classId variable if available
     queryFn: async () => {
       if (!classId) return "";
       const res = await getLearningPlansByClass(classId);
       return res.data;
+    },
+  });
+
+  const { mutate: updatePlan } = useMutation({
+    mutationFn: async ({
+      learningPlanId,
+      learningPlan,
+    }: {
+      learningPlanId: string;
+      learningPlan: string;
+    }) => {
+      const res = await updateLearningPlan(learningPlanId, learningPlan);
+      return res.data;
+    },
+    onSuccess: () => {
+      refetchLearningPlan();
     },
   });
 
@@ -137,6 +154,28 @@ const LearningPlansTab = ({
     setShowLearningPlanModal(false);
   };
 
+  const handleUpdateLearningPlan = (
+    learningPlanId: string,
+    learningPlanText: string
+  ) => {
+    if (!selectedLearningPlan) return;
+    updatePlan(
+      {
+        learningPlanId: learningPlanId,
+        learningPlan: learningPlanText,
+      },
+      {
+        onSuccess: () => {
+          setSelectedLearningPlan((prev) =>
+            prev ? { ...prev, learningPlan: learningPlanText } : prev
+          );
+          setIsEdit(false);
+          setShowLearningPlanModal(false);
+        },
+      }
+    );
+  };
+
   const [showLearningPlan, setShowLearningPlan] = useState(false);
   const [selectedLearningPlan, setSelectedLearningPlan] =
     useState<LearningPlan | null>(null);
@@ -145,6 +184,8 @@ const LearningPlansTab = ({
   const handleSearchTopic = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTopicTerm(event.target.value);
   };
+
+  const [isEdit, setIsEdit] = useState(false);
 
   return (
     <div className="max-w-full overflow-x-auto py-4 px-4">
@@ -347,10 +388,10 @@ const LearningPlansTab = ({
                     </div>
                     <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-300">
                       <div className="text-gray-600 dark:text-gray-400">
-                        {learningPlan.level}
+                        {learningPlan.learningStyle}
                       </div>
                       <div className="text-gray-600 dark:text-gray-400">
-                        {learningPlan.duration}
+                        {learningPlan.duration} hours
                       </div>
                     </div>
                   </div>
@@ -383,40 +424,74 @@ const LearningPlansTab = ({
                   {selectedLearningPlan.learningStyle}
                 </div>
                 <div>
-                  <span className="font-semibold">Student Name:</span>{" "}
+                  <span className="font-semibold">Learning Style:</span>{" "}
                   {selectedLearningPlan.learningStyle}
                 </div>
                 <div>
-                  <span className="font-semibold">Subject:</span>{" "}
-                  {selectedLearningPlan.level}
+                  <span className="font-semibold">Level:</span>{" "}
+                  {selectedLearningPlan.level === "dasar"
+                    ? "Beginner"
+                    : selectedLearningPlan.level === "menengah"
+                    ? "Intermediate"
+                    : "High"}
                 </div>
                 <div>
                   <span className="font-semibold">Duration:</span>{" "}
                   {selectedLearningPlan.duration} hours
                 </div>
-                <div className="w-full break-words whitespace-pre-wrap max-h-86 overflow-y-auto p-2 bg-gray-100 rounded">
-                  {selectedLearningPlan.learningPlan
-                    .split(/\r/)
-                    .map((line, idx) => {
-                      // Replace **text** with <b>text</b> for bold
-                      const formattedLine = line.replace(
-                        /\*\*(.+?)\*\*/g,
-                        "<b>$1</b>"
-                      );
-                      return (
-                        <div
-                          key={idx}
-                          dangerouslySetInnerHTML={{ __html: formattedLine }}
-                        />
-                      );
-                    })}
+                <div
+                  className={`w-full break-words whitespace-pre-wrap max-h-86 overflow-y-auto p-2 ${
+                    isEdit ? "bg-white" : "bg-gray-100"
+                  } rounded`}
+                >
+                  {isEdit ? (
+                    <textarea
+                      id="description"
+                      className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 w-full min-h-80 resize-none"
+                      value={learningPlanText}
+                      onChange={(e) => setLearningPlanText(e.target.value)}
+                    />
+                  ) : (
+                    selectedLearningPlan.learningPlan
+                      .split(/\r/)
+                      .map((line, idx) => {
+                        // Replace **text** with <b>text</b> for bold
+                        const formattedLine = line.replace(
+                          /\*\*(.+?)\*\*/g,
+                          "<b>$1</b>"
+                        );
+                        return (
+                          <div
+                            key={idx}
+                            dangerouslySetInnerHTML={{ __html: formattedLine }}
+                          />
+                        );
+                      })
+                  )}
                 </div>
               </div>
-              {classInfo?.role === "member" && (
+              {classInfo?.role === "member" && isEdit ? (
                 <div className="mt-4 flex items-center gap-4">
                   <button
                     className="mt-3 ml-auto px-4 py-2 rounded-md bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition w-20"
-                    onClick={() => {}}
+                    onClick={() =>
+                      handleUpdateLearningPlan(
+                        selectedLearningPlan.id,
+                        learningPlanText
+                      )
+                    }
+                  >
+                    Save
+                  </button>
+                </div>
+              ) : (
+                <div className="mt-4 flex items-center gap-4">
+                  <button
+                    className="mt-3 ml-auto px-4 py-2 rounded-md bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition w-20"
+                    onClick={() => {
+                      setIsEdit(!isEdit);
+                      setLearningPlanText(selectedLearningPlan.learningPlan);
+                    }}
                   >
                     Edit
                   </button>
