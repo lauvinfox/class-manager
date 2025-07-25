@@ -522,42 +522,7 @@ const StudentsTab = ({
                           }
                         )}
                       </td>
-                      {pdfPreviewUrl &&
-                        pdfPreviewStudent &&
-                        pdfPreviewStudent.studentId === student.studentId && (
-                          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/2.5">
-                            <div className="bg-white rounded-lg p-4 w-full max-w-3xl h-[80vh] flex flex-col">
-                              <iframe
-                                src={pdfPreviewUrl}
-                                className="flex-1 w-full"
-                              />
-                              <div className="flex gap-2 mt-2">
-                                <button
-                                  onClick={() => {
-                                    setPdfPreviewUrl(null);
-                                    setPdfDoc(null);
-                                    setPdfPreviewStudent(null);
-                                  }}
-                                  className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
-                                >
-                                  Close
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    if (pdfDoc) {
-                                      pdfDoc.save(
-                                        `student-report-${student.studentId}-${student.name}.pdf`
-                                      );
-                                    }
-                                  }}
-                                  className="px-4 py-2 rounded bg-indigo-600 text-white font-semibold hover:bg-indigo-700"
-                                >
-                                  Download PDF
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        )}
+
                       {classInfo?.role === "owner" && (
                         <>
                           <td className="px-6 py-4 text-center">
@@ -776,6 +741,43 @@ const StudentsTab = ({
                                 <MdOutlineModeEdit className="text-lg" />
                               </button> */}
 
+                              {pdfPreviewUrl &&
+                                pdfPreviewStudent &&
+                                pdfPreviewStudent.studentId ===
+                                  student.studentId && (
+                                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/2.5">
+                                    <div className="bg-white rounded-lg p-4 w-full max-w-3xl h-[80vh] flex flex-col border">
+                                      <iframe
+                                        src={pdfPreviewUrl}
+                                        className="flex-1 w-full"
+                                      />
+                                      <div className="flex gap-2 mt-2">
+                                        <button
+                                          onClick={() => {
+                                            setPdfPreviewUrl(null);
+                                            setPdfDoc(null);
+                                            setPdfPreviewStudent(null);
+                                          }}
+                                          className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
+                                        >
+                                          Close
+                                        </button>
+                                        <button
+                                          onClick={() => {
+                                            if (pdfDoc) {
+                                              pdfDoc.save(
+                                                `student-report-${student.studentId}-${student.name}.pdf`
+                                              );
+                                            }
+                                          }}
+                                          className="px-4 py-2 rounded bg-indigo-600 text-white font-semibold hover:bg-indigo-700"
+                                        >
+                                          Download PDF
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
                               {showEditStudentModal && (
                                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
                                   <div className="bg-white dark:bg-gray-900 rounded-lg p-6 w-full max-w-md relative">

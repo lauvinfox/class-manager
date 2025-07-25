@@ -24,18 +24,6 @@ const socket = io("http://localhost:3000", {
 });
 
 export const Sidebar = () => {
-  const [selected, setSelected] = useState(() => {
-    // Set default tab sesuai path
-    if (window.location.pathname.startsWith("/settings")) return "Settings";
-    if (window.location.pathname.startsWith("/notifications"))
-      return "Notification";
-    if (window.location.pathname.startsWith("/classes")) return "Classes";
-    if (window.location.pathname.startsWith("/help")) return "Help";
-    return "Home";
-  });
-
-  const [hasUnread, setHasUnread] = useState(false);
-
   // Query user info
   const { data: user } = useQuery({
     queryKey: ["userInfo"],
@@ -50,6 +38,18 @@ export const Sidebar = () => {
       user?.id ? getUserNotifications().then((res) => res.data) : [],
     enabled: !!user?.id,
   });
+
+  const [selected, setSelected] = useState(() => {
+    // Set default tab sesuai path
+    if (window.location.pathname.startsWith("/settings")) return "Settings";
+    if (window.location.pathname.startsWith("/notifications"))
+      return "Notification";
+    if (window.location.pathname.startsWith("/classes")) return "Classes";
+    if (window.location.pathname.startsWith("/help")) return "Help";
+    return "Home";
+  });
+
+  const [hasUnread, setHasUnread] = useState(false);
 
   // Integrasi socket.io untuk real-time notification
   useEffect(() => {

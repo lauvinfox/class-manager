@@ -302,7 +302,11 @@ const LearningPlansTab = ({
                       </div>
                       <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-300">
                         <div className="text-gray-600 dark:text-gray-400">
-                          {learningPlan.level}
+                          {learningPlan.level === "dasar"
+                            ? "Beginner"
+                            : learningPlan.level === "menengah"
+                            ? "Intermediate"
+                            : "High"}
                         </div>
                         <div className="text-gray-600 dark:text-gray-400">
                           {learningPlan.duration}
@@ -346,7 +350,11 @@ const LearningPlansTab = ({
                       </div>
                       <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-300">
                         <div className="text-gray-600 dark:text-gray-400">
-                          {learningPlan.level}
+                          {learningPlan.level === "dasar"
+                            ? "Beginner"
+                            : learningPlan.level === "menengah"
+                            ? "Intermediate"
+                            : "High"}
                         </div>
                         <div className="text-gray-600 dark:text-gray-400">
                           {learningPlan.duration}
@@ -677,7 +685,7 @@ const LearningPlansTab = ({
               >
                 &times;
               </button>
-              <h2 className="text-xl font-bold mb-4">Create Assistance</h2>
+              <h2 className="text-xl font-bold mb-4">Create Learning Plan</h2>
               <form
                 className="flex flex-col gap-1.5"
                 onSubmit={(e) => {
