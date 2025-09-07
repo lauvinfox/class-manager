@@ -17,10 +17,6 @@ import {
   FaListAlt,
 } from "react-icons/fa";
 
-import user01 from "../assets/user01.png";
-import user02 from "../assets/user02.png";
-import user03 from "../assets/user03.png";
-
 export const links = [
   {
     href: "#",
@@ -109,54 +105,245 @@ export const shortcutLink = [
   },
 ];
 
-export const users = [
-  {
-    name: "Robert Fox",
-    country: "USA",
-    role: "Python Developer",
-    image: user01,
-    bgColor: "bg-yellow-100",
-  },
-  {
-    name: "Jane Doe",
-    country: "UK",
-    role: "Frontend Developer",
-    image: user02,
-    bgColor: "bg-blue-100",
-  },
-  {
-    name: "John Smith",
-    country: "Canada",
-    role: "Backend Developer",
-    image: user03,
-    bgColor: "bg-gray-100",
-  },
-  {
-    name: "Alice Johnson",
-    country: "Australia",
-    role: "Full Stack Developer",
-    image: user01,
-    bgColor: "bg-slate-100",
-  },
-];
+export const wordTranslations = (language: string) => {
+  return {
+    subject: language === "id" ? "Mata Pelajaran" : "Subject",
+    noSubjects: language === "id" ? "Tidak ada mata pelajaran" : "No subjects",
+    createJournal: language === "id" ? "Buat Jurnal" : "Create Journal",
+    all: language === "id" ? "Semua" : "All",
+    thisWeek: language === "id" ? "Minggu Ini" : "This Week",
+    thisMonth: language === "id" ? "Bulan Ini" : "This Month",
+    name: language === "id" ? "Nama" : "Name",
+    attendance: language === "id" ? "Kehadiran" : "Attendance",
+    notes: language === "id" ? "Catatan" : "Notes",
+    present: language === "id" ? "Hadir" : "Present",
+    absent: language === "id" ? "Absen" : "Absent",
+    late: language === "id" ? "Terlambat" : "Late",
+    sick: language === "id" ? "Sakit" : "Sick",
+    excused: language === "id" ? "Izin" : "Excused",
+    pending: language === "id" ? "Menunggu" : "Pending",
+    noAttendances:
+      language === "id"
+        ? "Tidak ada kehadiran atau catatan."
+        : "No attendances or notes available.",
+    createdBy: language === "id" ? "Dibuat oleh" : "Created By:",
+    startTime: language === "id" ? "Waktu Mulai" : "Start Time:",
+    endTime: language === "id" ? "Waktu Selesai" : "End Time:",
+    deleteJournal: language === "id" ? "Hapus Jurnal" : "Delete Journal",
+    deleteAssignmentModalTitle:
+      language === "id" ? "Hapus Jurnal" : "Delete Journal",
+    deleteAssignmentModalDesc:
+      language === "id"
+        ? "Apakah Anda yakin ingin menghapus jurnal ini? Tindakan ini tidak dapat dibatalkan."
+        : "Are you sure you want to delete this journal? This action cannot be undone.",
+    delete: language === "id" ? "Hapus" : "Delete",
+    cancel: language === "id" ? "Batal" : "Cancel",
+    saveChanges: language === "id" ? "Simpan Perubahan" : "Save Changes",
+    journalCreated:
+      language === "id"
+        ? "Jurnal berhasil dibuat!"
+        : "Journal created successfully!",
+    journalDeleted:
+      language === "id" ? "Jurnal berhasil dihapus!" : "Journal deleted!",
+    changesSaved:
+      language === "id" ? "Perubahan berhasil disimpan!" : "Changes saved!",
+    create: language === "id" ? "Buat" : "Create",
+    title: language === "id" ? "Judul" : "Title",
+    description: language === "id" ? "Deskripsi" : "Description",
+    date: language === "id" ? "Tanggal" : "Date",
+    journalTitlePlaceholder:
+      language === "id" ? "Judul Jurnal" : "Journal Title",
+    journalDescPlaceholder:
+      language === "id" ? "Deskripsi Jurnal" : "Journal Description",
+    failedLoad:
+      language === "id"
+        ? "Gagal memuat detail jurnal"
+        : "Failed to load journal detail",
+    refresh: language === "id" ? "Segarkan" : "Refresh",
+    homework: language === "id" ? "PR" : "Homework",
+    quiz: language === "id" ? "Kuis" : "Quiz",
+    exam: language === "id" ? "Ujian" : "Exam",
+    project: language === "id" ? "Proyek" : "Project",
+    finalExam: language === "id" ? "Ujian Akhir" : "Final Exam",
+    assignedBy: language === "id" ? "Diberikan Oleh" : "Assigned By",
+    type: language === "id" ? "Tipe" : "Type",
+    assignmentDate: language === "id" ? "Tanggal Penugasan" : "Assignment Date",
+    noGradesAvailable:
+      language === "id" ? "Tidak ada nilai tersedia." : "No grades available.",
+    action: language === "id" ? "Aksi" : "Action",
+    score: language === "id" ? "Nilai" : "Score",
+    getAssistance: language === "id" ? "Minta Asistensi" : "Get Assistance",
+    createAssistance:
+      language === "id" ? "Buat Asistensi" : "Create Assistance",
+    assignmentDescription:
+      language === "id" ? "Deskripsi Tugas" : "Assignment Description",
+    assignmentTitle: language === "id" ? "Judul" : "Title",
+    selectStudent: language === "id" ? "Pilih Siswa" : "Select Student",
+    save: language === "id" ? "Simpan" : "Save",
+    deleteAssignmentConfirmation:
+      language === "id"
+        ? "Apakah Anda yakin ingin menghapus tugas ini? Tindakan ini tidak dapat dibatalkan."
+        : "Are you sure you want to delete this assignment? This action cannot be undone.",
 
-export const events = [
-  {
-    date: "01 Aug",
-    title: "Upcoming Event",
-    description: "Lorem ipsum dolor sit amet.",
-  },
-  {
-    date: "15 Sept",
-    title: "Annual Conference",
-    description: "Join us for our annual conference.",
-  },
-  {
-    date: "20 Sept",
-    title: "Networking Meetup",
-    description: "Connect with professionals in your field.",
-  },
-];
+    deleteAssignment: language === "id" ? "Hapus Tugas" : "Delete Assignment",
+    assignmentType: language === "id" ? "Tipe Tugas" : "Assignment Type",
+    noDescriptionProvided:
+      language === "id"
+        ? "Tidak ada deskripsi yang diberikan."
+        : "No description provided.",
+    createAssignment: language === "id" ? "Buat Tugas" : "Create Assignment",
+    searchStudent: language === "id" ? "Cari siswa" : "Search student",
+    editAssignment: language === "id" ? "Sunting Tugas" : "Edit Assignment",
+    edit: language === "id" ? "Sunting" : "Edit",
+    totalJournals: language === "id" ? "Total Jurnal" : "Total Journals",
+    noAttendanceSummary:
+      language === "id"
+        ? "Tidak ada ringkasan kehadiran ditemukan."
+        : "No attendance summary found.",
+    noAssignmentSummaryForSubject:
+      language === "id"
+        ? "Tidak ada ringkasan tugas untuk mata pelajaran ini."
+        : "No assignment summary for this subject.",
+    assignmentSummary:
+      language === "id" ? "Ringkasan Tugas" : "Assignment Summary",
+    attendanceSummary:
+      language === "id" ? "Ringkasan Kehadiran" : "Attendance Summary",
+    statistics: language === "id" ? "Statistik" : "Statistics",
+    changeViewMode:
+      language === "id" ? "Ubah Mode Tampilan" : "Change View Mode",
+    chooseLanguage: language === "id" ? "Pilih Bahasa" : "Choose Language",
+    language: language === "id" ? "Bahasa Indonesia" : "English",
+    account: language === "id" ? "Akun" : "Account",
+    general: language === "id" ? "Umum" : "General",
+    preferences: language === "id" ? "Preferensi" : "Preferences",
+    settings: language === "id" ? "Pengaturan" : "Settings",
+    profile: language === "id" ? "Profil" : "Profile",
+    searchInstructor:
+      language === "id" ? "Cari instruktur" : "Search instructor",
+    noInstructors:
+      language === "id"
+        ? "Tidak ada instruktur ditemukan."
+        : "No instructors found.",
+    addSubject: language === "id" ? "Tambah Subyek" : "Add Subject",
+    addInstructor: language === "id" ? "Tambah Instruktur" : "Add Instructor",
+    username: language === "id" ? "Username" : "Username",
+    status: language === "id" ? "Status" : "Status",
+    owner: language === "id" ? "Pemilik" : "Owner",
+    instructor: language === "id" ? "Instruktur" : "Instructor",
+    accepted: language === "id" ? "Diterima" : "Accepted",
+    declined: language === "id" ? "Ditolak" : "Declined",
+    needConfirmation:
+      language === "id" ? "Butuh Konfirmasi" : "Need Confirmation",
+    remove: language === "id" ? "Hapus" : "Remove",
+    removeInstructor:
+      language === "id" ? "Hapus Instruktur" : "Remove Instructor",
+    giveSubject: language === "id" ? "Berikan Subyek" : "Give Subject",
+    undetermined: language === "id" ? "Belum Ditentukan" : "Undetermined",
+    noInstructorsFound:
+      language === "id"
+        ? "Instruktur tidak ditemukan."
+        : "No instructors found.",
+    giveSubjectTo:
+      language === "id" ? "Berikan subyek kepada" : "Give subject to",
+    chooseOneSubjectToGive:
+      language === "id"
+        ? "Pilih satu subyek untuk diberikan"
+        : "Choose one subject to give to",
+
+    inviteInstructors:
+      language === "id" ? "Undang Instruktur" : "Invite Instructors",
+
+    userNotFound:
+      language === "id" ? "Pengguna tidak ditemukan" : "User not found",
+    invite: language === "id" ? "Undang" : "Invite",
+    add: language === "id" ? "Tambah" : "Add",
+    back: language === "id" ? "Kembali" : "Back",
+    addStudent: language === "id" ? "Tambah Siswa" : "Add Student",
+    deleteStudents: language === "id" ? "Hapus Semua Siswa" : "Delete Students",
+    deleteStudentsConfirmation:
+      language === "id"
+        ? "Apakah Anda yakin ingin menghapus semua siswa? Tindakan ini tidak dapat dibatalkan."
+        : "Are you sure you want to delete all students? This action cannot be undone.",
+    studentId: language === "id" ? "ID Siswa" : "Student ID",
+    birthDate: language === "id" ? "Tanggal Lahir" : "Birth Date",
+    birthPlace: language === "id" ? "Tempat Lahir" : "Birth Place",
+    contact: language === "id" ? "Kontak" : "Contact",
+    report: language === "id" ? "Laporan" : "Report",
+    createReport: language === "id" ? "Buat Laporan" : "Create Report",
+    createReportFor:
+      language === "id" ? "Buat Laporan untuk" : "Create Report for",
+    fullReport: language === "id" ? "Laporan Lengkap" : "Full Report",
+    reportByTime:
+      language === "id" ? "Laporan berdasarkan Waktu" : "Report by Time",
+    note: language === "id" ? "Catatan" : "Note",
+    notePlaceholder:
+      language === "id" ? "Catatan untuk laporan" : "Note for the report",
+    startDate: language === "id" ? "Tanggal Mulai" : "Start Date",
+    endDate: language === "id" ? "Tanggal Selesai" : "End Date",
+    reportDescription:
+      language === "id" ? "Deskripsi Laporan" : "Report Description",
+    close: language === "id" ? "Tutup" : "Close",
+    downloadPDF: language === "id" ? "Unduh PDF" : "Download PDF",
+    editStudent: language === "id" ? "Sunting Siswa" : "Edit Student",
+    address: language === "id" ? "Alamat" : "Address",
+    deleteStudent: language === "id" ? "Hapus Siswa" : "Delete Student",
+    deleteStudentConfirmation:
+      language === "id"
+        ? "Apakah Anda yakin ingin menghapus siswa ini? Tindakan ini tidak dapat dibatalkan."
+        : "Are you sure you want to delete this student? This action cannot be undone.",
+    noStudentFound:
+      language === "id" ? "Siswa tidak ditemukan." : "No student found.",
+    addStudents: language === "id" ? "Tambah Siswa" : "Add Students",
+    singleUpload: language === "id" ? "Upload Tunggal" : "Single Upload",
+    bulkUpload: language === "id" ? "Upload Massal" : "Bulk Upload",
+    searchTopic: language === "id" ? "Cari topik" : "Search topic",
+    createLearningPlan:
+      language === "id" ? "Buat Rencana Pembelajaran" : "Create Learning Plan",
+    assistanceRequest:
+      language === "id" ? "Permintaan Bantuan" : "Assistance Request",
+    beginner: language === "id" ? "Pemula" : "Beginner",
+    intermediate: language === "id" ? "Menengah" : "Intermediate",
+    high: language === "id" ? "Tinggi" : "High",
+    hours: language === "id" ? "jam" : "hours",
+    topic: language === "id" ? "Topik" : "Topic",
+    learningPlanTopic:
+      language === "id" ? "Topik Rencana Pembelajaran" : "Learning Plan Topic",
+    level: language === "id" ? "Tingkat" : "Level",
+    durationInHour: language === "id" ? "Durasi (jam)" : "Duration in Hour",
+    learningStyle: language === "id" ? "Gaya Belajar" : "Learning Style",
+    visual: language === "id" ? "Visual" : "Visual",
+    auditory: language === "id" ? "Auditori" : "Auditory",
+    kinesthetic: language === "id" ? "Kinestetik" : "Kinesthetic",
+    readingWriting: language === "id" ? "Membaca-Menulis" : "Reading-Writing",
+    collaborative: language === "id" ? "Kolaboratif" : "Collaborative",
+    independent: language === "id" ? "Mandiri" : "Independent",
+    problemBased: language === "id" ? "Berbasis Masalah" : "Problem-based",
+    inquiryBased: language === "id" ? "Berbasis Inkuiri" : "Inquiry-based",
+    learningPlan: language === "id" ? "Rencana Pembelajaran" : "Learning Plan",
+    subjectWeights: language === "id" ? "Bobot Subyek" : "Subject Weights",
+    noSubjectWeightFound:
+      language === "id"
+        ? "Tidak ada bobot subyek ditemukan."
+        : "No subject weights found.",
+    updateSubjectWeights:
+      language === "id" ? "Perbarui Bobot Subyek" : "Update Subject Weights",
+    enterValueInPercent:
+      language === "id"
+        ? "Masukkan nilai dalam persen (%)."
+        : "Enter value in percent (%).",
+    update: language === "id" ? "Perbarui" : "Update",
+    notifications: language === "id" ? "Notifikasi" : "Notifications",
+    loading: language === "id" ? "Memuat..." : "Loading...",
+    failedToLoadNotifications:
+      language === "id"
+        ? "Gagal memuat notifikasi."
+        : "Failed to load notifications.",
+    noNotifications:
+      language === "id" ? "Tidak ada notifikasi." : "No notifications.",
+    inviteAccepted: language === "id" ? "Undangan Diterima" : "Invite Accepted",
+    inviteDenied: language === "id" ? "Undangan Ditolak" : "Invite Denied",
+  };
+};
 
 // ------- ==
 // chart data, later we will use this!!!

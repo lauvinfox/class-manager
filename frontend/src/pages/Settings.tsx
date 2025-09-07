@@ -14,6 +14,7 @@ import { AuthProvider } from "../contexts/AuthContext";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useLanguage } from "../contexts/LanguageContext";
 import { FiChevronDown } from "react-icons/fi";
+import { wordTranslations } from "../constants";
 
 const Settings = () => {
   const { data: userPreferences, refetch: refetchUserPreferences } = useQuery({
@@ -36,8 +37,6 @@ const Settings = () => {
   });
 
   const { darkMode, toggleDarkMode } = useTheme();
-
-  const { language, setLanguage } = useLanguage();
 
   // Sync darkMode with userPreferences.viewMode
   useEffect(() => {
@@ -85,6 +84,10 @@ const Settings = () => {
   }, []);
 
   const [showChangeLanguage, setShowChangeLanguage] = useState(false);
+
+  const { language, setLanguage } = useLanguage();
+
+  const t = wordTranslations(language);
 
   return (
     <AuthProvider>
@@ -139,9 +142,7 @@ const Settings = () => {
                   <div className="flex flex-col dark:bg-gray-900 dark:text-slate-200 dark:border-slate-200 p-6 h-full gap-4">
                     <div className="flex flex-row justify-between mb-2">
                       <span className="font-medium mb-2">
-                        {language === "en"
-                          ? "Change view mode"
-                          : "Ubah mode tampilan"}
+                        {t.changeViewMode}
                       </span>
                       <label className="inline-flex items-center cursor-pointer">
                         <input
@@ -167,16 +168,14 @@ const Settings = () => {
                     </div>
                     <div className="flex flex-row justify-between">
                       <span className="font-medium mb-2">
-                        {language === "en" ? "Choose language" : "Ubah bahasa"}
+                        {t.chooseLanguage}
                       </span>
                       <button
                         className="flex items-center justify-between gap-2 text-sm text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 w-44"
                         type="button"
                         onClick={() => setShowChangeLanguage((prev) => !prev)}
                       >
-                        <span>
-                          {language === "en" ? "English" : "Bahasa Indonesia"}
-                        </span>
+                        <span>{t.language}</span>
                         <FiChevronDown className="ml-auto" />
                       </button>
                     </div>
@@ -319,18 +318,19 @@ const Settings = () => {
 
 const SettingHeader = ({ tab }: { tab: string }) => {
   const { language } = useLanguage();
+
+  const t = wordTranslations(language);
   // Translate tab name
   const tabLabel = (() => {
-    if (tab === "Preferences")
-      return language === "id" ? "Preferensi" : "Preferences";
-    if (tab === "Account") return language === "id" ? "Akun" : "Account";
-    if (tab === "General") return language === "id" ? "Umum" : "General";
+    if (tab === "Preferences") return t.preferences;
+    if (tab === "Account") return t.account;
+    if (tab === "General") return t.general;
     return tab;
   })();
   return (
     <nav className="sticky top-0 z-40 flex items-center justify-between bg-primary border-b border-slate-200 px-6 py-4 dark:bg-gray-900 dark:border-gray-800 min-w-0">
       <span className="flex text-lg font-semibold text-font-primary dark:text-white select-none gap-1">
-        {language === "en" ? "Settings" : "Pengaturan"} <span>&gt;</span>{" "}
+        {t.settings} <span>&gt;</span>{" "}
         <span className="font-light">{tabLabel}</span>
       </span>
     </nav>

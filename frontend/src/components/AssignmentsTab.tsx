@@ -10,6 +10,7 @@ import {
   giveScores,
 } from "../lib/api";
 import { useState } from "react";
+import { useRef, useEffect } from "react";
 import { getThisMonthRange, getThisWeekRange } from "../utils/date";
 import { FiChevronDown, FiPlus } from "react-icons/fi";
 import { MdSort } from "react-icons/md";
@@ -17,6 +18,8 @@ import { Assignment, ClassInfo } from "../types/types";
 import Spinner from "./Spinner";
 import { FaSortAlphaUp, FaSortAlphaDownAlt } from "react-icons/fa";
 import queryClient from "../config/queryClient";
+import { useLanguage } from "../contexts/LanguageContext";
+import { wordTranslations } from "../constants";
 
 interface Grade {
   studentId: {
@@ -51,6 +54,11 @@ const AssignmentsTab = ({
   classInfo: ClassInfo | null;
   handleRefresh: () => void;
 }) => {
+  const { language } = useLanguage();
+
+  // Translation dictionary
+  const t = wordTranslations(language);
+
   // Assignments
   const { data: assignmentsData } = useQuery({
     queryKey: ["assignmentsClass"],
@@ -95,11 +103,35 @@ const AssignmentsTab = ({
 
   const subjects = classInfo?.subjects || [];
 
-  const [selectedSubject, setSelectedSubject] = useState("");
-  const [subjectDropdown, setSubjectDropdown] = useState(false);
+  const [selectedSubject, setSelectedSubject] = useState(() => {
+    return subjects.length > 0 ? subjects[0] : "";
+  });
+
+  // Dropdown state
+  const [assignmentDropdown, setAssignmentDropdown] = useState<
+    "sort" | "subject" | ""
+  >("");
+
+  // Ref for dropdown area
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (assignmentDropdown === "") return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setAssignmentDropdown("");
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [assignmentDropdown]);
 
   // Add missing sort dropdown state
-  const [sortDropdown, setSortDropdown] = useState(false);
   const [sortOption, setSortOption] = useState<"all" | "week" | "month">("all");
 
   const { weekStart, weekEnd } = getThisWeekRange();
@@ -303,10 +335,8 @@ const AssignmentsTab = ({
   const [selectedStudentForAssistance, setSelectedStudentForAssistance] =
     useState<Grade | null>(null);
 
-  console.log("Selected Assignment:", selectedAssignment);
-
   return (
-    <div className="max-w-full overflow-x-auto py-4 px-4">
+    <div className="max-w-full overflow-x-auto py-4 px-4" ref={dropdownRef}>
       <div className="flex justify-end mb-4 gap-2">
         {classInfo?.role == "owner" && (
           <>
@@ -317,12 +347,18 @@ const AssignmentsTab = ({
               title="Refresh Table"
             >
               {/* Icon Refresh */}
-              Refresh
+              {t.refresh}
             </button>
             <button
               className="flex items-center justify-between gap-2 text-sm text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700"
               type="button"
-              onClick={() => setSubjectDropdown((v) => !v)}
+              onClick={() => {
+                if (assignmentDropdown === "subject") {
+                  setAssignmentDropdown("");
+                } else {
+                  setAssignmentDropdown("subject");
+                }
+              }}
             >
               <span>{selectedSubject == "" ? "Subject" : selectedSubject}</span>
               <FiChevronDown className="ml-auto" />
@@ -338,7 +374,7 @@ const AssignmentsTab = ({
               onClick={() => setShowCreateModal(true)}
             >
               <FiPlus />
-              Create Assignment
+              {t.createAssignment}
             </button>
             <button
               className="flex items-center justify-between gap-2 text-sm text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700"
@@ -348,7 +384,7 @@ const AssignmentsTab = ({
             </button>
           </>
         )}
-        {classInfo?.role == "owner" && subjectDropdown && (
+        {classInfo?.role == "owner" && assignmentDropdown === "subject" && (
           <div className="z-10 absolute mt-12 mr-42 bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700">
             <ul
               className="py-2 text-sm text-gray-700 dark:text-gray-200"
@@ -357,7 +393,7 @@ const AssignmentsTab = ({
               {subjects.length === 0 ? (
                 <li>
                   <span className="block px-4 py-2 text-gray-400">
-                    No subjects
+                    {t.noSubjects}
                   </span>
                 </li>
               ) : (
@@ -372,7 +408,7 @@ const AssignmentsTab = ({
                       }`}
                       onClick={() => {
                         setSelectedSubject(subject);
-                        setSubjectDropdown(false);
+                        setAssignmentDropdown("");
                       }}
                     >
                       {subject}
@@ -388,19 +424,25 @@ const AssignmentsTab = ({
           type="button"
           className="flex items-center justify-between gap-2 text-sm text-gray-700 dark:text-white bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200 font-semibold px-4 py-2 w-40 rounded-lg shadow"
           title="Sort"
-          onClick={() => setSortDropdown((v) => !v)}
+          onClick={() => {
+            if (assignmentDropdown === "sort") {
+              setAssignmentDropdown("");
+            } else {
+              setAssignmentDropdown("sort");
+            }
+          }}
         >
           <span className="flex items-center gap-2">
             <MdSort className="text-lg" />
             {sortOption === "all"
-              ? "All"
+              ? t.all
               : sortOption === "week"
-              ? "This Week"
-              : "This Month"}
+              ? t.thisWeek
+              : t.thisMonth}
           </span>
           <FiChevronDown className="ml-auto" />
         </button>
-        {sortDropdown && (
+        {assignmentDropdown === "sort" && (
           <div className="z-10 absolute mt-12  bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-40 dark:bg-gray-700">
             <ul className="py-2 text-sm text-gray-700 dark:text-gray-200">
               <li>
@@ -413,10 +455,10 @@ const AssignmentsTab = ({
                   }`}
                   onClick={() => {
                     setSortOption("all");
-                    setSortDropdown(false);
+                    setAssignmentDropdown("");
                   }}
                 >
-                  All
+                  {t.all}
                 </button>
               </li>
               <li>
@@ -429,10 +471,10 @@ const AssignmentsTab = ({
                   }`}
                   onClick={() => {
                     setSortOption("week");
-                    setSortDropdown(false);
+                    setAssignmentDropdown("");
                   }}
                 >
-                  This Week
+                  {t.thisWeek}
                 </button>
               </li>
               <li>
@@ -445,10 +487,10 @@ const AssignmentsTab = ({
                   }`}
                   onClick={() => {
                     setSortOption("month");
-                    setSortDropdown(false);
+                    setAssignmentDropdown("");
                   }}
                 >
-                  This Month
+                  {t.thisMonth}
                 </button>
               </li>
             </ul>
@@ -503,15 +545,15 @@ const AssignmentsTab = ({
                 <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-300">
                   <div className="ml-auto text-right">
                     {assignment.assignmentType === "homework" ? (
-                      <div className="text-green-800">Homework</div>
+                      <div className="text-green-800">{t.homework}</div>
                     ) : assignment.assignmentType === "quiz" ? (
-                      <div className="text-blue-800">Quiz</div>
+                      <div className="text-blue-800">{t.quiz}</div>
                     ) : assignment.assignmentType === "exam" ? (
-                      <div className="text-orange-800">Exam</div>
+                      <div className="text-orange-800">{t.exam}</div>
                     ) : assignment.assignmentType === "project" ? (
-                      <div className="text-yellow-800">Project</div>
+                      <div className="text-yellow-800">{t.project}</div>
                     ) : (
-                      <div className="text-red-800">Final Exam</div>
+                      <div className="text-red-800">{t.finalExam}</div>
                     )}
                   </div>
                 </div>
@@ -573,15 +615,15 @@ const AssignmentsTab = ({
                   </div>
                   <div className="ml-auto text-right">
                     {assignment.assignmentType === "homework" ? (
-                      <div className="text-green-800">Homework</div>
+                      <div className="text-green-800">{t.homework}</div>
                     ) : assignment.assignmentType === "quiz" ? (
-                      <div className="text-blue-800">Quiz</div>
+                      <div className="text-blue-800">{t.quiz}</div>
                     ) : assignment.assignmentType === "exam" ? (
-                      <div className="text-orange-800">Exam</div>
+                      <div className="text-orange-800">{t.exam}</div>
                     ) : assignment.assignmentType === "project" ? (
-                      <div className="text-yellow-800">Project</div>
+                      <div className="text-yellow-800">{t.project}</div>
                     ) : (
-                      <div className="text-red-800">Final Exam</div>
+                      <div className="text-red-800">{t.finalExam}</div>
                     )}
                   </div>
                 </div>
@@ -633,15 +675,15 @@ const AssignmentsTab = ({
                 <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-300">
                   <div className="ml-auto text-right">
                     {assignment.assignmentType === "homework" ? (
-                      <div className="text-green-800">Homework</div>
+                      <div className="text-green-800">{t.homework}</div>
                     ) : assignment.assignmentType === "quiz" ? (
-                      <div className="text-blue-800">Quiz</div>
+                      <div className="text-blue-800">{t.quiz}</div>
                     ) : assignment.assignmentType === "exam" ? (
-                      <div className="text-orange-800">Exam</div>
+                      <div className="text-orange-800">{t.exam}</div>
                     ) : assignment.assignmentType === "project" ? (
-                      <div className="text-yellow-800">Project</div>
+                      <div className="text-yellow-800">{t.project}</div>
                     ) : (
-                      <div className="text-red-800">Final Exam</div>
+                      <div className="text-red-800">{t.finalExam}</div>
                     )}
                   </div>
                 </div>
@@ -683,23 +725,23 @@ const AssignmentsTab = ({
             </div>
             <div className="mb-2 text-sm text-gray-600 dark:text-gray-400 flex flex-wrap gap-4">
               <div>
-                <span className="font-semibold">Assigned By:</span>{" "}
+                <span className="font-semibold">{t.assignedBy}:</span>{" "}
                 {selectedAssignment.assignedBy.name}
               </div>
               <div>
-                <span className="font-semibold">Type:</span>{" "}
+                <span className="font-semibold">{t.type}:</span>{" "}
                 {selectedAssignment.assignmentType === "homework"
-                  ? "Homework"
+                  ? t.homework
                   : selectedAssignment.assignmentType === "quiz"
-                  ? "Quiz"
+                  ? t.quiz
                   : selectedAssignment.assignmentType === "exam"
-                  ? "Exam"
+                  ? t.exam
                   : selectedAssignment.assignmentType === "project"
-                  ? "Project"
-                  : "Final Exam"}
+                  ? t.project
+                  : t.finalExam}
               </div>
               <div>
-                <span className="font-semibold">Start Time:</span>{" "}
+                <span className="font-semibold">{t.startTime}:</span>{" "}
                 {selectedAssignment.startTime
                   ? new Date(selectedAssignment.startTime).toLocaleTimeString(
                       [],
@@ -708,7 +750,7 @@ const AssignmentsTab = ({
                   : ""}
               </div>
               <div>
-                <span className="font-semibold">End Time:</span>{" "}
+                <span className="font-semibold">{t.endTime}: </span>{" "}
                 {selectedAssignment.endTime
                   ? new Date(selectedAssignment.endTime).toLocaleTimeString(
                       [],
@@ -717,8 +759,8 @@ const AssignmentsTab = ({
                   : ""}
               </div>
               <div>
-                <span className="font-semibold">Description: </span>{" "}
-                {selectedAssignment.description || "No description provided"}
+                <span className="font-semibold">{t.description}: </span>{" "}
+                {selectedAssignment.description || t.noDescriptionProvided}
               </div>
             </div>
 
@@ -743,7 +785,7 @@ const AssignmentsTab = ({
                           }}
                         >
                           <span className="flex items-center gap-0.5">
-                            Name{" "}
+                            {t.name}{" "}
                             {studentNameSort === "asc" ? (
                               <FaSortAlphaUp />
                             ) : (
@@ -768,7 +810,7 @@ const AssignmentsTab = ({
                           }}
                         >
                           <span className="flex items-center gap-0.5">
-                            Score{" "}
+                            {t.score}{" "}
                             {scoreSort === "" || scoreSort === "asc" ? (
                               <FaSortAlphaUp />
                             ) : (
@@ -776,7 +818,7 @@ const AssignmentsTab = ({
                             )}
                           </span>
                         </th>
-                        <th className="px-6 py-4">Notes</th>
+                        <th className="px-6 py-4">{t.notes}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -850,7 +892,7 @@ const AssignmentsTab = ({
                             colSpan={3}
                             className="px-6 py-4 text-center text-gray-400"
                           >
-                            No grades available.
+                            {t.noGradesAvailable}
                           </td>
                         </tr>
                       )}
@@ -876,7 +918,7 @@ const AssignmentsTab = ({
                           }}
                         >
                           <span className="flex items-center gap-0.5">
-                            Name{" "}
+                            {t.name}{" "}
                             {studentNameSort === "asc" ? (
                               <FaSortAlphaUp />
                             ) : (
@@ -884,9 +926,9 @@ const AssignmentsTab = ({
                             )}
                           </span>
                         </th>
-                        <th className="px-6 py-4 text-center">Action</th>
-                        <th className="px-6 py-4 text-center">Score</th>
-                        <th className="px-6 py-4 text-center">Notes</th>
+                        <th className="px-6 py-4 text-center">{t.action}</th>
+                        <th className="px-6 py-4 text-center">{t.score}</th>
+                        <th className="px-6 py-4 text-center">{t.notes}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -952,7 +994,7 @@ const AssignmentsTab = ({
                                     });
                                   }}
                                 >
-                                  Get Assistance
+                                  {t.getAssistance}
                                 </button>
                                 {showAssistanceModal && (
                                   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/2.5">
@@ -967,7 +1009,7 @@ const AssignmentsTab = ({
                                         &times;
                                       </button>
                                       <h2 className="text-xl font-bold mb-4">
-                                        Create Assistance
+                                        {t.createAssistance}
                                       </h2>
                                       <form
                                         className="flex flex-col gap-1.5"
@@ -996,12 +1038,14 @@ const AssignmentsTab = ({
                                             className="block text-sm text-left font-medium mb-1"
                                             htmlFor="description"
                                           >
-                                            Description
+                                            {t.description}
                                           </label>
                                           <textarea
                                             id="description"
                                             className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 w-full min-h-[250px] resize-none"
-                                            placeholder="Assignment Description"
+                                            placeholder={
+                                              t.assignmentDescription
+                                            }
                                             value={assignmentAdviceText}
                                             onChange={(e) =>
                                               setAssignmentAdviceText(
@@ -1016,7 +1060,7 @@ const AssignmentsTab = ({
                                             type="submit"
                                             className="px-4 py-2 rounded bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition"
                                           >
-                                            Save
+                                            {t.save}
                                           </button>
                                         </div>
                                       </form>
@@ -1106,7 +1150,7 @@ const AssignmentsTab = ({
                   className="mt-8 px-4 py-2 rounded-md bg-red-700 text-white font-semibold hover:bg-red-700 transition"
                   onClick={() => setShowDeleteModal(true)}
                 >
-                  Delete Assignment
+                  {t.deleteAssignment}
                 </button>
                 <button
                   className="mt-8 px-4 py-2 rounded-md bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition"
@@ -1128,11 +1172,11 @@ const AssignmentsTab = ({
                         scoresData: newScoresData,
                       });
 
-                      alert("Changes saved!");
+                      alert(t.changesSaved);
                     }
                   }}
                 >
-                  Save Changes
+                  {t.saveChanges}
                 </button>
               </div>
             )}
@@ -1176,12 +1220,11 @@ const AssignmentsTab = ({
                                 className="text-base font-semibold text-gray-900"
                                 id="modal-title"
                               >
-                                Delete Assignment
+                                {t.deleteAssignment}
                               </h3>
                               <div className="mt-2">
                                 <p className="text-sm text-gray-500">
-                                  Are you sure you want to delete this
-                                  assignment? This action cannot be undone.
+                                  {t.deleteAssignmentConfirmation}
                                 </p>
                               </div>
                             </div>
@@ -1201,14 +1244,14 @@ const AssignmentsTab = ({
                               alert("Assignment deleted!");
                             }}
                           >
-                            Delete
+                            {t.delete}
                           </button>
                           <button
                             type="button"
                             className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50 sm:mt-0 sm:w-auto"
                             onClick={() => setShowDeleteModal(false)}
                           >
-                            Cancel
+                            {t.cancel}
                           </button>
                         </div>
                       </div>
@@ -1250,7 +1293,8 @@ const AssignmentsTab = ({
                   className="block text-sm font-medium mb-1"
                   htmlFor="title"
                 >
-                  Title<span className="text-red-500">*</span>
+                  {t.title}
+                  <span className="text-red-500">*</span>
                 </label>
                 <input
                   id="title"
@@ -1268,7 +1312,7 @@ const AssignmentsTab = ({
                   className="block text-sm font-medium mb-1"
                   htmlFor="description"
                 >
-                  Description
+                  {t.description}
                 </label>
                 <textarea
                   id="description"
@@ -1285,7 +1329,8 @@ const AssignmentsTab = ({
                   className="block text-sm font-medium mb-1"
                   htmlFor="assignmentType"
                 >
-                  Assignment Type<span className="text-red-500">*</span>
+                  {t.assignmentType}
+                  <span className="text-red-500">*</span>
                 </label>
                 <select
                   id="assignmentType"
@@ -1304,11 +1349,11 @@ const AssignmentsTab = ({
                   }
                   required
                 >
-                  <option value="homework">Homework</option>
-                  <option value="quiz">Quiz</option>
-                  <option value="exam">Exam</option>
-                  <option value="project">Project</option>
-                  <option value="finalExam">Final Exam</option>
+                  <option value="homework">{t.homework}</option>
+                  <option value="quiz">{t.quiz}</option>
+                  <option value="exam">{t.exam}</option>
+                  <option value="project">{t.project}</option>
+                  <option value="finalExam">{t.finalExam}</option>
                 </select>
               </div>
               <div className="flex-col">
@@ -1316,7 +1361,8 @@ const AssignmentsTab = ({
                   className="block text-sm font-medium mb-1"
                   htmlFor="assignmentDate"
                 >
-                  Date<span className="text-red-500">*</span>
+                  {t.date}
+                  <span className="text-red-500">*</span>
                 </label>
                 <input
                   id="assignmentDate"
@@ -1334,7 +1380,8 @@ const AssignmentsTab = ({
                       className="block text-sm font-medium mb-1"
                       htmlFor="startTime"
                     >
-                      Start Time<span className="text-red-500">*</span>
+                      {t.startTime}
+                      <span className="text-red-500">*</span>
                     </label>
                     <input
                       id="startTime"
@@ -1352,7 +1399,8 @@ const AssignmentsTab = ({
                       className="block text-sm font-medium mb-1"
                       htmlFor="endTime"
                     >
-                      End Time<span className="text-red-500">*</span>
+                      {t.endTime}
+                      <span className="text-red-500">*</span>
                     </label>
                     <input
                       id="endTime"
@@ -1373,13 +1421,13 @@ const AssignmentsTab = ({
                   className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600 transition"
                   onClick={() => setShowCreateModal(false)}
                 >
-                  Cancel
+                  {t.cancel}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 rounded bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition"
                 >
-                  Create
+                  {t.create}
                 </button>
               </div>
             </form>

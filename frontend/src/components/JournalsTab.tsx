@@ -11,13 +11,14 @@ import {
   getSubjectByClassId,
   giveAttendancesAndNotes,
 } from "../lib/api";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FiChevronDown, FiPlus } from "react-icons/fi";
 import { MdSort } from "react-icons/md";
 import { getThisMonthRange, getThisWeekRange } from "../utils/date";
 import { FaSortAlphaDownAlt, FaSortAlphaUp } from "react-icons/fa";
 import Spinner from "./Spinner";
 import { useLanguage } from "../contexts/LanguageContext";
+import { wordTranslations } from "../constants";
 
 interface Journal {
   id?: string;
@@ -69,70 +70,34 @@ const Journals = ({
 }) => {
   const { language } = useLanguage();
 
-  // Translation dictionary
-  const t = {
-    subject: language === "id" ? "Mata Pelajaran" : "Subject",
-    noSubjects: language === "id" ? "Tidak ada mata pelajaran" : "No subjects",
-    createJournal: language === "id" ? "Buat Jurnal" : "Create Journal",
-    all: language === "id" ? "Semua" : "All",
-    thisWeek: language === "id" ? "Minggu Ini" : "This Week",
-    thisMonth: language === "id" ? "Bulan Ini" : "This Month",
-    name: language === "id" ? "Nama" : "Name",
-    attendance: language === "id" ? "Kehadiran" : "Attendance",
-    notes: language === "id" ? "Catatan" : "Notes",
-    present: language === "id" ? "Hadir" : "Present",
-    absent: language === "id" ? "Absen" : "Absent",
-    late: language === "id" ? "Terlambat" : "Late",
-    sick: language === "id" ? "Sakit" : "Sick",
-    excused: language === "id" ? "Izin" : "Excused",
-    pending: language === "id" ? "Menunggu" : "Pending",
-    noAttendances:
-      language === "id"
-        ? "Tidak ada kehadiran atau catatan."
-        : "No attendances or notes available.",
-    createdBy: language === "id" ? "Dibuat oleh" : "Created By:",
-    startTime: language === "id" ? "Waktu Mulai" : "Start Time:",
-    endTime: language === "id" ? "Waktu Selesai" : "End Time:",
-    deleteAssignment: language === "id" ? "Hapus Jurnal" : "Delete Journal",
-    deleteAssignmentModalTitle:
-      language === "id" ? "Hapus Jurnal" : "Delete Journal",
-    deleteAssignmentModalDesc:
-      language === "id"
-        ? "Apakah Anda yakin ingin menghapus jurnal ini? Tindakan ini tidak dapat dibatalkan."
-        : "Are you sure you want to delete this journal? This action cannot be undone.",
-    delete: language === "id" ? "Hapus" : "Delete",
-    cancel: language === "id" ? "Batal" : "Cancel",
-    saveChanges: language === "id" ? "Simpan Perubahan" : "Save Changes",
-    journalCreated:
-      language === "id"
-        ? "Jurnal berhasil dibuat!"
-        : "Journal created successfully!",
-    journalDeleted:
-      language === "id" ? "Jurnal berhasil dihapus!" : "Journal deleted!",
-    changesSaved:
-      language === "id" ? "Perubahan berhasil disimpan!" : "Changes saved!",
-    create: language === "id" ? "Buat" : "Create",
-    title: language === "id" ? "Judul" : "Title",
-    description: language === "id" ? "Deskripsi" : "Description",
-    date: language === "id" ? "Tanggal" : "Date",
-    start: language === "id" ? "Waktu Mulai" : "Start Time",
-    end: language === "id" ? "Waktu Selesai" : "End Time",
-    journalTitlePlaceholder:
-      language === "id" ? "Judul Jurnal" : "Journal Title",
-    journalDescPlaceholder:
-      language === "id" ? "Deskripsi Jurnal" : "Journal Description",
-    failedLoad:
-      language === "id"
-        ? "Gagal memuat detail jurnal"
-        : "Failed to load journal detail",
-  };
-
-  const [selectedSubject, setSelectedSubject] = useState("");
-  const [subjectDropdown, setSubjectDropdown] = useState(false);
+  const t = wordTranslations(language);
 
   const subjects = classInfo?.subjects || [];
 
-  const [sortDropdown, setSortDropdown] = useState(false);
+  const [selectedSubject, setSelectedSubject] = useState(() => {
+    return subjects.length > 0 ? subjects[0] : "";
+  });
+
+  const [dropdownType, setDropdownType] = useState<"subject" | "sort" | "">("");
+  // Ref for dropdown area
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (dropdownType === "") return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setDropdownType("");
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [dropdownType]);
+
   const [sortOption, setSortOption] = useState<"all" | "week" | "month">("all");
 
   const [form, setForm] = useState({
@@ -283,14 +248,20 @@ const Journals = ({
   const [studentNameSort, setStudentNameSort] = useState<"asc" | "desc">("asc");
   console.log("Selected Journal:", selectedJournal);
   return (
-    <div className="max-w-full overflow-x-auto py-4 px-4">
+    <div className="max-w-full overflow-x-auto py-4 px-4" ref={dropdownRef}>
       <div className="flex justify-end mb-4 gap-2">
         {classInfo?.role === "owner" && (
           <>
             <button
               className="flex items-center justify-between gap-2 text-sm text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700"
               type="button"
-              onClick={() => setSubjectDropdown((v) => !v)}
+              onClick={() => {
+                if (dropdownType === "subject") {
+                  setDropdownType("");
+                } else {
+                  setDropdownType("subject");
+                }
+              }}
             >
               <span>{selectedSubject == "" ? "Subject" : selectedSubject}</span>
               <FiChevronDown className="ml-auto" />
@@ -306,7 +277,7 @@ const Journals = ({
               onClick={() => setShowCreateJournalModal(true)}
             >
               <FiPlus />
-              Create Journal
+              {t.createJournal}
             </button>
             <button
               className="flex items-center justify-between gap-2 text-sm text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700"
@@ -316,7 +287,7 @@ const Journals = ({
             </button>
           </>
         )}
-        {classInfo?.role === "owner" && subjectDropdown && (
+        {classInfo?.role === "owner" && dropdownType === "subject" && (
           <div className="z-10 absolute mt-12 mr-42 bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700">
             <ul
               className="py-2 text-sm text-gray-700 dark:text-gray-200"
@@ -340,7 +311,7 @@ const Journals = ({
                       }`}
                       onClick={() => {
                         setSelectedSubject(subject);
-                        setSubjectDropdown(false);
+                        setDropdownType("");
                       }}
                     >
                       {subject}
@@ -355,19 +326,25 @@ const Journals = ({
           type="button"
           className="flex items-center justify-between gap-2 text-sm text-gray-700 dark:text-white bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200 font-semibold px-4 py-2 w-40 rounded-lg shadow"
           title="Sort"
-          onClick={() => setSortDropdown((v) => !v)}
+          onClick={() => {
+            if (dropdownType === "sort") {
+              setDropdownType("");
+            } else {
+              setDropdownType("sort");
+            }
+          }}
         >
           <span className="flex items-center gap-2">
             <MdSort className="text-lg" />
             {sortOption === "all"
-              ? "All"
+              ? t.all
               : sortOption === "week"
-              ? "This Week"
-              : "This Month"}
+              ? t.thisWeek
+              : t.thisMonth}
           </span>
           <FiChevronDown className="ml-auto" />
         </button>
-        {sortDropdown && (
+        {dropdownType === "sort" && (
           <div className="z-10 absolute mt-12  bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-40 dark:bg-gray-700">
             <ul className="py-2 text-sm text-gray-700 dark:text-gray-200">
               <li>
@@ -380,10 +357,10 @@ const Journals = ({
                   }`}
                   onClick={() => {
                     setSortOption("all");
-                    setSortDropdown(false);
+                    setDropdownType("");
                   }}
                 >
-                  All
+                  {t.all}
                 </button>
               </li>
               <li>
@@ -396,10 +373,10 @@ const Journals = ({
                   }`}
                   onClick={() => {
                     setSortOption("week");
-                    setSortDropdown(false);
+                    setDropdownType("");
                   }}
                 >
-                  This Week
+                  {t.thisWeek}
                 </button>
               </li>
               <li>
@@ -412,10 +389,10 @@ const Journals = ({
                   }`}
                   onClick={() => {
                     setSortOption("month");
-                    setSortDropdown(false);
+                    setDropdownType("");
                   }}
                 >
-                  This Month
+                  {t.thisMonth}
                 </button>
               </li>
             </ul>

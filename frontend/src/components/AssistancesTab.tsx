@@ -7,8 +7,9 @@ import {
 import { ClassInfo } from "../types/types";
 import { FiChevronDown } from "react-icons/fi";
 import { IoSearchOutline } from "react-icons/io5";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
+import { wordTranslations } from "../constants";
 
 interface Assistance {
   studentName: string;
@@ -29,6 +30,8 @@ const AssistancesTab = ({
   classInfo: ClassInfo | null;
 }) => {
   const { language } = useLanguage();
+
+  const t = wordTranslations(language);
 
   // Class Assistances By Class Id
   const { data: classAssistances, refetch: refetchAssistance } = useQuery({
@@ -72,9 +75,32 @@ const AssistancesTab = ({
     setSearchStudentTerm(event.target.value);
   };
 
-  const [selectedSubject, setSelectedSubject] = useState("");
   const [subjectDropdown, setSubjectDropdown] = useState(false);
+
+  // Ref for dropdown area
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (subjectDropdown === false) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setSubjectDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [subjectDropdown]);
+
   const subjects = classInfo?.subjects || [];
+
+  const [selectedSubject, setSelectedSubject] = useState(() => {
+    return subjects.length > 0 ? subjects[0] : "";
+  });
 
   const [showAssistanceModal, setShowAssistanceModal] = useState(false);
   const [selectedAssistance, setSelectedAssistance] =
@@ -102,14 +128,14 @@ const AssistancesTab = ({
   };
 
   return (
-    <div className="max-w-full overflow-x-auto py-4 px-4">
+    <div className="max-w-full overflow-x-auto py-4 px-4" ref={dropdownRef}>
       <div className="flex justify-end mb-4 gap-2">
         <div className="flex w-full items-center gap-2">
           <div className="flex w-[35%] items-center gap-5 rounded-lg px-3 py-2 bg-gray-200 dark:bg-gray-800">
             <IoSearchOutline className="text-gray-800 dark:text-gray-200" />
             <input
               type="text"
-              placeholder={language === "id" ? "Cari siswa" : "Search student"}
+              placeholder={t.searchStudent}
               value={searchStudentTerm}
               onChange={handleStudentSearch}
               className="w-full outline-none bg-transparent"
@@ -124,11 +150,7 @@ const AssistancesTab = ({
               onClick={() => setSubjectDropdown((v) => !v)}
             >
               <span>
-                {selectedSubject == ""
-                  ? language === "id"
-                    ? "Subyek"
-                    : "Subject"
-                  : selectedSubject}
+                {selectedSubject === "" ? t.subject : selectedSubject}
               </span>
               <FiChevronDown className="ml-auto" />
             </button>
@@ -143,7 +165,7 @@ const AssistancesTab = ({
               {subjects.length === 0 ? (
                 <li>
                   <span className="block px-4 py-2 text-gray-400">
-                    {language === "id" ? "Tidak ada subyek" : "No subjects"}
+                    {t.noSubjects}
                   </span>
                 </li>
               ) : (
@@ -376,7 +398,7 @@ const AssistancesTab = ({
                       )
                     }
                   >
-                    {language === "id" ? "Simpan" : "Save"}
+                    {t.save}
                   </button>
                 </div>
               ) : (
@@ -388,7 +410,7 @@ const AssistancesTab = ({
                       setAssistanceText(selectedAssistance.assistantResponse);
                     }}
                   >
-                    {language === "id" ? "Edit" : "Edit"}
+                    {t.edit}
                   </button>
                 </div>
               )}

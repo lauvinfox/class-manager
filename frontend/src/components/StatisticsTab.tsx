@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { IoSearchOutline } from "react-icons/io5";
@@ -18,6 +18,8 @@ import {
   getSubjectAttendanceSummary,
   getSubjectByClassId,
 } from "../lib/api";
+import { useLanguage } from "../contexts/LanguageContext";
+import { wordTranslations } from "../constants";
 
 const StatisticsTab = ({
   classId,
@@ -26,6 +28,10 @@ const StatisticsTab = ({
   classId: string;
   classInfo: ClassInfo | null;
 }) => {
+  const { language } = useLanguage();
+
+  const t = wordTranslations(language);
+
   const [searchStudentTerm, setSearchStudentTerm] = useState("");
   const handleStudentSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchStudentTerm(event.target.value);
@@ -39,11 +45,32 @@ const StatisticsTab = ({
     },
   });
   const subjects = classInfo?.subjects || [];
+
   const [selectedSubject, setSelectedSubject] = useState("");
 
+  // Dropdown state
   const [dropdownType, setDropdownType] = useState<
     "subject" | "overviewMode" | "assignmentType" | "subjectAttendance" | ""
   >("");
+
+  // Ref for dropdown area
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (dropdownType === "") return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setDropdownType("");
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [dropdownType]);
 
   const [selectedAssignmentType, setSelectedAssignmentType] = useState<
     "homework" | "quiz" | "exam" | "project" | "finalExam" | ""
@@ -118,13 +145,13 @@ const StatisticsTab = ({
   });
 
   return (
-    <div className="max-w-full overflow-x-auto py-4 px-4">
+    <div className="max-w-full overflow-x-auto py-4 px-4" ref={dropdownRef}>
       <div className="flex justify-between items-center mb-4 gap-2 flex-wrap">
         <div className="flex w-[35%] items-center gap-5 rounded-lg px-3 py-2 bg-gray-200 dark:bg-gray-800">
           <IoSearchOutline className="text-gray-800 dark:text-gray-200" />
           <input
             type="text"
-            placeholder="Search student"
+            placeholder={t.searchStudent}
             value={searchStudentTerm}
             onChange={handleStudentSearch}
             className="w-full outline-none bg-transparent"
@@ -145,7 +172,7 @@ const StatisticsTab = ({
               }}
             >
               <span>
-                {selectedSubject === "" ? "Subject" : selectedSubject}
+                {selectedSubject === "" ? t.subject : selectedSubject}
               </span>
               <FiChevronDown className="ml-auto" />
             </button>
@@ -178,16 +205,16 @@ const StatisticsTab = ({
             >
               <span>
                 {selectedAssignmentType === ""
-                  ? "Assignment Type"
+                  ? t.assignmentType
                   : selectedAssignmentType === "homework"
-                  ? "Homework"
+                  ? t.homework
                   : selectedAssignmentType === "exam"
-                  ? "Exam"
+                  ? t.exam
                   : selectedAssignmentType === "quiz"
-                  ? "Quiz"
+                  ? t.quiz
                   : selectedAssignmentType === "project"
-                  ? "Project"
-                  : "Final Exam"}
+                  ? t.project
+                  : t.finalExam}
               </span>
               <FiChevronDown className="ml-auto" />
             </button>
@@ -277,7 +304,7 @@ const StatisticsTab = ({
               {subjects.length === 0 ? (
                 <li>
                   <span className="block px-4 py-2 text-gray-400">
-                    No subjects
+                    {t.noSubjects}
                   </span>
                 </li>
               ) : (
@@ -334,16 +361,16 @@ const StatisticsTab = ({
             >
               <span>
                 {selectedAssignmentType === ""
-                  ? "Assignment Type"
+                  ? t.assignmentType
                   : selectedAssignmentType === "homework"
-                  ? "Homework"
+                  ? t.homework
                   : selectedAssignmentType === "exam"
-                  ? "Exam"
+                  ? t.exam
                   : selectedAssignmentType === "quiz"
-                  ? "Quiz"
+                  ? t.quiz
                   : selectedAssignmentType === "project"
-                  ? "Project"
-                  : "Final Exam"}
+                  ? t.project
+                  : t.finalExam}
               </span>
               <FiChevronDown className="ml-auto" />
             </button>
@@ -387,7 +414,7 @@ const StatisticsTab = ({
               {subjects.length === 0 ? (
                 <li>
                   <span className="block px-4 py-2 text-gray-400">
-                    No subjects
+                    {t.noSubjects}
                   </span>
                 </li>
               ) : (
@@ -470,22 +497,22 @@ const StatisticsTab = ({
                     }}
                   >
                     <div className="flex items-center gap-1 cursor-pointer">
-                      Name <CgArrowsExchangeV className="w-3 h-3" />
+                      {t.name} <CgArrowsExchangeV className="w-3 h-3" />
                     </div>
                   </th>
                   <th
                     className="px-6 py-4 flex items-center gap-2 cursor-pointer"
                     onClick={() => setDropdownType("subjectAttendance")}
                   >
-                    Subject <FiChevronDown />
+                    {t.subject} <FiChevronDown />
                   </th>
                   {[
-                    { key: "present", label: "Present" },
-                    { key: "absent", label: "Absent" },
-                    { key: "late", label: "Late" },
-                    { key: "sick", label: "Sick" },
-                    { key: "excused", label: "Excused" },
-                    { key: "pending", label: "Pending" },
+                    { key: "present", label: t.present },
+                    { key: "absent", label: t.absent },
+                    { key: "late", label: t.late },
+                    { key: "sick", label: t.sick },
+                    { key: "excused", label: t.excused },
+                    { key: "pending", label: t.pending },
                   ].map(({ key, label }) => (
                     <th
                       key={key}
@@ -512,7 +539,8 @@ const StatisticsTab = ({
                   ))}
                   <th className="px-6 py-4 text-center">
                     <div className="flex items-center justify-center gap-1 cursor-pointer">
-                      Total Journals <CgArrowsExchangeV className="w-3 h-3" />
+                      {t.totalJournals}{" "}
+                      <CgArrowsExchangeV className="w-3 h-3" />
                     </div>
                   </th>
                 </tr>
@@ -613,7 +641,7 @@ const StatisticsTab = ({
                 ) : (
                   <tr>
                     <td colSpan={10} className="px-6 py-4 text-center">
-                      No attendance summary found.
+                      {t.noAttendanceSummary}
                     </td>
                   </tr>
                 )}
@@ -632,7 +660,7 @@ const StatisticsTab = ({
             return (
               <div className="overflow-hidden rounded-xl shadow-md border border-gray-200 dark:border-gray-700 mt-4">
                 <div className="p-4 text-center">
-                  No assignment summary found for selected subject.
+                  {t.noAssignmentSummaryForSubject}
                 </div>
               </div>
             );
@@ -657,7 +685,7 @@ const StatisticsTab = ({
                         }}
                       >
                         <div className="flex items-center">
-                          Name
+                          {t.name}
                           <CgArrowsExchangeV />
                         </div>
                       </th>
@@ -829,16 +857,16 @@ const StatisticsTab = ({
                     }}
                   >
                     <div className="flex items-center gap-1 cursor-pointer">
-                      Name <CgArrowsExchangeV className="w-3 h-3" />
+                      {t.name} <CgArrowsExchangeV className="w-3 h-3" />
                     </div>
                   </th>
                   {[
-                    { key: "present", label: "Present" },
-                    { key: "absent", label: "Absent" },
-                    { key: "late", label: "Late" },
-                    { key: "sick", label: "Sick" },
-                    { key: "excused", label: "Excused" },
-                    { key: "pending", label: "Pending" },
+                    { key: "present", label: t.present },
+                    { key: "absent", label: t.absent },
+                    { key: "late", label: t.late },
+                    { key: "sick", label: t.sick },
+                    { key: "excused", label: t.excused },
+                    { key: "pending", label: t.pending },
                   ].map(({ key, label }) => (
                     <th
                       key={key}
@@ -865,7 +893,8 @@ const StatisticsTab = ({
                   ))}
                   <th className="px-6 py-4 text-center">
                     <div className="flex items-center justify-center gap-1 cursor-pointer">
-                      Total Journals <CgArrowsExchangeV className="w-3 h-3" />
+                      {t.totalJournals}{" "}
+                      <CgArrowsExchangeV className="w-3 h-3" />
                     </div>
                   </th>
                 </tr>
@@ -950,7 +979,7 @@ const StatisticsTab = ({
                 ) : (
                   <tr>
                     <td colSpan={10} className="px-6 py-4 text-center">
-                      No attendance summary found.
+                      {t.noAttendanceSummary}
                     </td>
                   </tr>
                 )}
@@ -969,7 +998,7 @@ const StatisticsTab = ({
             return (
               <div className="overflow-hidden rounded-xl shadow-md border border-gray-200 dark:border-gray-700 mt-4">
                 <div className="p-4 text-center">
-                  No assignment summary found for this subject.
+                  {t.noAssignmentSummaryForSubject}
                 </div>
               </div>
             );
@@ -994,7 +1023,7 @@ const StatisticsTab = ({
                         }}
                       >
                         <div className="flex items-center">
-                          Name
+                          {t.name}
                           <CgArrowsExchangeV />
                         </div>
                       </th>
