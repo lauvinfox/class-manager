@@ -90,14 +90,17 @@ export const createAccount = async (data: CreateAccountParams) => {
     userAgent: data.userAgent,
   });
 
-  // sign access token and refresh token
-  const refreshToken = signToken(
-    { sessionId: session._id },
-    refreshTokenSignOptions
+  const sessionInfo = {
+    sessionId: session._id,
+  };
+
+  // sign access token & refresh token
+  const refreshToken = signToken(sessionInfo, refreshTokenSignOptions);
+
+  const accessToken = signToken(
+    { ...sessionInfo, userId: user._id },
+    { expiresIn: "30d", secret: env.ACCESS_TOKEN_SECRET }
   );
-
-  const accessToken = signToken({ userId: userId, sessionId: session._id });
-
   // return user and token
   return { user: user.omitPassword(), accessToken, refreshToken };
 };

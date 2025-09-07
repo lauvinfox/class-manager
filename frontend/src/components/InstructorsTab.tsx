@@ -11,6 +11,7 @@ import {
   inviteInstructors,
 } from "../lib/api";
 import Spinner from "./Spinner";
+import { useLanguage } from "../contexts/LanguageContext";
 
 const InstructorsTab = ({
   classInfo,
@@ -21,6 +22,8 @@ const InstructorsTab = ({
   classId: string | undefined;
   handleRefresh: () => void;
 }) => {
+  const { language } = useLanguage();
+
   // Instructor
   const [showAddTeacherModal, setshowAddTeacherModal] = useState(false);
   const [teacher, setTeacher] = useState("");
@@ -256,11 +259,13 @@ const InstructorsTab = ({
     <div className="max-w-full overflow-x-auto py-4 px-4">
       <div className="flex justify-between items-center mb-4 gap-2">
         {/* Search bar di kiri */}
-        <div className="flex md:w-[30%] w-[70%] items-center gap-5 rounded-lg px-3 py-2 bg-gray-200">
-          <IoSearchOutline className="text-gray-800" />
+        <div className="flex md:w-[30%] w-[70%] items-center gap-5 rounded-lg px-3 py-2 bg-gray-200 dark:bg-gray-800">
+          <IoSearchOutline className="text-gray-800 dark:text-gray-200" />
           <input
             type="text"
-            placeholder="Search instructor"
+            placeholder={
+              language === "id" ? "Cari instruktur" : "Search instructor"
+            }
             value={searchInstructorTerm}
             onChange={handleInstructorSearch}
             className="w-full outline-none bg-transparent"
@@ -281,10 +286,10 @@ const InstructorsTab = ({
               type="button"
               className="flex items-center gap-2 text-sm text-gray-700 dark:text-white bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200 font-semibold px-4 py-2 rounded-lg shadow"
               onClick={toggleAddSubjectModal}
-              title="Add Subject"
+              title={language === "id" ? "Tambah Subyek" : "Add Subject"}
             >
               {/* Icon Add Subject */}
-              Add Subject
+              {language === "id" ? "Tambah Subject" : "Add Subject"}
             </button>
             <button
               type="button"
@@ -292,7 +297,7 @@ const InstructorsTab = ({
               onClick={toggleAddTeacherModal}
             >
               <IoPersonAddOutline className="text-lg" />
-              Add Instructor
+              {language === "id" ? "Tambah Instruktur" : "Add Instructor"}
             </button>
           </div>
         )}
@@ -315,10 +320,18 @@ const InstructorsTab = ({
           <table className="min-w-full text-sm text-left text-gray-600 dark:text-gray-300">
             <thead className="bg-gray-100 dark:bg-gray-800 text-xs uppercase tracking-wider sticky top-0 z-10">
               <tr>
-                <th className="px-6 py-4">Name</th>
-                <th className="px-6 py-4">Username</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4 text-center">Subject</th>
+                <th className="px-6 py-4">
+                  {language === "id" ? "Nama" : "Name"}
+                </th>
+                <th className="px-6 py-4">
+                  {language === "id" ? "Username" : "Username"}
+                </th>
+                <th className="px-6 py-4">
+                  {language === "id" ? "Status" : "Status"}
+                </th>
+                <th className="px-6 py-4 text-center">
+                  {language === "id" ? "Subyek" : "Subject"}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -364,7 +377,15 @@ const InstructorsTab = ({
                               : "text-yellow-400"
                           }`}
                         >
-                          {instructor.status}
+                          {instructor.status === "accepted"
+                            ? language === "id"
+                              ? "diterima"
+                              : "accepted"
+                            : instructor.status === "pending"
+                            ? language === "id"
+                              ? "menunggu"
+                              : "pending"
+                            : instructor.status}
                         </td>
                         <td className="px-6 py-4 text-center relative">
                           <div className="inline-block">
@@ -374,7 +395,9 @@ const InstructorsTab = ({
                               </span>
                             ) : instructor.status === "pending" ? (
                               <span className="inline-block px-3 py-1 rounded-md dark:bg-yellow-700 text-yellow-700 dark:text-white font-semibold">
-                                need confirmation
+                                {language === "id"
+                                  ? "butuh konfirmasi"
+                                  : "need confirmation"}
                               </span>
                             ) : classInfo?.role === "owner" ? (
                               <button
@@ -384,11 +407,17 @@ const InstructorsTab = ({
                                   handleGiveSubjectModal(instructor)
                                 }
                               >
-                                <span>Give Subject</span>
+                                <span>
+                                  {language === "id"
+                                    ? "Berikan Subyek"
+                                    : "Give Subject"}
+                                </span>
                               </button>
                             ) : (
                               <span className="text-gray-400 italic">
-                                Undetermined
+                                {language === "id"
+                                  ? "Belum ditentukan"
+                                  : "Undetermined"}
                               </span>
                             )}
                           </div>
@@ -399,7 +428,9 @@ const InstructorsTab = ({
               ) : (
                 <tr>
                   <td colSpan={4} className="px-6 py-4 text-center">
-                    No instructors found.
+                    {language === "id"
+                      ? "Instruktur tidak ditemukan."
+                      : "No instructors found."}
                   </td>
                 </tr>
               )}
@@ -420,10 +451,16 @@ const InstructorsTab = ({
               &times;
             </button>
             <h2 className="text-lg font-bold mb-4 text-font-primary dark:text-white">
-              Give Subject to {selectedInstructorForSubject.name}
+              {language === "id"
+                ? `Berikan Subyek ke ${selectedInstructorForSubject.name}`
+                : `Give Subject to ${selectedInstructorForSubject.name}`}
             </h2>
             <div>
-              <p className="mb-4">Choose one subject to give to</p>
+              <p className="mb-4">
+                {language === "id"
+                  ? "Pilih satu subyek untuk diberikan"
+                  : "Choose one subject to give to"}
+              </p>
               <div className="flex flex-col gap-2 mb-4 max-h-56 overflow-y-auto">
                 {classInfo?.subjects && classInfo.subjects.length > 0 ? (
                   classInfo.subjects
@@ -448,7 +485,11 @@ const InstructorsTab = ({
                       </button>
                     ))
                 ) : (
-                  <span className="text-gray-500">No subjects available.</span>
+                  <span className="text-gray-500">
+                    {language === "id"
+                      ? "Tidak ada subyek tersedia."
+                      : "No subjects available."}
+                  </span>
                 )}
               </div>
             </div>
@@ -460,7 +501,7 @@ const InstructorsTab = ({
                   handleGiveSubjectModal(selectedInstructorForSubject)
                 }
               >
-                Cancel
+                {language === "id" ? "Batal" : "Cancel"}
               </button>
               <button
                 type="button"
@@ -468,7 +509,7 @@ const InstructorsTab = ({
                 disabled={!selectedSubject}
                 onClick={handleGiveSubject}
               >
-                Save
+                {language === "id" ? "Simpan" : "Save"}
               </button>
             </div>
           </div>
@@ -485,7 +526,7 @@ const InstructorsTab = ({
               &times;
             </button>
             <h2 className="text-lg font-bold mb-4 text-font-primary dark:text-white">
-              Invite Instructors
+              {language === "id" ? "Undang Instruktur" : "Invite Instructors"}
             </h2>
             <form
               className="flex flex-col gap-4 h-90"
@@ -495,7 +536,9 @@ const InstructorsTab = ({
               }}
             >
               <div className="relative flex flex-col gap-2">
-                <label>Instructors</label>
+                <label>
+                  {language === "id" ? "Instruktur" : "Instructors"}
+                </label>
                 <div className="relative w-full">
                   <input
                     type="text"
@@ -528,7 +571,9 @@ const InstructorsTab = ({
                   ) {
                     return (
                       <div className="mt-1 text-xs text-red-500">
-                        User not found
+                        {language === "id"
+                          ? "Pengguna tidak ditemukan"
+                          : "User not found"}
                       </div>
                     );
                   }
@@ -607,13 +652,13 @@ const InstructorsTab = ({
                   className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600"
                   onClick={toggleAddTeacherModal}
                 >
-                  Cancel
+                  {language === "id" ? "Batal" : "Cancel"}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 rounded bg-indigo-600 text-white font-semibold hover:bg-indigo-700"
                 >
-                  Invite
+                  {language === "id" ? "Undang" : "Invite"}
                 </button>
               </div>
             </form>
@@ -640,13 +685,15 @@ const InstructorsTab = ({
             >
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  Subject
+                  {language === "id" ? "Subyek" : "Subject"}
                 </label>
                 <div className="flex gap-2 mb-2">
                   <input
                     type="text"
                     className="w-full rounded border border-slate-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-font-primary dark:text-white"
-                    placeholder="Add subject"
+                    placeholder={
+                      language === "id" ? "Tambah subyek" : "Add subject"
+                    }
                     value={subjectInput}
                     onChange={(e) => handleSubjectInput(e.target.value)}
                     onKeyDown={(e) => {
@@ -661,7 +708,7 @@ const InstructorsTab = ({
                     className="px-3 py-2 rounded bg-indigo-600 text-white font-semibold hover:bg-indigo-700"
                     onClick={toggleAddSubjectInput}
                   >
-                    Add
+                    {language === "id" ? "Tambah" : "Add"}
                   </button>
                 </div>
                 {instructorSubjects.length > 0 && (
@@ -697,14 +744,14 @@ const InstructorsTab = ({
                     toggleAddSubjectModal();
                   }}
                 >
-                  Back
+                  {language === "id" ? "Kembali" : "Back"}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 rounded bg-indigo-600 text-white font-semibold hover:bg-indigo-700"
                   disabled={instructorSubjects.length === 0}
                 >
-                  Create
+                  {language === "id" ? "Buat" : "Create"}
                 </button>
               </div>
             </form>

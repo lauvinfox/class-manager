@@ -5,6 +5,7 @@ import { useTheme } from "../contexts/ThemeContext";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getUserNotifications, respondInviteInstructor } from "../lib/api";
 import { FaRegCheckCircle, FaRegTimesCircle } from "react-icons/fa";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface Notification {
   _id: string;
@@ -20,6 +21,7 @@ interface Notification {
 
 const Notifications = () => {
   const { darkMode } = useTheme();
+  const { language } = useLanguage();
 
   // Ambil notifikasi user
   const {
@@ -69,17 +71,29 @@ const Notifications = () => {
           <Sidebar />
           <div className="flex-1">
             <Header title="Class Manager" fontSize="text-xl" />
-            <NotificationsHeader />
+            <nav className="sticky top-0 z-40 flex items-center justify-between bg-primary border-b border-slate-200 px-6 py-4 dark:bg-gray-900 dark:border-gray-800 min-w-0">
+              <span className="flex text-lg font-semibold text-font-primary dark:text-white select-none gap-1">
+                {language === "id" ? "Notifikasi" : "Notifications"}
+              </span>
+            </nav>
             <div className="flex flex-col h-[608px] w-full items-center justify-center">
-              {isLoading && <p>Loading...</p>}
+              {isLoading && (
+                <p>{language === "id" ? "Memuat..." : "Loading..."}</p>
+              )}
               {error && (
-                <p className="text-red-500">Failed to load notifications.</p>
+                <p className="text-red-500">
+                  {language === "id"
+                    ? "Gagal memuat notifikasi."
+                    : "Failed to load notifications."}
+                </p>
               )}
               <ul className="w-full h-full space-y-1 overflow-auto">
                 {notifs.length === 0 && !isLoading && (
                   <div className="flex items-center justify-center h-full w-full">
                     <span className="text-gray-500 text-center translate-y-[-70px]">
-                      No notifications.
+                      {language === "id"
+                        ? "Tidak ada notifikasi."
+                        : "No notifications."}
                     </span>
                   </div>
                 )}
@@ -103,11 +117,15 @@ const Notifications = () => {
                       <div className="flex ml-4">
                         {notif.status === "accepted" ? (
                           <span className="text-font-primary font-semibold">
-                            Invite Accepted
+                            {language === "id"
+                              ? "Undangan Diterima"
+                              : "Invite Accepted"}
                           </span>
                         ) : notif.status === "denied" ? (
                           <span className="text-font-primary-800 font-semibold">
-                            Invite Denied
+                            {language === "id"
+                              ? "Undangan Ditolak"
+                              : "Invite Denied"}
                           </span>
                         ) : (
                           <>
@@ -139,16 +157,6 @@ const Notifications = () => {
         </div>
       </div>
     </AuthProvider>
-  );
-};
-
-const NotificationsHeader = () => {
-  return (
-    <nav className="sticky top-0 z-40 flex items-center justify-between bg-primary border-b border-slate-200 px-6 py-4 dark:bg-gray-900 dark:border-gray-800 min-w-0">
-      <span className="flex text-lg font-semibold text-font-primary dark:text-white select-none gap-1">
-        Notifications
-      </span>
-    </nav>
   );
 };
 

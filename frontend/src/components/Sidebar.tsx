@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo, useRef, memo, ElementType } from "react";
+import { useLanguage } from "../contexts/LanguageContext";
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -24,6 +25,7 @@ const socket = io("http://localhost:3000", {
 });
 
 export const Sidebar = () => {
+  const { language } = useLanguage();
   // Query user info
   const { data: user } = useQuery({
     queryKey: ["userInfo"],
@@ -63,11 +65,8 @@ export const Sidebar = () => {
 
     // Listen event notification
     socket.on("notification", () => {
-      // Bisa refetch dari server, atau update state notifs secara manual
       refetchNotifs();
-      setHasUnread(true); // Tanda unread muncul saat ada notifikasi baru
-      // Atau jika ingin langsung push ke notifs:
-      // setNotifs((prev) => [notification, ...prev]);
+      setHasUnread(true);
     });
 
     // Cleanup listener saat unmount
@@ -97,6 +96,12 @@ export const Sidebar = () => {
     }
   };
 
+  // Option labels based on language
+  const optionLabels = {
+    Home: language === "id" ? "Beranda" : "Home",
+    Notification: language === "id" ? "Notifikasi" : "Notification",
+    Settings: language === "id" ? "Pengaturan" : "Settings",
+  };
   return (
     <nav
       className="sticky top-0 h-screen shrink-0 border-r border-slate-300 bg-primary p-2 dark:bg-gray-900 dark:border-gray-700"
@@ -108,6 +113,7 @@ export const Sidebar = () => {
           Icon={FiHome}
           href="/"
           title="Home"
+          label={optionLabels.Home}
           selected={selected}
           setSelected={setSelected}
         />
@@ -115,6 +121,7 @@ export const Sidebar = () => {
           Icon={MdOutlineNotifications}
           href="/notifications"
           title="Notification"
+          label={optionLabels.Notification}
           selected={selected}
           setSelected={handleOptionClick}
           notifs={hasUnread}
@@ -123,6 +130,7 @@ export const Sidebar = () => {
           Icon={FiSettings}
           href="/settings"
           title="Settings"
+          label={optionLabels.Settings}
           selected={selected}
           setSelected={setSelected}
         />
@@ -142,6 +150,7 @@ interface User {
 
 const TitleSection = memo(({ user }: { user: User | undefined }) => {
   const navigate = useNavigate();
+  const { language } = useLanguage();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showSignOutModal, setShowSignOutModal] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -215,13 +224,13 @@ const TitleSection = memo(({ user }: { user: User | undefined }) => {
               className="w-full px-4 py-2 text-left text-sm hover:bg-slate-100 dark:hover:bg-gray-800"
               onClick={() => navigate(`/profile/${user?.username}`)}
             >
-              Profile
+              {language === "id" ? "Profil" : "Profile"}
             </button>
             <button
               className="w-full px-4 py-2 text-left text-sm hover:bg-slate-100 dark:hover:bg-gray-800"
               onClick={() => setShowSignOutModal(true)}
             >
-              Logout
+              {language === "id" ? "Keluar" : "Logout"}
             </button>
           </motion.div>
         )}
@@ -267,12 +276,13 @@ const TitleSection = memo(({ user }: { user: User | undefined }) => {
                           className="text-base font-semibold text-gray-900"
                           id="modal-title"
                         >
-                          Sign out
+                          {language === "id" ? "Keluar" : "Sign out"}
                         </h3>
                         <div className="mt-2">
                           <p className="text-sm text-gray-500">
-                            Are you sure you want to sign out? You will need to
-                            log in again to access your account.
+                            {language === "id"
+                              ? "Apakah Anda yakin ingin keluar? Anda perlu masuk lagi untuk mengakses akun Anda."
+                              : "Are you sure you want to sign out? You will need to log in again to access your account."}
                           </p>
                         </div>
                       </div>
@@ -313,6 +323,7 @@ interface OptionProps {
   Icon: ElementType;
   href: string;
   title: string;
+  label?: string;
   selected: string;
   setSelected: (title: string) => void;
   notifs?: boolean;
@@ -321,6 +332,7 @@ const Option = ({
   Icon,
   href,
   title,
+  label,
   selected,
   setSelected,
   notifs,
@@ -345,7 +357,7 @@ const Option = ({
       <div className="grid h-full w-10 place-content-center text-lg">
         <Icon />
       </div>
-      <span className="text-xs font-medium">{title}</span>
+      <span className="text-xs font-medium">{label ?? title}</span>
 
       {notifs && (
         <span className="absolute right-2 w-2 h-2 rounded bg-indigo-500"></span>

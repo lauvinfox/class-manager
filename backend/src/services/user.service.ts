@@ -158,3 +158,37 @@ export const addClassToUser = async (userId: string, classId: string) => {
 
   return user.omitPassword();
 };
+
+export const getUserPreferences = async (userId: string) => {
+  const user = await UserModel.findById(userId)
+    .select("languages viewMode")
+    .exec();
+  appAssert(user, NOT_FOUND, "User not found");
+
+  return {
+    languages: user.languages,
+    viewMode: user.viewMode,
+  };
+};
+
+export const updateUserPreferences = async (
+  userId: string,
+  preferences: { languages?: "en" | "id"; viewMode?: "light" | "dark" }
+) => {
+  const user = await UserModel.findById(userId);
+  appAssert(user, NOT_FOUND, "User not found");
+
+  if (preferences.languages) {
+    user.languages = preferences.languages;
+  }
+  if (preferences.viewMode) {
+    user.viewMode = preferences.viewMode;
+  }
+
+  await user.save();
+
+  return {
+    languages: user.languages,
+    viewMode: user.viewMode,
+  };
+};

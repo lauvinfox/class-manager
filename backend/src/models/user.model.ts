@@ -26,6 +26,8 @@ export interface IUser extends Document {
     date: Date;
     read: boolean;
   }[];
+  languages?: "en" | "id";
+  viewMode?: "light" | "dark";
   createdAt: Date;
   updatedAt: Date;
 
@@ -97,6 +99,16 @@ const UserSchema: Schema = new Schema<IUser>(
         read: { type: Boolean, default: false },
       },
     ],
+    languages: {
+      type: String,
+      enum: ["en", "id"],
+      default: "en",
+    },
+    viewMode: {
+      type: String,
+      enum: ["light", "dark"],
+      default: "light",
+    },
   },
   { timestamps: true }
 );

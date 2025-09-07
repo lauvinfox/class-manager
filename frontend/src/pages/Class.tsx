@@ -24,6 +24,7 @@ import LearningPlansTab from "../components/LearningPlansTab";
 
 const ClassPage = () => {
   const { darkMode } = useTheme();
+
   const { classId } = useParams();
 
   const [classInfo, setClassInfo] = useState<ClassInfo | null>(null);

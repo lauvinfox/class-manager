@@ -7,6 +7,7 @@ import {
 } from "../lib/api";
 import { ClassInfo } from "../types/types";
 import { useState } from "react";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface AssignmentWeights {
   subject: string;
@@ -27,6 +28,8 @@ const SubjectsTab = ({
   classInfo: ClassInfo | null;
   handleRefresh: () => void;
 }) => {
+  const { language } = useLanguage();
+
   const { mutate: updateClassWeights } = useMutation({
     mutationFn: async ({
       classId,
@@ -121,7 +124,9 @@ const SubjectsTab = ({
     <div className="mx-auto py-4 px-4">
       {classInfo?.role === "owner" && (
         <div className="mx-auto py-8 px-4">
-          <h2 className="text-2xl font-semibold mb-6">Subject Weights</h2>
+          <h2 className="text-2xl font-semibold mb-6">
+            {language === "id" ? "Bobot Subyek" : "Subject Weights"}
+          </h2>
           <div className="space-y-4 pb-4">
             {classWeights && classWeights.length > 0 ? (
               // Chunk classWeights into groups of 4
@@ -134,7 +139,7 @@ const SubjectsTab = ({
                       .map((subjectWeight: AssignmentWeights, idx: number) => (
                         <div
                           key={subjectWeight.subject || idx}
-                          className="min-w-[260px] bg-white shadow rounded-lg p-6 flex-shrink-0"
+                          className="min-w-[260px] bg-white dark:bg-gray-800 shadow rounded-lg p-6 flex-shrink-0"
                         >
                           <h3 className="text-lg font-bold mb-2">
                             {subjectWeight.subject}
@@ -167,14 +172,20 @@ const SubjectsTab = ({
                 )
               )
             ) : (
-              <div className="text-gray-500">No subject weights found.</div>
+              <div className="text-gray-500">
+                {language === "id"
+                  ? "Tidak ada bobot subyek ditemukan."
+                  : "No subject weights found."}
+              </div>
             )}
           </div>
         </div>
       )}
       {classInfo?.role === "member" && (
         <div className="flex flex-col gap-2 dark:bg-gray-900 dark:text-slate-200 dark:border-slate-200 p-6 h-full">
-          <h2 className="text-2xl font-semibold mb-4">Subject Weights</h2>
+          <h2 className="text-2xl font-semibold mb-4">
+            {language === "id" ? "Bobot Subyek" : "Subject Weights"}
+          </h2>
           {classWeightBySubject ? (
             <div className="min-w-[260px] bg-white shadow rounded-lg p-6 flex-shrink-0 dark:bg-gray-800 relative">
               <h3 className="text-lg font-bold mb-2">
@@ -222,7 +233,11 @@ const SubjectsTab = ({
               </button>
             </div>
           ) : (
-            <div className="text-gray-500">No subject weights found.</div>
+            <div className="text-gray-500">
+              {language === "id"
+                ? "Tidak ada bobot subyek ditemukan."
+                : "No subject weights found."}
+            </div>
           )}
         </div>
       )}
@@ -236,9 +251,15 @@ const SubjectsTab = ({
             >
               &times;
             </button>
-            <h3 className="text-xl font-bold mb-1">Update Subject Weights</h3>
+            <h3 className="text-xl font-bold mb-1">
+              {language === "id"
+                ? "Perbarui Bobot Subyek"
+                : "Update Subject Weights"}
+            </h3>
             <p className="text-sm text-gray-500 mb-4">
-              Enter value in percent (%).
+              {language === "id"
+                ? "Masukkan nilai dalam persen (%)."
+                : "Enter value in percent (%)."}
             </p>
             <form
               className="flex flex-col gap-1.5"
@@ -352,13 +373,13 @@ const SubjectsTab = ({
                   className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600 transition"
                   onClick={() => setShowUpdateWeight(false)}
                 >
-                  Cancel
+                  {language === "id" ? "Batal" : "Cancel"}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 rounded bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition"
                 >
-                  Update
+                  {language === "id" ? "Perbarui" : "Update"}
                 </button>
               </div>
             </form>

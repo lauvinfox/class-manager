@@ -40,13 +40,14 @@ const StatisticsTab = ({
   });
   const subjects = classInfo?.subjects || [];
   const [selectedSubject, setSelectedSubject] = useState("");
-  const [subjectDropdown, setSubjectDropdown] = useState(false);
+
+  const [dropdownType, setDropdownType] = useState<
+    "subject" | "overviewMode" | "assignmentType" | "subjectAttendance" | ""
+  >("");
 
   const [selectedAssignmentType, setSelectedAssignmentType] = useState<
     "homework" | "quiz" | "exam" | "project" | "finalExam" | ""
   >("homework");
-  const [selectAssignmentTypeDropdown, setSelectAssignmentTypeDropdown] =
-    useState(false);
 
   const { data: classAttendanceSummary } = useQuery({
     queryKey: ["classAttendanceSummary", classId],
@@ -66,8 +67,6 @@ const StatisticsTab = ({
     enabled: !!classId,
   });
 
-  const [subjectAttendanceDropdown, setSubjectAttendanceDropdown] =
-    useState(false);
   const [selectedSubjectAttendance, setSelectedSubjectAttendance] =
     useState("");
 
@@ -101,7 +100,6 @@ const StatisticsTab = ({
   const [overviewMode, setOverviewMode] = useState<"attendance" | "grade">(
     "attendance"
   );
-  const [overviewModeDropdown, setOverviewModeDropdown] = useState(false);
 
   // Sorting state
   const [columnSorts, setColumnSorts] = useState<string[]>([]);
@@ -122,8 +120,8 @@ const StatisticsTab = ({
   return (
     <div className="max-w-full overflow-x-auto py-4 px-4">
       <div className="flex justify-between items-center mb-4 gap-2 flex-wrap">
-        <div className="flex md:w-[30%] w-[70%] items-center gap-3 rounded-lg px-3 py-2 bg-gray-200">
-          <IoSearchOutline className="text-gray-800" />
+        <div className="flex w-[35%] items-center gap-5 rounded-lg px-3 py-2 bg-gray-200 dark:bg-gray-800">
+          <IoSearchOutline className="text-gray-800 dark:text-gray-200" />
           <input
             type="text"
             placeholder="Search student"
@@ -138,7 +136,13 @@ const StatisticsTab = ({
             <button
               className="flex items-center justify-between gap-2 text-sm text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700"
               type="button"
-              onClick={() => setSubjectDropdown((v) => !v)}
+              onClick={() => {
+                if (dropdownType === "subject") {
+                  setDropdownType("");
+                } else {
+                  setDropdownType("subject");
+                }
+              }}
             >
               <span>
                 {selectedSubject === "" ? "Subject" : selectedSubject}
@@ -148,7 +152,13 @@ const StatisticsTab = ({
             <button
               className="flex items-center justify-between gap-2 text-sm text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg px-5 py-2.5 w-35 text-center dark:bg-blue-600 dark:hover:bg-blue-700"
               type="button"
-              onClick={() => setOverviewModeDropdown((v) => !v)}
+              onClick={() => {
+                if (dropdownType === "overviewMode") {
+                  setDropdownType("");
+                } else {
+                  setDropdownType("overviewMode");
+                }
+              }}
             >
               <span>
                 {overviewMode === "attendance" ? "Attendance" : "Grade"}
@@ -158,7 +168,13 @@ const StatisticsTab = ({
             <button
               className="flex items-center justify-between gap-2 text-sm text-gray-700 dark:text-white bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200 font-semibold px-4 py-2 w-35 rounded-lg shadow"
               type="button"
-              onClick={() => setSelectAssignmentTypeDropdown((v) => !v)}
+              onClick={() => {
+                if (dropdownType === "assignmentType") {
+                  setDropdownType("");
+                } else {
+                  setDropdownType("assignmentType");
+                }
+              }}
             >
               <span>
                 {selectedAssignmentType === ""
@@ -178,7 +194,7 @@ const StatisticsTab = ({
           </div>
         )}
 
-        {classInfo?.role == "owner" && overviewModeDropdown && (
+        {classInfo?.role == "owner" && dropdownType === "overviewMode" && (
           <div className="z-50 absolute right-40 mt-36 bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700">
             <ul
               className="py-2 text-sm text-gray-700 dark:text-gray-200"
@@ -202,7 +218,7 @@ const StatisticsTab = ({
                           subjects.length > 0 ? subjects[0] : ""
                         );
                       }
-                      setOverviewModeDropdown(false);
+                      setDropdownType("");
                     }}
                   >
                     {mode.charAt(0).toUpperCase() + mode.slice(1)}
@@ -213,7 +229,7 @@ const StatisticsTab = ({
           </div>
         )}
 
-        {classInfo?.role == "member" && selectAssignmentTypeDropdown && (
+        {classInfo?.role == "member" && dropdownType === "assignmentType" && (
           <div className="z-50 absolute right-4 mt-62 bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700">
             <ul
               className="py-2 text-sm text-gray-700 dark:text-gray-200"
@@ -240,7 +256,7 @@ const StatisticsTab = ({
                             | "finalExam"
                         );
                         setOverviewMode("grade");
-                        setSelectAssignmentTypeDropdown(false);
+                        setDropdownType("");
                       }}
                     >
                       {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -252,8 +268,8 @@ const StatisticsTab = ({
           </div>
         )}
 
-        {classInfo?.role == "owner" && subjectDropdown && (
-          <div className="z-50 absolute right-51 mt-35 bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 translate-y-5 translate-x-[-110px]">
+        {classInfo?.role == "owner" && dropdownType === "subject" && (
+          <div className="z-50 absolute right-51 mt-16 bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 translate-y-5 translate-x-[-110px]">
             <ul
               className="py-2 text-sm text-gray-700 dark:text-gray-200"
               aria-labelledby="dropdownDefaultButton"
@@ -277,7 +293,7 @@ const StatisticsTab = ({
                       onClick={() => {
                         setSelectedSubject(subject);
                         setOverviewMode("grade");
-                        setSubjectDropdown(false);
+                        setDropdownType("");
                       }}
                     >
                       {subject}
@@ -304,7 +320,7 @@ const StatisticsTab = ({
             <button
               className="flex items-center justify-between gap-2 text-sm text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg px-5 py-2.5 w-35 text-center dark:bg-blue-600 dark:hover:bg-blue-700"
               type="button"
-              onClick={() => setOverviewModeDropdown((v) => !v)}
+              onClick={() => setDropdownType("overviewMode")}
             >
               <span>
                 {overviewMode === "attendance" ? "Attendance" : "Grade"}
@@ -314,7 +330,7 @@ const StatisticsTab = ({
             <button
               className="flex items-center justify-between gap-2 text-sm text-gray-700 dark:text-white bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200 font-semibold px-4 py-2 w-45 rounded-lg shadow"
               type="button"
-              onClick={() => setSelectAssignmentTypeDropdown((v) => !v)}
+              onClick={() => setDropdownType("assignmentType")}
             >
               <span>
                 {selectedAssignmentType === ""
@@ -334,7 +350,7 @@ const StatisticsTab = ({
           </div>
         )}
 
-        {classInfo?.role == "member" && overviewModeDropdown && (
+        {classInfo?.role == "member" && dropdownType === "overviewMode" && (
           <div className="z-50 absolute right-40 mt-36 bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700">
             <ul
               className="py-2 text-sm text-gray-700 dark:text-gray-200"
@@ -351,7 +367,7 @@ const StatisticsTab = ({
                     }`}
                     onClick={() => {
                       setOverviewMode(mode as "attendance" | "grade");
-                      setOverviewModeDropdown(false);
+                      setDropdownType("");
                     }}
                   >
                     {mode.charAt(0).toUpperCase() + mode.slice(1)}
@@ -362,7 +378,7 @@ const StatisticsTab = ({
           </div>
         )}
 
-        {classInfo?.role == "owner" && subjectAttendanceDropdown && (
+        {classInfo?.role == "owner" && dropdownType === "subjectAttendance" && (
           <div className="z-50 absolute left-110 mt-64 bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700">
             <ul
               className="py-2 text-sm text-gray-700 dark:text-gray-200"
@@ -386,7 +402,7 @@ const StatisticsTab = ({
                       }`}
                       onClick={() => {
                         setSelectedSubjectAttendance(subject);
-                        setSubjectAttendanceDropdown(false);
+                        setDropdownType("");
                       }}
                     >
                       {subject}
@@ -398,7 +414,7 @@ const StatisticsTab = ({
           </div>
         )}
 
-        {classInfo?.role == "owner" && selectAssignmentTypeDropdown && (
+        {classInfo?.role == "owner" && dropdownType === "assignmentType" && (
           <div className="z-50 absolute right-4 mt-62 bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700">
             <ul
               className="py-2 text-sm text-gray-700 dark:text-gray-200"
@@ -424,7 +440,7 @@ const StatisticsTab = ({
                             | "project"
                             | "finalExam"
                         );
-                        setSelectAssignmentTypeDropdown(false);
+                        setDropdownType("");
                       }}
                     >
                       {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -459,7 +475,7 @@ const StatisticsTab = ({
                   </th>
                   <th
                     className="px-6 py-4 flex items-center gap-2 cursor-pointer"
-                    onClick={() => setSubjectAttendanceDropdown((v) => !v)}
+                    onClick={() => setDropdownType("subjectAttendance")}
                   >
                     Subject <FiChevronDown />
                   </th>

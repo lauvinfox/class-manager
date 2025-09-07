@@ -166,3 +166,33 @@ export const getUserClass: RequestHandler = catchError(async (req, res) => {
     data: classes,
   });
 });
+
+export const getUserPreferencesByUserId: RequestHandler = catchError(
+  async (req, res) => {
+    const userId = req.userId as string;
+
+    const userPreferences = await UserService.getUserPreferences(userId);
+
+    return res.json({
+      message: "User preferences retrieved successfully",
+      data: userPreferences,
+    });
+  }
+);
+
+export const updateUserPreferencesByUserId: RequestHandler = catchError(
+  async (req, res) => {
+    const userId = req.userId as string;
+    const preferences = req.body;
+
+    const updatedPreferences = await UserService.updateUserPreferences(
+      userId,
+      preferences
+    );
+
+    return res.json({
+      message: "User preferences updated successfully",
+      data: updatedPreferences,
+    });
+  }
+);

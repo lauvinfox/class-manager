@@ -8,6 +8,7 @@ import { ClassInfo } from "../types/types";
 import { FiChevronDown } from "react-icons/fi";
 import { IoSearchOutline } from "react-icons/io5";
 import { useState } from "react";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface Assistance {
   studentName: string;
@@ -27,6 +28,8 @@ const AssistancesTab = ({
   classId: string;
   classInfo: ClassInfo | null;
 }) => {
+  const { language } = useLanguage();
+
   // Class Assistances By Class Id
   const { data: classAssistances, refetch: refetchAssistance } = useQuery({
     queryKey: ["classAssistances"],
@@ -102,11 +105,11 @@ const AssistancesTab = ({
     <div className="max-w-full overflow-x-auto py-4 px-4">
       <div className="flex justify-end mb-4 gap-2">
         <div className="flex w-full items-center gap-2">
-          <div className="flex w-96 items-center gap-5 rounded-lg px-3 py-2 bg-gray-200 ">
-            <IoSearchOutline className="text-gray-800" />
+          <div className="flex w-[35%] items-center gap-5 rounded-lg px-3 py-2 bg-gray-200 dark:bg-gray-800">
+            <IoSearchOutline className="text-gray-800 dark:text-gray-200" />
             <input
               type="text"
-              placeholder="Search student"
+              placeholder={language === "id" ? "Cari siswa" : "Search student"}
               value={searchStudentTerm}
               onChange={handleStudentSearch}
               className="w-full outline-none bg-transparent"
@@ -120,7 +123,13 @@ const AssistancesTab = ({
               type="button"
               onClick={() => setSubjectDropdown((v) => !v)}
             >
-              <span>{selectedSubject == "" ? "Subject" : selectedSubject}</span>
+              <span>
+                {selectedSubject == ""
+                  ? language === "id"
+                    ? "Subyek"
+                    : "Subject"
+                  : selectedSubject}
+              </span>
               <FiChevronDown className="ml-auto" />
             </button>
           </>
@@ -134,7 +143,7 @@ const AssistancesTab = ({
               {subjects.length === 0 ? (
                 <li>
                   <span className="block px-4 py-2 text-gray-400">
-                    No subjects
+                    {language === "id" ? "Tidak ada subyek" : "No subjects"}
                   </span>
                 </li>
               ) : (
@@ -367,7 +376,7 @@ const AssistancesTab = ({
                       )
                     }
                   >
-                    Save
+                    {language === "id" ? "Simpan" : "Save"}
                   </button>
                 </div>
               ) : (
@@ -379,7 +388,7 @@ const AssistancesTab = ({
                       setAssistanceText(selectedAssistance.assistantResponse);
                     }}
                   >
-                    Edit
+                    {language === "id" ? "Edit" : "Edit"}
                   </button>
                 </div>
               )}

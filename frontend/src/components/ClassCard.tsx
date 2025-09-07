@@ -40,7 +40,7 @@ export const ClassCard = ({
       )}
       <div
         onClick={() => navigate(`/class/${classId}`)}
-        className="bg-white hover:bg-slate-100 dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden flex flex-row items-center transition h-40 w-76 justify-center gap-4 cursor-pointer relative"
+        className="bg-white hover:bg-slate-100 dark:hover:bg-gray-800 dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden flex flex-row items-center transition h-40 w-76 justify-center gap-4 cursor-pointer relative"
       >
         {/* ProfilePic di kiri atas */}
         <div className="absolute left-6 top-10">

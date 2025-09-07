@@ -9,6 +9,7 @@ import { createClass, getClasses } from "../lib/api";
 import { MdGroupAdd } from "react-icons/md";
 import { ClassCard } from "../components/ClassCard";
 import { FiChevronDown } from "react-icons/fi";
+import { useLanguage } from "../contexts/LanguageContext";
 
 export interface ClassesData {
   classId: string;
@@ -21,6 +22,8 @@ export interface ClassesData {
 
 const HomePage = () => {
   const { darkMode } = useTheme();
+  const { language } = useLanguage();
+
   const [showModal, setShowModal] = useState(false);
 
   const [name, setName] = useState("");
@@ -105,16 +108,22 @@ const HomePage = () => {
                       }}
                     />
                     <span className="text-lg translate-x-[-1px] translate-y-[4px] font-semibold mb-2 text-font-primary dark:text-white">
-                      Owned Class
+                      {language === "id" ? "Kelas Dimiliki" : "Owned Class"}
                     </span>
                   </div>
                 </div>
                 {openClassOwned && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                    {isLoading && <div>Loading...</div>}
+                    {isLoading && (
+                      <div>
+                        {language === "id" ? "Memuat..." : "Loading..."}
+                      </div>
+                    )}
                     {error && (
                       <div className="text-red-500">
-                        Failed to load classes.
+                        {language === "id"
+                          ? "Gagal memuat kelas."
+                          : "Failed to load classes."}
                       </div>
                     )}
                     {classesData?.data &&
@@ -122,7 +131,9 @@ const HomePage = () => {
                       classesData.data.classOwned.length === 0 &&
                       !isLoading && (
                         <div className="col-span-full text-center text-gray-500">
-                          No classes found.
+                          {language === "id"
+                            ? "Tidak ada kelas ditemukan."
+                            : "No classes found."}
                         </div>
                       )}
                     {classesData?.data &&
@@ -156,16 +167,22 @@ const HomePage = () => {
                       }}
                     />
                     <span className="text-lg translate-x-[-1px] translate-y-[4px] font-semibold mb-2 text-font-primary dark:text-white">
-                      Joined Class
+                      {language === "id" ? "Kelas Diikuti" : "Joined Class"}
                     </span>
                   </div>
                 </div>
                 {openClassJoined && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1">
-                    {isLoading && <div>Loading...</div>}
+                    {isLoading && (
+                      <div>
+                        {language === "id" ? "Memuat..." : "Loading..."}
+                      </div>
+                    )}
                     {error && (
                       <div className="text-red-500">
-                        Failed to load classes.
+                        {language === "id"
+                          ? "Gagal memuat kelas."
+                          : "Failed to load classes."}
                       </div>
                     )}
                     {classesData?.data &&
@@ -173,7 +190,9 @@ const HomePage = () => {
                       classesData.data.classes.length === 0 &&
                       !isLoading && (
                         <div className="col-span-full text-center text-gray-500">
-                          No classes found.
+                          {language === "id"
+                            ? "Tidak ada kelas ditemukan."
+                            : "No classes found."}
                         </div>
                       )}
                     {classesData?.data &&
@@ -195,8 +214,16 @@ const HomePage = () => {
 
       {/* Create Class Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 w-full max-w-md relative">
+        <div
+          className={`fixed inset-0 z-50 flex items-center justify-center ${
+            darkMode ? "bg-black/70" : "bg-black/40"
+          } ${darkMode && "dark"} text-font-primary dark:text-slate-200`}
+        >
+          <div
+            className={`bg-white ${
+              darkMode ? "dark:bg-gray-900" : ""
+            } rounded-lg shadow-lg p-6 w-full max-w-md relative`}
+          >
             <button
               className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 dark:hover:text-white text-xl"
               onClick={toggleShowModal}
@@ -205,7 +232,7 @@ const HomePage = () => {
               &times;
             </button>
             <h2 className="text-lg font-bold mb-4 text-font-primary dark:text-white">
-              Create Class
+              {language === "id" ? "Buat Kelas" : "Create Class"}
             </h2>
 
             <form
@@ -216,7 +243,9 @@ const HomePage = () => {
               }}
             >
               <div>
-                <label className="block text-sm font-medium mb-1">Name</label>
+                <label className="block text-sm font-medium mb-1">
+                  {language === "id" ? "Nama" : "Name"}
+                </label>
                 <input
                   type="text"
                   className="w-full rounded-md border border-slate-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-2 py-2 text-font-primary dark:text-white"
@@ -226,7 +255,7 @@ const HomePage = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  Description
+                  {language === "id" ? "Deskripsi" : "Description"}
                 </label>
                 <textarea
                   className="w-full rounded border border-slate-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-2 py-2 pt-3 text-font-primary dark:text-white h-40 text-left align-top leading-none resize-none"
@@ -240,14 +269,14 @@ const HomePage = () => {
                   className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600"
                   onClick={toggleShowModal}
                 >
-                  Cancel
+                  {language === "id" ? "Batal" : "Cancel"}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 rounded bg-indigo-600 text-white font-semibold hover:bg-indigo-700"
                   disabled={!name}
                 >
-                  Create
+                  {language === "id" ? "Buat" : "Create"}
                 </button>
               </div>
             </form>
@@ -259,6 +288,7 @@ const HomePage = () => {
 };
 
 const ClassHeader = ({ toggleShowModal }: { toggleShowModal: () => void }) => {
+  const { language } = useLanguage();
   return (
     <div className="sticky top-0 z-45 bg-white">
       <nav className="relative top-0 z-40 flex items-center justify-between bg-primary border-b border-slate-200 px-6 py-4 dark:bg-gray-900 dark:border-gray-800 min-w-0">
@@ -270,7 +300,7 @@ const ClassHeader = ({ toggleShowModal }: { toggleShowModal: () => void }) => {
           onClick={toggleShowModal}
         >
           <MdGroupAdd className="text-lg" />
-          <span>Create class</span>
+          <span>{language === "id" ? "Buat kelas" : "Create class"}</span>
         </button>
       </nav>
     </div>

@@ -155,6 +155,26 @@ export const getClasses = async () => {
   return await API.get("/api/v1/users/class/get");
 };
 
+/** Get User Classes by Class Owner
+ * This function retrieves the classes owned by the currently logged-in user.
+ * @returns Promise resolving to the API response for fetching classes owned by the user.
+ */
+export const getUserPreferencesByUserId = async () => {
+  return await API.get("/api/v1/users/preferences");
+};
+
+/** Update User Preferences
+ * This function updates the preferences of the currently logged-in user.
+ * @param preferences - An object containing the user's preferences, such as language and view mode.
+ * @returns Promise resolving to the API response for updating user preferences.
+ */
+export const updateUserPreferencesByUserId = async (preferences: {
+  languages?: "en" | "id";
+  viewMode?: "light" | "dark";
+}) => {
+  return await API.patch("/api/v1/users/preferences", preferences);
+};
+
 /** Notification API Module
  * This module provides functions to retrieve and manage user notifications.
  */

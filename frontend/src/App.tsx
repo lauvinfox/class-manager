@@ -6,7 +6,7 @@ import EmailVerificationPage from "./pages/EmailVerification";
 import ForgetPasswordPage from "./pages/ForgetPassword";
 import ChangePasswordPage from "./pages/ResetPassword";
 import Settings from "./pages/Settings";
-import Classes from "./pages/Classes";
+
 import Notifications from "./pages/Notifications";
 import Help from "./pages/Help";
 import ProfilePage from "./pages/Profile";
@@ -24,7 +24,6 @@ function App() {
       <Route path="/password/reset" element={<ChangePasswordPage />} />
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/profile/:username" element={<ProfilePage />} />
-      <Route path="/classes" element={<Classes />} />
       <Route path="/class/:classId" element={<ClassPage />} />
       <Route path="/notifications" element={<Notifications />} />
       <Route path="/settings" element={<Settings />} />

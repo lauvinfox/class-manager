@@ -20,6 +20,7 @@ import {
   StudentRecords,
 } from "../utils/pdf";
 import jsPDF from "jspdf";
+import { useLanguage } from "../contexts/LanguageContext";
 
 const StudentsTab = ({
   classId,
@@ -30,6 +31,8 @@ const StudentsTab = ({
   classInfo: ClassInfo | null;
   handleRefresh: () => void;
 }) => {
+  const { language } = useLanguage();
+
   const { mutateAsync: addStudent } = useMutation({
     mutationFn: async (studentData: {
       studentId: number;
@@ -355,11 +358,11 @@ const StudentsTab = ({
   return (
     <div className="max-w-full overflow-x-auto py-4 px-4">
       <div className="flex justify-between mb-4">
-        <div className="flex md:w-[30%] w-[70%] items-center gap-5 rounded-lg px-3 py-2 bg-gray-200">
-          <IoSearchOutline className="text-gray-800" />
+        <div className="flex md:w-[30%] w-[70%] items-center gap-5 rounded-lg px-3 py-2 bg-gray-200 dark:bg-gray-800">
+          <IoSearchOutline className="text-gray-800 dark:text-gray-200" />
           <input
             type="text"
-            placeholder="Search student"
+            placeholder={language === "id" ? "Cari siswa" : "Search student"}
             value={searchStudentTerm}
             onChange={handleStudentSearch}
             className="w-full outline-none bg-transparent"
@@ -373,7 +376,7 @@ const StudentsTab = ({
               onClick={() => setShowAddStudentModal(true)}
             >
               <IoPersonAddOutline className="text-lg" />
-              Add Student
+              {language === "id" ? "Tambah Siswa" : "Add Student"}
             </button>
             <button
               type="button"
@@ -381,7 +384,7 @@ const StudentsTab = ({
               onClick={() => setDeleteStudentsModal(true)}
             >
               <MdDelete className="text-lg" />
-              Delete Students
+              {language === "id" ? "Hapus Semua Siswa" : "Delete Students"}
             </button>
             {deleteStudentsModal && (
               <div
@@ -422,12 +425,15 @@ const StudentsTab = ({
                               className="text-base font-semibold text-gray-900"
                               id="modal-title"
                             >
-                              Delete All Students
+                              {language === "id"
+                                ? "Hapus Semua Siswa"
+                                : "Delete All Students"}
                             </h3>
                             <div className="mt-2">
                               <p className="text-sm text-gray-500">
-                                Are you sure you want to delete all students in
-                                this class? This action cannot be undone.
+                                {language === "id"
+                                  ? "Apakah Anda yakin ingin menghapus semua siswa di kelas ini? Tindakan ini tidak dapat dibatalkan."
+                                  : "Are you sure you want to delete all students in this class? This action cannot be undone."}
                               </p>
                             </div>
                           </div>
@@ -441,14 +447,14 @@ const StudentsTab = ({
                             deleteStudents();
                           }}
                         >
-                          Delete
+                          {language === "id" ? "Hapus" : "Delete"}
                         </button>
                         <button
                           type="button"
                           className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50 sm:mt-0 sm:w-auto"
                           onClick={() => setDeleteStudentsModal(false)}
                         >
-                          Cancel
+                          {language === "id" ? "Batal" : "Cancel"}
                         </button>
                       </div>
                     </div>
@@ -477,15 +483,25 @@ const StudentsTab = ({
           <table className="min-w-full text-sm text-left text-gray-600 dark:text-gray-300">
             <thead className="bg-gray-100 dark:bg-gray-800 text-xs uppercase tracking-wider sticky top-0 z-10">
               <tr>
-                <th className="px-6 py-4">Name</th>
-                <th className="px-6 py-4">Student ID</th>
-                <th className="px-6 py-4">Birth Date</th>
+                <th className="px-6 py-4">
+                  {language === "id" ? "Nama" : "Name"}
+                </th>
+                <th className="px-6 py-4">
+                  {language === "id" ? "ID Siswa" : "Student ID"}
+                </th>
+                <th className="px-6 py-4">
+                  {language === "id" ? "Tanggal Lahir" : "Birth Date"}
+                </th>
 
                 {classInfo?.role === "owner" && (
-                  <th className="px-6 py-4 text-center">Report</th>
+                  <th className="px-6 py-4 text-center">
+                    {language === "id" ? "Laporan" : "Report"}
+                  </th>
                 )}
                 {classInfo?.role === "owner" && (
-                  <th className="px-6 py-4 text-center">Action</th>
+                  <th className="px-6 py-4 text-center">
+                    {language === "id" ? "Aksi" : "Action"}
+                  </th>
                 )}
               </tr>
             </thead>
@@ -533,7 +549,9 @@ const StudentsTab = ({
                                 setShowCreateReportModal(student.studentId)
                               }
                             >
-                              Create Report
+                              {language === "id"
+                                ? "Buat Laporan"
+                                : "Create Report"}
                             </button>
                             {showCreateReportModal === student.studentId && (
                               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
@@ -548,7 +566,10 @@ const StudentsTab = ({
                                     &times;
                                   </button>
                                   <h2 className="text-lg font-bold mb-4 text-font-primary dark:text-white">
-                                    Create Report for {student.name}
+                                    {language === "id"
+                                      ? "Buat Laporan untuk"
+                                      : "Create Report for"}{" "}
+                                    {student.name}
                                   </h2>
                                   {/* Tabs for report type */}
                                   <div className="flex gap-2 mb-4">
@@ -560,7 +581,9 @@ const StudentsTab = ({
                                       }`}
                                       onClick={() => setReportTab("full")}
                                     >
-                                      Full Report
+                                      {language === "id"
+                                        ? "Laporan Lengkap"
+                                        : "Full Report"}
                                     </button>
                                     <button
                                       className={`px-4 py-2 rounded-t-md font-semibold border-b-2 transition-colors duration-150 ${
@@ -570,7 +593,9 @@ const StudentsTab = ({
                                       }`}
                                       onClick={() => setReportTab("byTime")}
                                     >
-                                      Report by Time
+                                      {language === "id"
+                                        ? "Laporan Berdasarkan Waktu"
+                                        : "Report by Time"}
                                     </button>
                                   </div>
                                   {reportTab === "full" ? (
@@ -596,12 +621,18 @@ const StudentsTab = ({
                                     >
                                       <div className="flex items-center gap-2 mt-2">
                                         <label className="whitespace-nowrap font-bold">
-                                          Note
+                                          {language === "id"
+                                            ? "Catatan"
+                                            : "Note"}
                                         </label>
                                       </div>
                                       <textarea
                                         className="border rounded px-3 py-2 mb-20"
-                                        placeholder="Note for the report"
+                                        placeholder={
+                                          language === "id"
+                                            ? "Catatan untuk laporan"
+                                            : "Note for the report"
+                                        }
                                         rows={8}
                                         value={fullReportNote}
                                         onChange={(e) =>
@@ -616,13 +647,17 @@ const StudentsTab = ({
                                             setShowCreateReportModal(null)
                                           }
                                         >
-                                          Cancel
+                                          {language === "id"
+                                            ? "Batal"
+                                            : "Cancel"}
                                         </button>
                                         <button
                                           type="submit"
                                           className="px-4 py-2 rounded bg-indigo-600 text-white font-semibold hover:bg-indigo-700"
                                         >
-                                          Create
+                                          {language === "id"
+                                            ? "Buat"
+                                            : "Create"}
                                         </button>
                                       </div>
                                     </form>
@@ -657,7 +692,9 @@ const StudentsTab = ({
                                     >
                                       <div className="flex items-center gap-2">
                                         <label className="whitespace-nowrap font-bold">
-                                          Start Date
+                                          {language === "id"
+                                            ? "Tanggal Mulai"
+                                            : "Start Date"}
                                         </label>
                                       </div>
                                       <input
@@ -670,7 +707,9 @@ const StudentsTab = ({
                                       />
                                       <div className="flex items-center gap-2">
                                         <label className="whitespace-nowrap font-bold">
-                                          End Date
+                                          {language === "id"
+                                            ? "Tanggal Selesai"
+                                            : "End Date"}
                                         </label>
                                       </div>
                                       <input
@@ -683,12 +722,18 @@ const StudentsTab = ({
                                       />
                                       <div className="flex items-center gap-2">
                                         <label className="whitespace-nowrap font-bold">
-                                          Note
+                                          {language === "id"
+                                            ? "Catatan"
+                                            : "Note"}
                                         </label>
                                       </div>
                                       <textarea
                                         className="border rounded px-3 py-2 mb-5"
-                                        placeholder="Report Description"
+                                        placeholder={
+                                          language === "id"
+                                            ? "Deskripsi Laporan"
+                                            : "Report Description"
+                                        }
                                         rows={4}
                                         value={byTimeReportNote}
                                         onChange={(e) =>
@@ -703,13 +748,17 @@ const StudentsTab = ({
                                             setShowCreateReportModal(null)
                                           }
                                         >
-                                          Cancel
+                                          {language === "id"
+                                            ? "Batal"
+                                            : "Cancel"}
                                         </button>
                                         <button
                                           type="submit"
                                           className="px-4 py-2 rounded bg-indigo-600 text-white font-semibold hover:bg-indigo-700"
                                         >
-                                          Create
+                                          {language === "id"
+                                            ? "Buat"
+                                            : "Create"}
                                         </button>
                                       </div>
                                     </form>
@@ -760,7 +809,9 @@ const StudentsTab = ({
                                           }}
                                           className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
                                         >
-                                          Close
+                                          {language === "id"
+                                            ? "Tutup"
+                                            : "Close"}
                                         </button>
                                         <button
                                           onClick={() => {
@@ -772,7 +823,9 @@ const StudentsTab = ({
                                           }}
                                           className="px-4 py-2 rounded bg-indigo-600 text-white font-semibold hover:bg-indigo-700"
                                         >
-                                          Download PDF
+                                          {language === "id"
+                                            ? "Unduh PDF"
+                                            : "Download PDF"}
                                         </button>
                                       </div>
                                     </div>
@@ -791,7 +844,9 @@ const StudentsTab = ({
                                       &times;
                                     </button>
                                     <h2 className="text-lg font-bold mb-4 text-font-primary dark:text-white">
-                                      Edit Student
+                                      {language === "id"
+                                        ? "Edit Siswa"
+                                        : "Edit Student"}
                                     </h2>
                                     <form
                                       className="flex flex-col gap-2 h-90"
@@ -807,7 +862,9 @@ const StudentsTab = ({
                                       {/* Form input satu-satu student */}
                                       <input
                                         className="border rounded px-3 py-2"
-                                        placeholder="Name"
+                                        placeholder={
+                                          language === "id" ? "Nama" : "Name"
+                                        }
                                         value={editStudentForm.name}
                                         onChange={(e) =>
                                           setEditStudentForm({
@@ -818,7 +875,11 @@ const StudentsTab = ({
                                       />
                                       <input
                                         className="border rounded px-3 py-2"
-                                        placeholder="Student Id"
+                                        placeholder={
+                                          language === "id"
+                                            ? "ID Siswa"
+                                            : "Student Id"
+                                        }
                                         value={editStudentForm.studentId}
                                         onChange={(e) =>
                                           setEditStudentForm({
@@ -829,7 +890,11 @@ const StudentsTab = ({
                                       />
                                       <input
                                         className="border rounded px-3 py-2"
-                                        placeholder="Birth date (YYYY-MM-DD)"
+                                        placeholder={
+                                          language === "id"
+                                            ? "Tanggal Lahir (YYYY-MM-DD)"
+                                            : "Birth date (YYYY-MM-DD)"
+                                        }
                                         value={editStudentForm.birthDate}
                                         onChange={(e) =>
                                           setEditStudentForm({
@@ -840,7 +905,11 @@ const StudentsTab = ({
                                       />
                                       <input
                                         className="border rounded px-3 py-2"
-                                        placeholder="Birth place"
+                                        placeholder={
+                                          language === "id"
+                                            ? "Tempat Lahir"
+                                            : "Birth place"
+                                        }
                                         value={editStudentForm.birthPlace}
                                         onChange={(e) =>
                                           setEditStudentForm({
@@ -851,7 +920,11 @@ const StudentsTab = ({
                                       />
                                       <input
                                         className="border rounded px-3 py-2"
-                                        placeholder="Contact"
+                                        placeholder={
+                                          language === "id"
+                                            ? "Kontak"
+                                            : "Contact"
+                                        }
                                         value={editStudentForm.contact}
                                         onChange={(e) =>
                                           setEditStudentForm({
@@ -862,7 +935,11 @@ const StudentsTab = ({
                                       />
                                       <input
                                         className="border rounded px-3 py-2"
-                                        placeholder="Address"
+                                        placeholder={
+                                          language === "id"
+                                            ? "Alamat"
+                                            : "Address"
+                                        }
                                         value={editStudentForm.address}
                                         onChange={(e) =>
                                           setEditStudentForm({
@@ -879,13 +956,17 @@ const StudentsTab = ({
                                             setShowEditStudentModal(false)
                                           }
                                         >
-                                          Cancel
+                                          {language === "id"
+                                            ? "Batal"
+                                            : "Cancel"}
                                         </button>
                                         <button
                                           type="submit"
                                           className="px-4 py-2 rounded bg-indigo-600 text-white font-semibold hover:bg-indigo-700"
                                         >
-                                          Save
+                                          {language === "id"
+                                            ? "Simpan"
+                                            : "Save"}
                                         </button>
                                       </div>
                                     </form>
@@ -940,13 +1021,15 @@ const StudentsTab = ({
                                                 className="text-base font-semibold text-gray-900"
                                                 id="modal-title"
                                               >
-                                                Delete Student
+                                                {language === "id"
+                                                  ? "Hapus Siswa"
+                                                  : "Delete Student"}
                                               </h3>
                                               <div className="mt-2">
                                                 <p className="text-sm text-gray-500">
-                                                  Are you sure you want to
-                                                  delete this student? This
-                                                  action cannot be undone.
+                                                  {language === "id"
+                                                    ? "Apakah Anda yakin ingin menghapus siswa ini? Tindakan ini tidak dapat dibatalkan."
+                                                    : "Are you sure you want to delete this student? This action cannot be undone."}
                                                 </p>
                                               </div>
                                             </div>
@@ -961,7 +1044,9 @@ const StudentsTab = ({
                                               setDeleteStudentModal(false);
                                             }}
                                           >
-                                            Delete
+                                            {language === "id"
+                                              ? "Hapus"
+                                              : "Delete"}
                                           </button>
                                           <button
                                             type="button"
@@ -970,7 +1055,9 @@ const StudentsTab = ({
                                               setDeleteStudentModal(false)
                                             }
                                           >
-                                            Cancel
+                                            {language === "id"
+                                              ? "Batal"
+                                              : "Cancel"}
                                           </button>
                                         </div>
                                       </div>
@@ -987,7 +1074,9 @@ const StudentsTab = ({
               ) : (
                 <tr>
                   <td colSpan={4} className="px-6 py-4 text-center">
-                    No students found.
+                    {language === "id"
+                      ? "Siswa tidak ditemukan."
+                      : "No students found."}
                   </td>
                 </tr>
               )}
@@ -1007,7 +1096,7 @@ const StudentsTab = ({
               &times;
             </button>
             <h2 className="text-lg font-bold mb-4 text-font-primary dark:text-white">
-              Add Students
+              {language === "id" ? "Tambah Siswa" : "Add Students"}
             </h2>
             <div className="flex gap-2 mb-4">
               <button
@@ -1018,7 +1107,7 @@ const StudentsTab = ({
                 }`}
                 onClick={() => setAddStudentTab("single")}
               >
-                Single
+                {language === "id" ? "Satu Siswa" : "Single"}
               </button>
               <button
                 className={`px-4 py-2 rounded-t-md font-semibold border-b-2 transition-colors duration-150 ${
@@ -1028,7 +1117,7 @@ const StudentsTab = ({
                 }`}
                 onClick={() => setAddStudentTab("bulk")}
               >
-                Bulk Upload
+                {language === "id" ? "Upload Massal" : "Bulk Upload"}
               </button>
             </div>
             {addStudentTab === "single" ? (
@@ -1041,7 +1130,7 @@ const StudentsTab = ({
                 {/* Form input satu-satu student */}
                 <input
                   className="border rounded px-3 py-2"
-                  placeholder="Name"
+                  placeholder={language === "id" ? "Nama" : "Name"}
                   value={addStudentForm.name}
                   onChange={(e) =>
                     setStudentForm({
@@ -1052,7 +1141,7 @@ const StudentsTab = ({
                 />
                 <input
                   className="border rounded px-3 py-2"
-                  placeholder="Student Id"
+                  placeholder={language === "id" ? "ID Siswa" : "Student Id"}
                   value={addStudentForm.studentId}
                   onChange={(e) =>
                     setStudentForm({
@@ -1063,7 +1152,11 @@ const StudentsTab = ({
                 />
                 <input
                   className="border rounded px-3 py-2"
-                  placeholder="Birth date (YYYY-MM-DD)"
+                  placeholder={
+                    language === "id"
+                      ? "Tanggal Lahir (YYYY-MM-DD)"
+                      : "Birth date (YYYY-MM-DD)"
+                  }
                   value={addStudentForm.birthDate}
                   onChange={(e) =>
                     setStudentForm({
@@ -1074,7 +1167,9 @@ const StudentsTab = ({
                 />
                 <input
                   className="border rounded px-3 py-2"
-                  placeholder="Birth place"
+                  placeholder={
+                    language === "id" ? "Tempat Lahir" : "Birth place"
+                  }
                   value={addStudentForm.birthPlace}
                   onChange={(e) =>
                     setStudentForm({
@@ -1085,7 +1180,7 @@ const StudentsTab = ({
                 />
                 <input
                   className="border rounded px-3 py-2"
-                  placeholder="Contact"
+                  placeholder={language === "id" ? "Kontak" : "Contact"}
                   value={addStudentForm.contact}
                   onChange={(e) =>
                     setStudentForm({
@@ -1096,7 +1191,7 @@ const StudentsTab = ({
                 />
                 <input
                   className="border rounded px-3 py-2"
-                  placeholder="Address"
+                  placeholder={language === "id" ? "Alamat" : "Address"}
                   value={addStudentForm.address}
                   onChange={(e) =>
                     setStudentForm({
@@ -1111,13 +1206,13 @@ const StudentsTab = ({
                     className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600"
                     onClick={() => setShowAddStudentModal(false)}
                   >
-                    Cancel
+                    {language === "id" ? "Batal" : "Cancel"}
                   </button>
                   <button
                     type="submit"
                     className="px-4 py-2 rounded bg-indigo-600 text-white font-semibold hover:bg-indigo-700"
                   >
-                    Add
+                    {language === "id" ? "Tambah" : "Add"}
                   </button>
                 </div>
               </form>
@@ -1147,13 +1242,13 @@ const StudentsTab = ({
                       setSelectedFile(null);
                     }}
                   >
-                    Cancel
+                    {language === "id" ? "Batal" : "Cancel"}
                   </button>
                   <button
                     type="submit"
                     className="px-4 py-2 rounded bg-indigo-600 text-white font-semibold hover:bg-indigo-700"
                   >
-                    Add
+                    {language === "id" ? "Tambah" : "Add"}
                   </button>
                 </div>
               </form>

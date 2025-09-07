@@ -17,6 +17,7 @@ import { MdSort } from "react-icons/md";
 import { getThisMonthRange, getThisWeekRange } from "../utils/date";
 import { FaSortAlphaDownAlt, FaSortAlphaUp } from "react-icons/fa";
 import Spinner from "./Spinner";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface Journal {
   id?: string;
@@ -66,6 +67,66 @@ const Journals = ({
   classId: string | undefined;
   classInfo: ClassInfo | null;
 }) => {
+  const { language } = useLanguage();
+
+  // Translation dictionary
+  const t = {
+    subject: language === "id" ? "Mata Pelajaran" : "Subject",
+    noSubjects: language === "id" ? "Tidak ada mata pelajaran" : "No subjects",
+    createJournal: language === "id" ? "Buat Jurnal" : "Create Journal",
+    all: language === "id" ? "Semua" : "All",
+    thisWeek: language === "id" ? "Minggu Ini" : "This Week",
+    thisMonth: language === "id" ? "Bulan Ini" : "This Month",
+    name: language === "id" ? "Nama" : "Name",
+    attendance: language === "id" ? "Kehadiran" : "Attendance",
+    notes: language === "id" ? "Catatan" : "Notes",
+    present: language === "id" ? "Hadir" : "Present",
+    absent: language === "id" ? "Absen" : "Absent",
+    late: language === "id" ? "Terlambat" : "Late",
+    sick: language === "id" ? "Sakit" : "Sick",
+    excused: language === "id" ? "Izin" : "Excused",
+    pending: language === "id" ? "Menunggu" : "Pending",
+    noAttendances:
+      language === "id"
+        ? "Tidak ada kehadiran atau catatan."
+        : "No attendances or notes available.",
+    createdBy: language === "id" ? "Dibuat oleh" : "Created By:",
+    startTime: language === "id" ? "Waktu Mulai" : "Start Time:",
+    endTime: language === "id" ? "Waktu Selesai" : "End Time:",
+    deleteAssignment: language === "id" ? "Hapus Jurnal" : "Delete Journal",
+    deleteAssignmentModalTitle:
+      language === "id" ? "Hapus Jurnal" : "Delete Journal",
+    deleteAssignmentModalDesc:
+      language === "id"
+        ? "Apakah Anda yakin ingin menghapus jurnal ini? Tindakan ini tidak dapat dibatalkan."
+        : "Are you sure you want to delete this journal? This action cannot be undone.",
+    delete: language === "id" ? "Hapus" : "Delete",
+    cancel: language === "id" ? "Batal" : "Cancel",
+    saveChanges: language === "id" ? "Simpan Perubahan" : "Save Changes",
+    journalCreated:
+      language === "id"
+        ? "Jurnal berhasil dibuat!"
+        : "Journal created successfully!",
+    journalDeleted:
+      language === "id" ? "Jurnal berhasil dihapus!" : "Journal deleted!",
+    changesSaved:
+      language === "id" ? "Perubahan berhasil disimpan!" : "Changes saved!",
+    create: language === "id" ? "Buat" : "Create",
+    title: language === "id" ? "Judul" : "Title",
+    description: language === "id" ? "Deskripsi" : "Description",
+    date: language === "id" ? "Tanggal" : "Date",
+    start: language === "id" ? "Waktu Mulai" : "Start Time",
+    end: language === "id" ? "Waktu Selesai" : "End Time",
+    journalTitlePlaceholder:
+      language === "id" ? "Judul Jurnal" : "Journal Title",
+    journalDescPlaceholder:
+      language === "id" ? "Deskripsi Jurnal" : "Journal Description",
+    failedLoad:
+      language === "id"
+        ? "Gagal memuat detail jurnal"
+        : "Failed to load journal detail",
+  };
+
   const [selectedSubject, setSelectedSubject] = useState("");
   const [subjectDropdown, setSubjectDropdown] = useState(false);
 

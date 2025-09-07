@@ -4,11 +4,53 @@ import { Sidebar } from "../components/Sidebar";
 import { useTheme } from "../contexts/ThemeContext";
 import SettingSidebar from "../components/SettingSidebar";
 import { FaMoon, FaSun } from "react-icons/fa";
-import { changeUsername, getUserInfo } from "../lib/api";
+import {
+  changeUsername,
+  getUserInfo,
+  getUserPreferencesByUserId,
+  updateUserPreferencesByUserId,
+} from "../lib/api";
 import { AuthProvider } from "../contexts/AuthContext";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useLanguage } from "../contexts/LanguageContext";
+import { FiChevronDown } from "react-icons/fi";
 
 const Settings = () => {
+  const { data: userPreferences, refetch: refetchUserPreferences } = useQuery({
+    queryKey: ["userPreferences"],
+    queryFn: async () => {
+      const res = await getUserPreferencesByUserId();
+      return res.data;
+    },
+  });
+
+  const { mutate: updateUserPreferences } = useMutation({
+    mutationFn: async (preferences: {
+      languages?: "en" | "id" | undefined;
+      viewMode?: "light" | "dark" | undefined;
+    }) => {
+      const res = await updateUserPreferencesByUserId(preferences);
+      refetchUserPreferences();
+      return res.data;
+    },
+  });
+
   const { darkMode, toggleDarkMode } = useTheme();
+
+  const { language, setLanguage } = useLanguage();
+
+  // Sync darkMode with userPreferences.viewMode
+  useEffect(() => {
+    if (userPreferences?.viewMode) {
+      if (userPreferences.viewMode === "dark" && !darkMode) {
+        toggleDarkMode();
+      } else if (userPreferences.viewMode === "light" && darkMode) {
+        toggleDarkMode();
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userPreferences?.viewMode]);
+
   const [user, setUser] = useState<{
     username: string;
     email: string;
@@ -41,6 +83,8 @@ const Settings = () => {
       isMounted = false;
     };
   }, []);
+
+  const [showChangeLanguage, setShowChangeLanguage] = useState(false);
 
   return (
     <AuthProvider>
@@ -92,12 +136,20 @@ const Settings = () => {
                   </div>
                 )}
                 {selectedTab === "Preferences" && (
-                  <div className="flex flex-col dark:bg-gray-900 dark:text-slate-200 dark:border-slate-200 p-6 h-full">
-                    <div className="flex flex-row justify-between">
-                      <span className="font-medium mb-2">Change mode</span>
+                  <div className="flex flex-col dark:bg-gray-900 dark:text-slate-200 dark:border-slate-200 p-6 h-full gap-4">
+                    <div className="flex flex-row justify-between mb-2">
+                      <span className="font-medium mb-2">
+                        {language === "en"
+                          ? "Change view mode"
+                          : "Ubah mode tampilan"}
+                      </span>
                       <label className="inline-flex items-center cursor-pointer">
                         <input
-                          onChange={toggleDarkMode}
+                          onChange={() => {
+                            const newMode = darkMode ? "light" : "dark";
+                            updateUserPreferences({ viewMode: newMode });
+                            toggleDarkMode();
+                          }}
                           type="checkbox"
                           value=""
                           className="sr-only peer"
@@ -113,11 +165,64 @@ const Settings = () => {
                         </span>
                       </label>
                     </div>
+                    <div className="flex flex-row justify-between">
+                      <span className="font-medium mb-2">
+                        {language === "en" ? "Choose language" : "Ubah bahasa"}
+                      </span>
+                      <button
+                        className="flex items-center justify-between gap-2 text-sm text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 w-44"
+                        type="button"
+                        onClick={() => setShowChangeLanguage((prev) => !prev)}
+                      >
+                        <span>
+                          {language === "en" ? "English" : "Bahasa Indonesia"}
+                        </span>
+                        <FiChevronDown className="ml-auto" />
+                      </button>
+                    </div>
                   </div>
                 )}
                 {selectedTab === "General" && (
                   <div className="h-full">General Content</div>
                 )}
+
+                {showChangeLanguage && (
+                  <div className="z-50 fixed top-62 right-6 bg-white divide-y divide-gray-100 rounded-lg shadow w-44 h-fit dark:bg-gray-700">
+                    <ul
+                      className="py-2 text-sm text-gray-700 dark:text-gray-200"
+                      aria-labelledby="dropdownDefaultButton"
+                    >
+                      {[
+                        { code: "en", label: "English" },
+                        { code: "id", label: "Bahasa Indonesia" },
+                      ].map((lang) => (
+                        <li key={lang.code}>
+                          <button
+                            type="button"
+                            className={`block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white ${
+                              language === lang.code
+                                ? "font-bold text-indigo-600 dark:text-indigo-400"
+                                : ""
+                            }`}
+                            onClick={() => {
+                              if (language !== lang.code) {
+                                setLanguage(lang.code as "en" | "id");
+                                updateUserPreferences({
+                                  languages: lang.code as "en" | "id",
+                                });
+                                refetchUserPreferences();
+                              }
+                              setShowChangeLanguage(false);
+                            }}
+                          >
+                            {lang.label}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
                 {showChangeUsername && (
                   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
                     <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 w-full max-w-sm relative">
@@ -213,10 +318,20 @@ const Settings = () => {
 };
 
 const SettingHeader = ({ tab }: { tab: string }) => {
+  const { language } = useLanguage();
+  // Translate tab name
+  const tabLabel = (() => {
+    if (tab === "Preferences")
+      return language === "id" ? "Preferensi" : "Preferences";
+    if (tab === "Account") return language === "id" ? "Akun" : "Account";
+    if (tab === "General") return language === "id" ? "Umum" : "General";
+    return tab;
+  })();
   return (
     <nav className="sticky top-0 z-40 flex items-center justify-between bg-primary border-b border-slate-200 px-6 py-4 dark:bg-gray-900 dark:border-gray-800 min-w-0">
       <span className="flex text-lg font-semibold text-font-primary dark:text-white select-none gap-1">
-        Settings <span>&gt;</span> <span className="font-light">{tab}</span>
+        {language === "en" ? "Settings" : "Pengaturan"} <span>&gt;</span>{" "}
+        <span className="font-light">{tabLabel}</span>
       </span>
     </nav>
   );

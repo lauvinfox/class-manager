@@ -11,6 +11,7 @@ import { FiChevronDown, FiPlus } from "react-icons/fi";
 import { useState } from "react";
 import Spinner from "./Spinner";
 import { IoSearchOutline } from "react-icons/io5";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface LearningPlan {
   subject: string;
@@ -29,6 +30,8 @@ const LearningPlansTab = ({
   classId: string;
   classInfo: ClassInfo | null;
 }) => {
+  const { language } = useLanguage();
+
   // Create learning plan mutation
   const { mutate: createLearningPlan } = useMutation({
     mutationFn: async ({
@@ -191,11 +194,11 @@ const LearningPlansTab = ({
     <div className="max-w-full overflow-x-auto py-4 px-4">
       <div className="flex justify-end mb-4 gap-2">
         <div className="flex w-full items-center gap-2">
-          <div className="flex w-96 items-center gap-5 rounded-lg px-3 py-2 bg-gray-200 ">
-            <IoSearchOutline className="text-gray-800" />
+          <div className="flex w-[35%] items-center gap-5 rounded-lg px-3 py-2 bg-gray-200 dark:bg-gray-800">
+            <IoSearchOutline className="text-gray-800 dark:text-gray-200" />
             <input
               type="text"
-              placeholder="Search topic"
+              placeholder={language === "id" ? "Cari topik" : "Search topic"}
               value={searchTopicTerm}
               onChange={handleSearchTopic}
               className="w-full outline-none bg-transparent"
@@ -209,7 +212,13 @@ const LearningPlansTab = ({
               type="button"
               onClick={() => setSubjectDropdown((v) => !v)}
             >
-              <span>{selectedSubject == "" ? "Subject" : selectedSubject}</span>
+              <span>
+                {selectedSubject == ""
+                  ? language === "id"
+                    ? "Subyek"
+                    : "Subject"
+                  : selectedSubject}
+              </span>
               <FiChevronDown className="ml-auto" />
             </button>
           </>
@@ -223,7 +232,7 @@ const LearningPlansTab = ({
               {subjects.length === 0 ? (
                 <li>
                   <span className="block px-4 py-2 text-gray-400">
-                    No subjects
+                    {language === "id" ? "Tidak ada mapel" : "No subjects"}
                   </span>
                 </li>
               ) : (
@@ -253,12 +262,20 @@ const LearningPlansTab = ({
           <>
             <button
               type="button"
-              className="flex items-center gap-2 text-sm text-gray-700 dark:text-white bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200 font-semibold px-4 py-2 rounded-lg shadow w-60"
-              title="Create Learning Plan"
+              className={`flex items-center gap-2 text-sm text-gray-700 dark:text-white bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200 font-semibold px-4 py-2 rounded-lg shadow ${
+                language === "id" ? "w-75" : "w-60"
+              }`}
+              title={
+                language === "id"
+                  ? "Buat Rencana Pembelajaran"
+                  : "Create Learning Plan"
+              }
               onClick={() => setShowCreateLearningPlanModal(true)}
             >
               <FiPlus />
-              Create Learning Plan
+              {language === "id"
+                ? "Buat Rencana Pembelajaran"
+                : "Create Learning Plan"}
             </button>
             <button
               className="flex items-center justify-between gap-2 text-sm text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700"
@@ -295,7 +312,10 @@ const LearningPlansTab = ({
                   >
                     <div className="flex flex-col gap-1">
                       <div className="font-semibold text-lg mb-1">
-                        {learningPlan.subject || "Assistance Request"}
+                        {learningPlan.subject ||
+                          (language === "id"
+                            ? "Permintaan Bantuan"
+                            : "Assistance Request")}
                       </div>
                       <div className="text-sm text-gray-500 dark:text-gray-300 mb-1">
                         {learningPlan.topic}
@@ -303,13 +323,20 @@ const LearningPlansTab = ({
                       <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-300">
                         <div className="text-gray-600 dark:text-gray-400">
                           {learningPlan.level === "dasar"
-                            ? "Beginner"
+                            ? language === "id"
+                              ? "Pemula"
+                              : "Beginner"
                             : learningPlan.level === "menengah"
-                            ? "Intermediate"
+                            ? language === "id"
+                              ? "Menengah"
+                              : "Intermediate"
+                            : language === "id"
+                            ? "Tinggi"
                             : "High"}
                         </div>
                         <div className="text-gray-600 dark:text-gray-400">
-                          {learningPlan.duration}
+                          {learningPlan.duration}{" "}
+                          {language === "id" ? "jam" : "hours"}
                         </div>
                       </div>
                     </div>
@@ -343,7 +370,10 @@ const LearningPlansTab = ({
                   >
                     <div className="flex flex-col gap-1">
                       <div className="font-semibold text-lg mb-1">
-                        {learningPlan.subject || "Assistance Request"}
+                        {learningPlan.subject ||
+                          (language === "id"
+                            ? "Permintaan Bantuan"
+                            : "Assistance Request")}
                       </div>
                       <div className="text-sm text-gray-500 dark:text-gray-300 mb-1">
                         {learningPlan.topic}
@@ -351,13 +381,20 @@ const LearningPlansTab = ({
                       <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-300">
                         <div className="text-gray-600 dark:text-gray-400">
                           {learningPlan.level === "dasar"
-                            ? "Beginner"
+                            ? language === "id"
+                              ? "Pemula"
+                              : "Beginner"
                             : learningPlan.level === "menengah"
-                            ? "Intermediate"
+                            ? language === "id"
+                              ? "Menengah"
+                              : "Intermediate"
+                            : language === "id"
+                            ? "Tinggi"
                             : "High"}
                         </div>
                         <div className="text-gray-600 dark:text-gray-400">
-                          {learningPlan.duration}
+                          {learningPlan.duration}{" "}
+                          {language === "id" ? "jam" : "hours"}
                         </div>
                       </div>
                     </div>
@@ -389,7 +426,10 @@ const LearningPlansTab = ({
                 >
                   <div className="flex flex-col gap-1">
                     <div className="font-semibold text-lg mb-1">
-                      {learningPlan.subject || "Assistance Request"}
+                      {learningPlan.subject ||
+                        (language === "id"
+                          ? "Permintaan Bantuan"
+                          : "Assistance Request")}
                     </div>
                     <div className="text-sm text-gray-500 dark:text-gray-300 mb-1">
                       {learningPlan.topic}
@@ -399,7 +439,8 @@ const LearningPlansTab = ({
                         {learningPlan.learningStyle}
                       </div>
                       <div className="text-gray-600 dark:text-gray-400">
-                        {learningPlan.duration} hours
+                        {learningPlan.duration}{" "}
+                        {language === "id" ? "jam" : "hours"}
                       </div>
                     </div>
                   </div>
@@ -489,7 +530,7 @@ const LearningPlansTab = ({
                       )
                     }
                   >
-                    Save
+                    {language === "id" ? "Simpan" : "Save"}
                   </button>
                 </div>
               ) : (
@@ -501,7 +542,7 @@ const LearningPlansTab = ({
                       setLearningPlanText(selectedLearningPlan.learningPlan);
                     }}
                   >
-                    Edit
+                    {language === "id" ? "Edit" : "Edit"}
                   </button>
                 </div>
               )}
@@ -518,7 +559,11 @@ const LearningPlansTab = ({
               >
                 &times;
               </button>
-              <h2 className="text-xl font-bold mb-4">Create Learning Plan</h2>
+              <h2 className="text-xl font-bold mb-4">
+                {language === "id"
+                  ? "Buat Rencana Pembelajaran"
+                  : "Create Learning Plan"}
+              </h2>
               <form
                 className="flex flex-col gap-1.5"
                 onSubmit={(e) => {
@@ -548,12 +593,17 @@ const LearningPlansTab = ({
                     className="block text-sm font-medium mb-1"
                     htmlFor="topic"
                   >
-                    Topic<span className="text-red-500">*</span>
+                    {language === "id" ? "Topik" : "Topic"}
+                    <span className="text-red-500">*</span>
                   </label>
                   <input
                     id="topic"
                     className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                    placeholder="Learning Plan Topic"
+                    placeholder={
+                      language === "id"
+                        ? "Topik Rencana Pembelajaran"
+                        : "Learning Plan Topic"
+                    }
                     value={form.topic}
                     onChange={(e) =>
                       setForm((f) => ({ ...f, topic: e.target.value }))
@@ -566,11 +616,12 @@ const LearningPlansTab = ({
                     className="block text-sm font-medium mb-1"
                     htmlFor="learningLevel"
                   >
-                    Level<span className="text-red-500">*</span>
+                    {language === "id" ? "Tingkat" : "Level"}
+                    <span className="text-red-500">*</span>
                   </label>
                   <select
                     id="learningLevel"
-                    className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                     value={form.level || ""}
                     onChange={(e) =>
                       setForm((f) => ({
@@ -583,9 +634,15 @@ const LearningPlansTab = ({
                     }
                     required
                   >
-                    <option value="dasar">Beginner</option>
-                    <option value="menengah">Intermediate</option>
-                    <option value="tinggi">High</option>
+                    <option value="dasar">
+                      {language === "id" ? "Pemula" : "Beginner"}
+                    </option>
+                    <option value="menengah">
+                      {language === "id" ? "Menengah" : "Intermediate"}
+                    </option>
+                    <option value="tinggi">
+                      {language === "id" ? "Tinggi" : "High"}
+                    </option>
                   </select>
                 </div>
                 <div>
@@ -593,13 +650,16 @@ const LearningPlansTab = ({
                     className="block text-sm font-medium mb-1"
                     htmlFor="duration"
                   >
-                    Duration in Hour<span className="text-red-500">*</span>
+                    {language === "id" ? "Durasi (jam)" : "Duration in Hour"}
+                    <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="number"
                     id="duration"
                     className="border rounded-lg px-3 py-2 w-full min-h-[30px] focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                    placeholder="Duration in hour"
+                    placeholder={
+                      language === "id" ? "Durasi (jam)" : "Duration in hour"
+                    }
                     value={form.duration}
                     onChange={(e) =>
                       setForm((f) => ({
@@ -614,11 +674,12 @@ const LearningPlansTab = ({
                     className="block text-sm font-medium mb-1"
                     htmlFor="learningStyle"
                   >
-                    Learning Style<span className="text-red-500">*</span>
+                    {language === "id" ? "Gaya Belajar" : "Learning Style"}
+                    <span className="text-red-500">*</span>
                   </label>
                   <select
                     id="learningStyle"
-                    className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                     value={form.learningStyle || ""}
                     onChange={(e) =>
                       setForm((f) => ({
@@ -636,14 +697,32 @@ const LearningPlansTab = ({
                     }
                     required
                   >
-                    <option value="visual">Visual</option>
-                    <option value="auditory">Auditory</option>
-                    <option value="kinesthetic">Kinesthetic</option>
-                    <option value="reading-writing">Reading-Writing</option>
-                    <option value="collaborative">Collaborative</option>
-                    <option value="independent">Independent</option>
-                    <option value="problem-based">Problem-based</option>
-                    <option value="inquiry-based">Inquiry-based</option>
+                    <option value="visual">
+                      {language === "id" ? "Visual" : "Visual"}
+                    </option>
+                    <option value="auditory">
+                      {language === "id" ? "Auditori" : "Auditory"}
+                    </option>
+                    <option value="kinesthetic">
+                      {language === "id" ? "Kinestetik" : "Kinesthetic"}
+                    </option>
+                    <option value="reading-writing">
+                      {language === "id"
+                        ? "Membaca-Menulis"
+                        : "Reading-Writing"}
+                    </option>
+                    <option value="collaborative">
+                      {language === "id" ? "Kolaboratif" : "Collaborative"}
+                    </option>
+                    <option value="independent">
+                      {language === "id" ? "Mandiri" : "Independent"}
+                    </option>
+                    <option value="problem-based">
+                      {language === "id" ? "Berbasis Masalah" : "Problem-based"}
+                    </option>
+                    <option value="inquiry-based">
+                      {language === "id" ? "Berbasis Inkuiri" : "Inquiry-based"}
+                    </option>
                   </select>
                 </div>
                 <div className="flex justify-end gap-2 mt-4">
@@ -652,13 +731,13 @@ const LearningPlansTab = ({
                     className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600 transition"
                     onClick={() => setShowCreateLearningPlanModal(false)}
                   >
-                    Cancel
+                    {language === "id" ? "Batal" : "Cancel"}
                   </button>
                   <button
                     type="submit"
                     className="px-4 py-2 rounded bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition"
                   >
-                    Create
+                    {language === "id" ? "Buat" : "Create"}
                   </button>
                 </div>
               </form>
@@ -685,7 +764,11 @@ const LearningPlansTab = ({
               >
                 &times;
               </button>
-              <h2 className="text-xl font-bold mb-4">Create Learning Plan</h2>
+              <h2 className="text-xl font-bold mb-4">
+                {language === "id"
+                  ? "Buat Rencana Pembelajaran"
+                  : "Create Learning Plan"}
+              </h2>
               <form
                 className="flex flex-col gap-1.5"
                 onSubmit={(e) => {
@@ -698,12 +781,18 @@ const LearningPlansTab = ({
                     className="block text-sm text-left font-medium mb-1"
                     htmlFor="description"
                   >
-                    Learning Plan
+                    {language === "id"
+                      ? "Rencana Pembelajaran"
+                      : "Learning Plan"}
                   </label>
                   <textarea
                     id="description"
                     className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 w-full min-h-[250px] resize-none"
-                    placeholder="Assignment Description"
+                    placeholder={
+                      language === "id"
+                        ? "Deskripsi Rencana Pembelajaran"
+                        : "Assignment Description"
+                    }
                     value={learningPlanText}
                     onChange={(e) => setLearningPlanText(e.target.value)}
                   />
@@ -714,7 +803,7 @@ const LearningPlansTab = ({
                     type="submit"
                     className="px-4 py-2 rounded bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition"
                   >
-                    Save
+                    {language === "id" ? "Simpan" : "Save"}
                   </button>
                 </div>
               </form>

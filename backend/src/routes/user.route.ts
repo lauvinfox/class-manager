@@ -23,6 +23,10 @@ router.delete("/:id", UsersController.deleteUser);
 
 router.put("/username/change", UsersController.changeUsername);
 
+router.get("/preferences", UsersController.getUserPreferencesByUserId);
+
+router.patch("/preferences", UsersController.updateUserPreferencesByUserId);
+
 // Notification
 // Rute untuk mendapatkan notifikasi user
 router.get("/:userId/notifications", UsersController.getNotifications);
