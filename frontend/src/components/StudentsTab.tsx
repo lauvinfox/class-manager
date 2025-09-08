@@ -225,6 +225,7 @@ const StudentsTab = ({
   };
 
   // Student management state
+  const [deleteStudentId, setDeleteStudentId] = useState<string | null>(null);
   const [showAddStudentModal, setShowAddStudentModal] = useState(false);
   const [addStudentTab, setAddStudentTab] = useState<"single" | "bulk">(
     "single"
@@ -238,7 +239,6 @@ const StudentsTab = ({
   };
 
   const [deleteStudentsModal, setDeleteStudentsModal] = useState(false);
-  const [deleteStudentModal, setDeleteStudentModal] = useState(false);
 
   const [addStudentForm, setStudentForm] = useState({
     studentId: "",
@@ -477,7 +477,7 @@ const StudentsTab = ({
         )}
       </div>
       <div className="overflow-hidden rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
-        <div className="max-h-80 overflow-y-auto">
+        <div className="max-h-96 overflow-y-auto">
           <table className="min-w-full text-sm text-left text-gray-600 dark:text-gray-300">
             <thead className="bg-gray-100 dark:bg-gray-800 text-xs uppercase tracking-wider sticky top-0 z-10">
               <tr>
@@ -901,12 +901,12 @@ const StudentsTab = ({
                                 className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
                                 title="Delete"
                                 onClick={() => {
-                                  setDeleteStudentModal(true);
+                                  setDeleteStudentId(student.id);
                                 }}
                               >
                                 <MdDeleteOutline className="text-lg" />
                               </button>
-                              {deleteStudentModal && (
+                              {deleteStudentId === student.id && (
                                 <div
                                   className="relative z-50"
                                   aria-labelledby="modal-title"
@@ -960,7 +960,7 @@ const StudentsTab = ({
                                             className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-red-500 sm:ml-3 sm:w-auto"
                                             onClick={() => {
                                               deleteStudent(student.id);
-                                              setDeleteStudentModal(false);
+                                              setDeleteStudentId(null);
                                             }}
                                           >
                                             {t.delete}
@@ -969,7 +969,7 @@ const StudentsTab = ({
                                             type="button"
                                             className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50 sm:mt-0 sm:w-auto"
                                             onClick={() =>
-                                              setDeleteStudentModal(false)
+                                              setDeleteStudentId(null)
                                             }
                                           >
                                             {t.cancel}

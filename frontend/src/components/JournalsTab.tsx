@@ -624,8 +624,8 @@ const Journals = ({
             </div>
             <div className="mb-2">{selectedJournal.description}</div>
             <div className="mt-5 overflow-hidden rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
-              <div className="max-h-76 overflow-y-auto">
-                {classInfo?.role === "owner" && (
+              {classInfo?.role === "owner" && (
+                <div className="max-h-90 overflow-y-auto">
                   <table className="min-w-full text-sm text-left text-gray-600 dark:text-gray-300">
                     <thead className="bg-gray-100 dark:bg-gray-800 text-xs uppercase tracking-wider sticky top-0 z-10">
                       <tr>
@@ -720,8 +720,10 @@ const Journals = ({
                       )}
                     </tbody>
                   </table>
-                )}
-                {classInfo?.role === "member" && (
+                </div>
+              )}
+              {classInfo?.role === "member" && (
+                <div className="max-h-85 overflow-y-auto">
                   <table className="min-w-full text-sm text-left text-gray-600 dark:text-gray-300">
                     <thead className="bg-gray-100 dark:bg-gray-800 text-xs uppercase tracking-wider sticky top-0 z-10">
                       <tr>
@@ -845,11 +847,11 @@ const Journals = ({
                           ))}
                     </tbody>
                   </table>
-                )}
-              </div>
+                </div>
+              )}
             </div>
             {classInfo?.role === "member" && (
-              <div className="flex items-center gap-4">
+              <div className="mt-[-10px] flex items-center gap-4">
                 <button
                   className="mt-8 px-4 py-2 rounded-md bg-red-700 text-white font-semibold hover:bg-red-700 transition"
                   onClick={() => setShowDeleteModal(true)}

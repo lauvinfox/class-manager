@@ -380,6 +380,10 @@ export const wordTranslations = (language: string) => {
         ? "Apakah Anda yakin ingin menghapus kelas ini? Tindakan ini tidak dapat dibatalkan."
         : "Are you sure you want to delete this class? This action cannot be undone.",
     journalTitle: language === "id" ? "Judul Jurnal" : "Journal Title",
+    noAttendanceSummaryForSubject:
+      language === "id"
+        ? "Tidak ada ringkasan kehadiran ditemukan untuk subjek ini."
+        : "No attendance summary found for selected subject.",
   };
 };
 

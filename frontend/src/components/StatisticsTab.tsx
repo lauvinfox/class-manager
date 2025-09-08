@@ -558,7 +558,6 @@ const StatisticsTab = ({
                   <th className="px-6 py-4 text-center">
                     <div className="flex items-center justify-center gap-1 cursor-pointer">
                       {t.totalJournals}{" "}
-                      <CgArrowsExchangeV className="w-3 h-3" />
                     </div>
                   </th>
                 </tr>
@@ -574,7 +573,7 @@ const StatisticsTab = ({
                       return (
                         <tr>
                           <td colSpan={10} className="px-6 py-4 text-center">
-                            No attendance summary found for selected subject.
+                            {t.noAttendanceSummaryForSubject}
                           </td>
                         </tr>
                       );
@@ -824,7 +823,8 @@ const StatisticsTab = ({
                               {studentName}
                             </td>
                             {Array.from({ length: maxAssignment }, (_, i) => {
-                              const assignment = assignmentArr[i];
+                              const reversedArr = [...assignmentArr].reverse();
+                              const assignment = reversedArr[i];
                               return (
                                 <td
                                   key={i}
@@ -839,7 +839,7 @@ const StatisticsTab = ({
                                     ) : null}
                                   </span>
                                   {assignment && assignment.notes && (
-                                    <div className="absolute left-1/2 -translate-x-1/2 mt-2 z-10 min-w-[120px] max-w-xs bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs rounded shadow px-3 py-2 border border-gray-200 dark:border-gray-700 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
+                                    <div className="absolute z-10 min-w-[120px] max-w-xs bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs rounded shadow px-3 py-5 border border-gray-200 dark:border-gray-700 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
                                       {assignment.notes}
                                     </div>
                                   )}
@@ -912,7 +912,6 @@ const StatisticsTab = ({
                   <th className="px-6 py-4 text-center">
                     <div className="flex items-center justify-center gap-1 cursor-pointer">
                       {t.totalJournals}{" "}
-                      <CgArrowsExchangeV className="w-3 h-3" />
                     </div>
                   </th>
                 </tr>
