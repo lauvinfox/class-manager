@@ -9,14 +9,7 @@ import app from "app";
 export const createAssignmentByClassId = catchError(async (req, res) => {
   const userId = req.userId as string;
   const { classId } = req.params;
-  const {
-    title,
-    description,
-    assignmentDate,
-    assignmentType,
-    startTime,
-    endTime,
-  } = req.body;
+  const { title, description, assignmentDate, assignmentType } = req.body;
 
   const subject = (await ClassService.getSubjectByClassUserId(
     userId,
@@ -31,8 +24,6 @@ export const createAssignmentByClassId = catchError(async (req, res) => {
     description,
     assignmentDate,
     assignmentType,
-    startTime,
-    endTime,
   });
 
   return res

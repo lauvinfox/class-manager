@@ -172,7 +172,7 @@ export const updateUserPreferencesByUserId = async (preferences: {
   languages?: "en" | "id";
   viewMode?: "light" | "dark";
 }) => {
-  return await API.patch("/api/v1/users/preferences", preferences);
+  return await API.patch("/api/v1/users/preferences", { preferences });
 };
 
 /** Notification API Module
@@ -641,8 +641,6 @@ export const createAssignmentByClassId = async (
     description: string;
     assignmentDate: string;
     assignmentType: "homework" | "quiz" | "exam" | "project" | "finalExam";
-    startTime: string;
-    endTime: string;
   }
 ) => {
   return await API.post(`/api/v1/assignments/${classId}/create`, assignment);

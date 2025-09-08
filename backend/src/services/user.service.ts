@@ -160,14 +160,12 @@ export const addClassToUser = async (userId: string, classId: string) => {
 };
 
 export const getUserPreferences = async (userId: string) => {
-  const user = await UserModel.findById(userId)
-    .select("languages viewMode")
-    .exec();
+  const user = await UserModel.findById(userId).select("preferences").exec();
   appAssert(user, NOT_FOUND, "User not found");
 
   return {
-    languages: user.languages,
-    viewMode: user.viewMode,
+    languages: user.preferences?.languages,
+    viewMode: user.preferences?.viewMode,
   };
 };
 
@@ -178,17 +176,17 @@ export const updateUserPreferences = async (
   const user = await UserModel.findById(userId);
   appAssert(user, NOT_FOUND, "User not found");
 
-  if (preferences.languages) {
-    user.languages = preferences.languages;
+  if (preferences.languages && user.preferences) {
+    user.preferences.languages = preferences.languages;
   }
-  if (preferences.viewMode) {
-    user.viewMode = preferences.viewMode;
+  if (preferences.viewMode && user.preferences) {
+    user.preferences.viewMode = preferences.viewMode;
   }
 
   await user.save();
 
   return {
-    languages: user.languages,
-    viewMode: user.viewMode,
+    languages: user.preferences?.languages,
+    viewMode: user.preferences?.viewMode,
   };
 };

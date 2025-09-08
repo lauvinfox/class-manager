@@ -38,9 +38,7 @@ interface AssignmentInfo {
   classId: string;
   createdAt: Date;
   description: string;
-  endTime: string;
   grades: Grade[];
-  startTime: string;
   subject: string;
   title: string;
 }
@@ -162,8 +160,6 @@ const AssignmentsTab = ({
         description: string;
         assignmentDate: string;
         assignmentType: "homework" | "quiz" | "exam" | "project" | "finalExam";
-        startTime: string;
-        endTime: string;
       };
     }) => {
       const res = await createAssignmentByClassId(classId, assignment);
@@ -219,8 +215,6 @@ const AssignmentsTab = ({
       | "exam"
       | "project"
       | "finalExam",
-    startTime: "",
-    endTime: "",
   });
 
   const handleCreateAssignment = async (
@@ -231,8 +225,6 @@ const AssignmentsTab = ({
       description: string;
       assignmentDate: string;
       assignmentType: "homework" | "quiz" | "exam" | "project" | "finalExam";
-      startTime: string;
-      endTime: string;
     }
   ) => {
     e.preventDefault();
@@ -252,8 +244,6 @@ const AssignmentsTab = ({
             | "exam"
             | "project"
             | "finalExam",
-          startTime: "",
-          endTime: "",
         });
       })
       .catch((error) => {
@@ -765,24 +755,6 @@ const AssignmentsTab = ({
                   : selectedAssignment.assignmentType === "project"
                   ? t.project
                   : t.finalExam}
-              </div>
-              <div>
-                <span className="font-semibold">{t.startTime}:</span>{" "}
-                {selectedAssignment.startTime
-                  ? new Date(selectedAssignment.startTime).toLocaleTimeString(
-                      [],
-                      { hour: "2-digit", minute: "2-digit" }
-                    )
-                  : ""}
-              </div>
-              <div>
-                <span className="font-semibold">{t.endTime}: </span>{" "}
-                {selectedAssignment.endTime
-                  ? new Date(selectedAssignment.endTime).toLocaleTimeString(
-                      [],
-                      { hour: "2-digit", minute: "2-digit" }
-                    )
-                  : ""}
               </div>
               <div>
                 <span className="font-semibold">{t.description}: </span>{" "}
@@ -1400,46 +1372,6 @@ const AssignmentsTab = ({
                   }
                   required
                 />
-                <div className="flex mt-2">
-                  <div className="flex-1 mr-2">
-                    <label
-                      className="block text-sm font-medium mb-1"
-                      htmlFor="startTime"
-                    >
-                      {t.startTime}
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      id="startTime"
-                      type="time"
-                      className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                      value={form.startTime}
-                      onChange={(e) =>
-                        setForm((f) => ({ ...f, startTime: e.target.value }))
-                      }
-                      required
-                    />
-                  </div>
-                  <div className="flex-1 ml-2">
-                    <label
-                      className="block text-sm font-medium mb-1"
-                      htmlFor="endTime"
-                    >
-                      {t.endTime}
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      id="endTime"
-                      type="time"
-                      className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                      value={form.endTime}
-                      onChange={(e) =>
-                        setForm((f) => ({ ...f, endTime: e.target.value }))
-                      }
-                      required
-                    />
-                  </div>
-                </div>
               </div>
               <div className="flex justify-end gap-2 mt-4">
                 <button

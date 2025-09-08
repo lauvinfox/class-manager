@@ -21,6 +21,7 @@ const Settings = () => {
     queryKey: ["userPreferences"],
     queryFn: async () => {
       const res = await getUserPreferencesByUserId();
+      console.log("Get Response", res.data);
       return res.data;
     },
   });
@@ -30,8 +31,10 @@ const Settings = () => {
       languages?: "en" | "id" | undefined;
       viewMode?: "light" | "dark" | undefined;
     }) => {
+      console.log("Preferences", preferences);
       const res = await updateUserPreferencesByUserId(preferences);
       refetchUserPreferences();
+      console.log("Response", res.data);
       return res.data;
     },
   });

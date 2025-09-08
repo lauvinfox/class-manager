@@ -9,8 +9,6 @@ interface IAssignment {
   description: string;
   questions?: string[];
   assignmentDate: Date;
-  startTime: Date;
-  endTime: Date;
   grades: { studentId: Types.ObjectId; score?: number; notes?: string }[];
   assignmentType: "homework" | "quiz" | "exam" | "project" | "finalExam";
   weights: {
@@ -56,14 +54,6 @@ const AssignmentSchema = new Schema<IAssignment>(
       required: true,
     },
     assignmentDate: {
-      type: Date,
-      required: true,
-    },
-    startTime: {
-      type: Date,
-      required: true,
-    },
-    endTime: {
       type: Date,
       required: true,
     },

@@ -17,8 +17,6 @@ export const createAssignment = async ({
   title,
   description,
   assignmentDate,
-  startTime,
-  endTime,
   assignmentType,
 }: {
   userId: string;
@@ -28,15 +26,10 @@ export const createAssignment = async ({
   description: string;
   assignmentDate: string;
   assignmentType: string;
-  startTime: string;
-  endTime: string;
 }) => {
   // Validate instructor exists
   const instructor = await UserModel.findById(userId);
   appAssert(instructor, NOT_FOUND, "Instructor not found");
-
-  const startTimeString = `${assignmentDate}T${startTime}`;
-  const endTimeString = `${assignmentDate}T${endTime}`;
 
   const now = new Date();
 
@@ -72,8 +65,6 @@ export const createAssignment = async ({
     title,
     description,
     assignmentDate,
-    startTime: startTimeString,
-    endTime: endTimeString,
     grades,
     assignmentType,
   });

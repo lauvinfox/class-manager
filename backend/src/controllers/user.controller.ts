@@ -183,7 +183,7 @@ export const getUserPreferencesByUserId: RequestHandler = catchError(
 export const updateUserPreferencesByUserId: RequestHandler = catchError(
   async (req, res) => {
     const userId = req.userId as string;
-    const preferences = req.body;
+    const { preferences } = req.body;
 
     const updatedPreferences = await UserService.updateUserPreferences(
       userId,
