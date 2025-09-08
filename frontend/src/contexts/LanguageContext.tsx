@@ -1,4 +1,11 @@
-import React, { createContext, ReactNode, useContext, useState } from "react";
+import React, {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import { getUserPreferencesByUserId } from "../lib/api";
 
 export type Language = "en" | "id";
 
@@ -21,6 +28,14 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({
   defaultLanguage = "en",
 }) => {
   const [language, setLanguage] = useState<Language>(defaultLanguage);
+
+  useEffect(() => {
+    // Fetch user preferences on mount
+    getUserPreferencesByUserId().then((res) => {
+      const language = res.data?.languages;
+      setLanguage(language);
+    });
+  }, []);
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage }}>

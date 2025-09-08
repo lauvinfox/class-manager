@@ -188,7 +188,7 @@ const StatisticsTab = ({
               }}
             >
               <span>
-                {overviewMode === "attendance" ? "Attendance" : "Grade"}
+                {overviewMode === "attendance" ? t.attendance : t.grade}
               </span>
               <FiChevronDown className="ml-auto" />
             </button>
@@ -350,7 +350,7 @@ const StatisticsTab = ({
               onClick={() => setDropdownType("overviewMode")}
             >
               <span>
-                {overviewMode === "attendance" ? "Attendance" : "Grade"}
+                {overviewMode === "attendance" ? t.attendance : t.grade}
               </span>
               <FiChevronDown className="ml-auto" />
             </button>

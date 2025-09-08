@@ -7,6 +7,7 @@ import { getUserNotifications, respondInviteInstructor } from "../lib/api";
 import { FaRegCheckCircle, FaRegTimesCircle } from "react-icons/fa";
 import { useLanguage } from "../contexts/LanguageContext";
 import { wordTranslations } from "../constants";
+import Spinner from "../components/Spinner";
 
 interface Notification {
   _id: string;
@@ -80,7 +81,13 @@ const Notifications = () => {
               </span>
             </nav>
             <div className="flex flex-col h-[608px] w-full items-center justify-center">
-              {isLoading && <p>{t.loading}</p>}
+              {isLoading && (
+                <div className="flex items-center justify-center h-full w-full">
+                  <span className="text-gray-500 text-center translate-y-[80px]">
+                    <Spinner />
+                  </span>
+                </div>
+              )}
               {error && (
                 <p className="text-red-500">{t.failedToLoadNotifications}</p>
               )}

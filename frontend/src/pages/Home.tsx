@@ -10,6 +10,7 @@ import { MdGroupAdd } from "react-icons/md";
 import { ClassCard } from "../components/ClassCard";
 import { FiChevronDown } from "react-icons/fi";
 import { useLanguage } from "../contexts/LanguageContext";
+import Spinner from "../components/Spinner";
 
 export interface ClassesData {
   classId: string;
@@ -81,132 +82,144 @@ const HomePage = () => {
             <Header title="Class Manager" fontSize="text-xl" />
 
             <ClassHeader toggleShowModal={toggleShowModal} />
-
-            {isLoading && (
-              <div className="w-full bg-gray-200 rounded-full h-1 dark:bg-gray-700 overflow-hidden mb-2">
-                <div className="bg-indigo-500 h-1 rounded-full animate-pulse w-full transition-all duration-500 ease-in-out"></div>
-              </div>
-            )}
             <div className="w-full overflow-y-auto max-h-[590px]">
+              {isLoading ? (
+                <div className="flex items-center justify-center h-full w-full">
+                  <span className="text-gray-500 text-center translate-y-[80px]">
+                    <Spinner />
+                  </span>
+                </div>
+              ) : (
+                <>
+                  <div className="pt-6 pl-6 pr-6">
+                    <div
+                      className="flex items-center gap-2 hover:cursor-pointer hover:bg-slate-100 dark:hover:bg-gray-800 rounded-md p-2 select-none"
+                      onClick={() => {
+                        setOpenClassOwned(!openClassOwned);
+                      }}
+                    >
+                      <div className="flex items-center">
+                        <FiChevronDown
+                          className={`mr-2 transition-transform duration-200 ${
+                            openClassOwned
+                              ? "rotate-90 md:rotate-180"
+                              : "rotate-0"
+                          }`}
+                          style={{
+                            transform: openClassOwned
+                              ? "rotate(180deg)"
+                              : "rotate(270deg)",
+                          }}
+                        />
+                        <span className="text-lg translate-x-[-1px] translate-y-[4px] font-semibold mb-2 text-font-primary dark:text-white">
+                          {language === "id" ? "Kelas Dimiliki" : "Owned Class"}
+                        </span>
+                      </div>
+                    </div>
+                    {openClassOwned && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                        {isLoading && (
+                          <div className="flex items-center justify-center h-full w-full">
+                            <span className="text-gray-500 text-center translate-y-[80px]">
+                              <Spinner />
+                            </span>
+                          </div>
+                        )}
+                        {error && (
+                          <div className="text-red-500">
+                            {language === "id"
+                              ? "Gagal memuat kelas."
+                              : "Failed to load classes."}
+                          </div>
+                        )}
+                        {classesData?.data &&
+                          classesData?.data?.classOwned &&
+                          classesData.data.classOwned.length === 0 &&
+                          !isLoading && (
+                            <div className="col-span-full text-center text-gray-500">
+                              {language === "id"
+                                ? "Tidak ada kelas ditemukan."
+                                : "No classes found."}
+                            </div>
+                          )}
+                        {classesData?.data &&
+                          classesData.data.classOwned &&
+                          classesData.data.classOwned.map(
+                            (cls: ClassesData) => (
+                              <ClassCard
+                                key={cls.classId}
+                                title={cls.id.name}
+                                classId={cls.classId}
+                                owned={true}
+                              />
+                            )
+                          )}
+                      </div>
+                    )}
+                  </div>
+                  <div className="pt-6 pl-6 pr-6">
+                    <div
+                      className="flex items-center gap-2 hover:cursor-pointer hover:bg-slate-100 dark:hover:bg-gray-800 rounded-md p-2 select-none"
+                      onClick={() => setOpenClassJoined(!openClassJoined)}
+                    >
+                      <div className="flex items-center">
+                        <FiChevronDown
+                          className={`mr-2 transition-transform duration-200 ${
+                            openClassJoined
+                              ? "rotate-90 md:rotate-180"
+                              : "rotate-0"
+                          }`}
+                          style={{
+                            transform: openClassJoined
+                              ? "rotate(180deg)"
+                              : "rotate(270deg)",
+                          }}
+                        />
+                        <span className="text-lg translate-x-[-1px] translate-y-[4px] font-semibold mb-2 text-font-primary dark:text-white">
+                          {language === "id" ? "Kelas Diikuti" : "Joined Class"}
+                        </span>
+                      </div>
+                    </div>
+                    {openClassJoined && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1">
+                        {isLoading && (
+                          <div>
+                            {language === "id" ? "Memuat..." : "Loading..."}
+                          </div>
+                        )}
+                        {error && (
+                          <div className="text-red-500">
+                            {language === "id"
+                              ? "Gagal memuat kelas."
+                              : "Failed to load classes."}
+                          </div>
+                        )}
+                        {classesData?.data &&
+                          classesData?.data?.classes &&
+                          classesData.data.classes.length === 0 &&
+                          !isLoading && (
+                            <div className="col-span-full text-center text-gray-500">
+                              {language === "id"
+                                ? "Tidak ada kelas ditemukan."
+                                : "No classes found."}
+                            </div>
+                          )}
+                        {classesData?.data &&
+                          classesData.data.classes &&
+                          classesData.data.classes.map((cls: ClassesData) => (
+                            <ClassCard
+                              key={cls.classId}
+                              title={cls.id.name}
+                              classId={cls.classId}
+                            />
+                          ))}
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
               {/* Owned Classes */}
-              <div className="pt-6 pl-6 pr-6">
-                <div
-                  className="flex items-center gap-2 hover:cursor-pointer hover:bg-slate-100 dark:hover:bg-gray-800 rounded-md p-2 select-none"
-                  onClick={() => {
-                    setOpenClassOwned(!openClassOwned);
-                  }}
-                >
-                  <div className="flex items-center">
-                    <FiChevronDown
-                      className={`mr-2 transition-transform duration-200 ${
-                        openClassOwned ? "rotate-90 md:rotate-180" : "rotate-0"
-                      }`}
-                      style={{
-                        transform: openClassOwned
-                          ? "rotate(180deg)"
-                          : "rotate(270deg)",
-                      }}
-                    />
-                    <span className="text-lg translate-x-[-1px] translate-y-[4px] font-semibold mb-2 text-font-primary dark:text-white">
-                      {language === "id" ? "Kelas Dimiliki" : "Owned Class"}
-                    </span>
-                  </div>
-                </div>
-                {openClassOwned && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                    {isLoading && (
-                      <div>
-                        {language === "id" ? "Memuat..." : "Loading..."}
-                      </div>
-                    )}
-                    {error && (
-                      <div className="text-red-500">
-                        {language === "id"
-                          ? "Gagal memuat kelas."
-                          : "Failed to load classes."}
-                      </div>
-                    )}
-                    {classesData?.data &&
-                      classesData?.data?.classOwned &&
-                      classesData.data.classOwned.length === 0 &&
-                      !isLoading && (
-                        <div className="col-span-full text-center text-gray-500">
-                          {language === "id"
-                            ? "Tidak ada kelas ditemukan."
-                            : "No classes found."}
-                        </div>
-                      )}
-                    {classesData?.data &&
-                      classesData.data.classOwned &&
-                      classesData.data.classOwned.map((cls: ClassesData) => (
-                        <ClassCard
-                          key={cls.classId}
-                          title={cls.id.name}
-                          classId={cls.classId}
-                          owned={true}
-                        />
-                      ))}
-                  </div>
-                )}
-              </div>
               {/* Joined Classes */}
-              <div className="pt-6 pl-6 pr-6">
-                <div
-                  className="flex items-center gap-2 hover:cursor-pointer hover:bg-slate-100 dark:hover:bg-gray-800 rounded-md p-2 select-none"
-                  onClick={() => setOpenClassJoined(!openClassJoined)}
-                >
-                  <div className="flex items-center">
-                    <FiChevronDown
-                      className={`mr-2 transition-transform duration-200 ${
-                        openClassJoined ? "rotate-90 md:rotate-180" : "rotate-0"
-                      }`}
-                      style={{
-                        transform: openClassJoined
-                          ? "rotate(180deg)"
-                          : "rotate(270deg)",
-                      }}
-                    />
-                    <span className="text-lg translate-x-[-1px] translate-y-[4px] font-semibold mb-2 text-font-primary dark:text-white">
-                      {language === "id" ? "Kelas Diikuti" : "Joined Class"}
-                    </span>
-                  </div>
-                </div>
-                {openClassJoined && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1">
-                    {isLoading && (
-                      <div>
-                        {language === "id" ? "Memuat..." : "Loading..."}
-                      </div>
-                    )}
-                    {error && (
-                      <div className="text-red-500">
-                        {language === "id"
-                          ? "Gagal memuat kelas."
-                          : "Failed to load classes."}
-                      </div>
-                    )}
-                    {classesData?.data &&
-                      classesData?.data?.classes &&
-                      classesData.data.classes.length === 0 &&
-                      !isLoading && (
-                        <div className="col-span-full text-center text-gray-500">
-                          {language === "id"
-                            ? "Tidak ada kelas ditemukan."
-                            : "No classes found."}
-                        </div>
-                      )}
-                    {classesData?.data &&
-                      classesData.data.classes &&
-                      classesData.data.classes.map((cls: ClassesData) => (
-                        <ClassCard
-                          key={cls.classId}
-                          title={cls.id.name}
-                          classId={cls.classId}
-                        />
-                      ))}
-                  </div>
-                )}
-              </div>
             </div>
           </div>
         </div>

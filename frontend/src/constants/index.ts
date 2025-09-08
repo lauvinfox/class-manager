@@ -342,6 +342,7 @@ export const wordTranslations = (language: string) => {
       language === "id" ? "Tidak ada notifikasi." : "No notifications.",
     inviteAccepted: language === "id" ? "Undangan Diterima" : "Invite Accepted",
     inviteDenied: language === "id" ? "Undangan Ditolak" : "Invite Denied",
+    grade: language === "id" ? "Nilai" : "Grade",
   };
 };
 

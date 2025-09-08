@@ -303,7 +303,6 @@ const StudentsTab = ({
         console.error("Error creating assignment:", error);
       });
     setShowAddStudentModal(false);
-    alert("Student added successfully!");
   };
 
   const handleEditStudent = (
