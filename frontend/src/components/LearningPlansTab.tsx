@@ -277,7 +277,7 @@ const LearningPlansTab = ({
             </ul>
           </div>
         )}
-        {classInfo?.role === "member" && (
+        {classInfo?.role === "member" && memberSubject && (
           <>
             <button
               type="button"

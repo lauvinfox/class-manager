@@ -191,7 +191,7 @@ const AssistancesTab = ({
             </ul>
           </div>
         )}
-        {classInfo?.role === "member" && (
+        {classInfo?.role === "member" && memberSubject && (
           <button
             className="flex items-center justify-between gap-2 text-sm text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700"
             type="button"

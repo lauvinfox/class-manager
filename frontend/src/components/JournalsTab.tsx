@@ -266,9 +266,31 @@ const Journals = ({
               <span>{selectedSubject == "" ? "Subject" : selectedSubject}</span>
               <FiChevronDown className="ml-auto" />
             </button>
+            <button
+              type="button"
+              className="flex items-center justify-between gap-2 text-sm text-gray-700 dark:text-white bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200 font-semibold px-4 py-2 w-40 rounded-lg shadow"
+              title="Sort"
+              onClick={() => {
+                if (dropdownType === "sort") {
+                  setDropdownType("");
+                } else {
+                  setDropdownType("sort");
+                }
+              }}
+            >
+              <span className="flex items-center gap-2">
+                <MdSort className="text-lg" />
+                {sortOption === "all"
+                  ? t.all
+                  : sortOption === "week"
+                  ? t.thisWeek
+                  : t.thisMonth}
+              </span>
+              <FiChevronDown className="ml-auto" />
+            </button>
           </>
         )}
-        {classInfo?.role === "member" && (
+        {classInfo?.role === "member" && memberSubject && (
           <>
             <button
               type="button"
@@ -284,6 +306,28 @@ const Journals = ({
               type="button"
             >
               <span>{memberSubject}</span>
+            </button>
+            <button
+              type="button"
+              className="flex items-center justify-between gap-2 text-sm text-gray-700 dark:text-white bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200 font-semibold px-4 py-2 w-40 rounded-lg shadow"
+              title="Sort"
+              onClick={() => {
+                if (dropdownType === "sort") {
+                  setDropdownType("");
+                } else {
+                  setDropdownType("sort");
+                }
+              }}
+            >
+              <span className="flex items-center gap-2">
+                <MdSort className="text-lg" />
+                {sortOption === "all"
+                  ? t.all
+                  : sortOption === "week"
+                  ? t.thisWeek
+                  : t.thisMonth}
+              </span>
+              <FiChevronDown className="ml-auto" />
             </button>
           </>
         )}
@@ -322,28 +366,6 @@ const Journals = ({
             </ul>
           </div>
         )}
-        <button
-          type="button"
-          className="flex items-center justify-between gap-2 text-sm text-gray-700 dark:text-white bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200 font-semibold px-4 py-2 w-40 rounded-lg shadow"
-          title="Sort"
-          onClick={() => {
-            if (dropdownType === "sort") {
-              setDropdownType("");
-            } else {
-              setDropdownType("sort");
-            }
-          }}
-        >
-          <span className="flex items-center gap-2">
-            <MdSort className="text-lg" />
-            {sortOption === "all"
-              ? t.all
-              : sortOption === "week"
-              ? t.thisWeek
-              : t.thisMonth}
-          </span>
-          <FiChevronDown className="ml-auto" />
-        </button>
         {dropdownType === "sort" && (
           <div className="z-10 absolute mt-12  bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-40 dark:bg-gray-700">
             <ul className="py-2 text-sm text-gray-700 dark:text-gray-200">
