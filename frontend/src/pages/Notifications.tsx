@@ -19,6 +19,7 @@ interface Notification {
   createdAt: string;
   updatedAt: string;
   status: "accepted" | "denied" | "pending";
+  classOwner?: string;
 }
 
 const Notifications = () => {
@@ -109,7 +110,9 @@ const Notifications = () => {
                     }`}
                   >
                     <div className="flex flex-col flex-1 min-w-0">
-                      <span className="truncate">{notif.message}</span>
+                      <span className="truncate">
+                        {notif.message} {`${t.by} ${notif.classOwner}`}
+                      </span>
                       <span className="text-xs text-gray-500 mt-1">
                         {notif.type} •{" "}
                         {new Date(notif.createdAt).toLocaleString()}
@@ -118,11 +121,11 @@ const Notifications = () => {
                     {notif.type === "invite" && (
                       <div className="flex ml-4">
                         {notif.status === "accepted" ? (
-                          <span className="text-font-primary font-semibold">
+                          <span className="text-font-primary font-semibold dark:text-form-bg">
                             {t.inviteAccepted}
                           </span>
                         ) : notif.status === "denied" ? (
-                          <span className="text-font-primary-800 font-semibold">
+                          <span className="text-font-primary-800 font-semibold dark:text-form-bg">
                             {t.inviteDenied}
                           </span>
                         ) : (

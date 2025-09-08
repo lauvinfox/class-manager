@@ -324,12 +324,17 @@ export const inviteClassInstructor = async (
     }
   );
 
+  const classOwners = await UserService.getUserById(
+    classDoc.classOwner.toString()
+  );
+
   await NotificationService.createNotifications({
     inviteeIds,
     notificationType: "invite",
     message: `You have been invited to be an instructor in class "${classDoc.name}"`,
     classId: classDoc.classId,
     isRead: false,
+    classOwner: classOwners?.username,
   });
 };
 

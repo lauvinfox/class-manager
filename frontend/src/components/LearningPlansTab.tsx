@@ -458,15 +458,11 @@ const LearningPlansTab = ({
               </div>
               <div className="mb-2 text-sm text-gray-600 dark:text-gray-400 flex flex-wrap gap-4">
                 <div>
-                  <span className="font-semibold">Student Name:</span>{" "}
+                  <span className="font-semibold">{t.learningStyle}:</span>{" "}
                   {selectedLearningPlan.learningStyle}
                 </div>
                 <div>
-                  <span className="font-semibold">Learning Style:</span>{" "}
-                  {selectedLearningPlan.learningStyle}
-                </div>
-                <div>
-                  <span className="font-semibold">Level:</span>{" "}
+                  <span className="font-semibold">{t.level}:</span>{" "}
                   {selectedLearningPlan.level === "dasar"
                     ? t.beginner
                     : selectedLearningPlan.level === "menengah"
@@ -474,18 +470,16 @@ const LearningPlansTab = ({
                     : t.high}
                 </div>
                 <div>
-                  <span className="font-semibold">Duration:</span>{" "}
+                  <span className="font-semibold">{t.duration}:</span>{" "}
                   {selectedLearningPlan.duration} {t.hours}
                 </div>
                 <div
-                  className={`w-full break-words whitespace-pre-wrap max-h-86 overflow-y-auto p-2 ${
-                    isEdit ? "bg-white" : "bg-gray-100"
-                  } rounded`}
+                  className={`w-full break-words whitespace-pre-wrap max-h-86 overflow-y-auto p-2 rounded`}
                 >
                   {isEdit ? (
                     <textarea
                       id="description"
-                      className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 w-full min-h-80 resize-none"
+                      className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 w-full min-h-80 resize-none dark:bg-gray-800 "
                       value={learningPlanText}
                       onChange={(e) => setLearningPlanText(e.target.value)}
                     />
@@ -511,7 +505,7 @@ const LearningPlansTab = ({
               {classInfo?.role === "member" && isEdit ? (
                 <div className="mt-4 flex items-center gap-4">
                   <button
-                    className="mt-3 ml-auto px-4 py-2 rounded-md bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition w-20"
+                    className="mt-3 ml-auto px-4 py-2 rounded-md bg-indigo-600 text-white font-semibold hover:bg-indigo-700 w-20 transition flex items-center justify-center"
                     onClick={() =>
                       handleUpdateLearningPlan(
                         selectedLearningPlan.id,
@@ -525,7 +519,7 @@ const LearningPlansTab = ({
               ) : (
                 <div className="mt-4 flex items-center gap-4">
                   <button
-                    className="mt-3 ml-auto px-4 py-2 rounded-md bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition w-20"
+                    className="mt-3 ml-auto px-4 py-2 rounded-md bg-indigo-600 text-white font-semibold hover:bg-indigo-700 w-20 transition flex items-center justify-center"
                     onClick={() => {
                       setIsEdit(!isEdit);
                       setLearningPlanText(selectedLearningPlan.learningPlan);
@@ -736,7 +730,7 @@ const LearningPlansTab = ({
                   </label>
                   <textarea
                     id="description"
-                    className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 w-full min-h-[250px] resize-none"
+                    className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 w-full min-h-80 resize-none dark:bg-gray-800"
                     placeholder={t.assignmentDescription}
                     value={learningPlanText}
                     onChange={(e) => setLearningPlanText(e.target.value)}

@@ -7,6 +7,7 @@ interface INotification {
   isRead: boolean;
   type: "invite" | "reminder" | "info" | "other";
   status?: "accepted" | "denied" | "pending";
+  classOwner?: string;
 }
 
 const NotificationSchema: Schema = new Schema<INotification>(
@@ -38,6 +39,7 @@ const NotificationSchema: Schema = new Schema<INotification>(
       enum: ["accepted", "denied", "pending"], // enum string
       default: "pending",
     },
+    classOwner: { type: String, ref: "User" },
   },
   { timestamps: true }
 );

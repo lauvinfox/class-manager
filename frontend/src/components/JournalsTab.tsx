@@ -600,11 +600,11 @@ const Journals = ({
             </div>
             <div className="mb-2 text-sm text-gray-600 dark:text-gray-400 flex flex-wrap gap-4">
               <div>
-                <span className="font-semibold">Created By:</span>{" "}
+                <span className="font-semibold">{t.createdBy}:</span>{" "}
                 {selectedJournal.createdBy.name}
               </div>
               <div>
-                <span className="font-semibold">Start Time:</span>{" "}
+                <span className="font-semibold">{t.startTime}:</span>{" "}
                 {selectedJournal.startTime
                   ? new Date(selectedJournal.startTime).toLocaleTimeString([], {
                       hour: "2-digit",
@@ -613,7 +613,7 @@ const Journals = ({
                   : ""}
               </div>
               <div>
-                <span className="font-semibold">End Time:</span>{" "}
+                <span className="font-semibold">{t.endTime}:</span>{" "}
                 {selectedJournal.endTime
                   ? new Date(selectedJournal.endTime).toLocaleTimeString([], {
                       hour: "2-digit",
@@ -854,7 +854,7 @@ const Journals = ({
                   className="mt-8 px-4 py-2 rounded-md bg-red-700 text-white font-semibold hover:bg-red-700 transition"
                   onClick={() => setShowDeleteModal(true)}
                 >
-                  Delete Assignment
+                  {t.deleteAssignment}
                 </button>
                 <button
                   className="mt-8 ml-auto px-4 py-2 rounded-md bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition"
@@ -877,7 +877,7 @@ const Journals = ({
                     }
                   }}
                 >
-                  Save Changes
+                  {t.saveChanges}
                 </button>
               </div>
             )}
@@ -1018,12 +1018,12 @@ const Journals = ({
                   className="block text-sm font-medium mb-1"
                   htmlFor="description"
                 >
-                  Description
+                  {t.description}
                 </label>
                 <textarea
                   id="description"
                   className="border rounded-lg px-3 py-2 w-full min-h-[60px] focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                  placeholder="Journal Description"
+                  placeholder={t.journalDescription}
                   value={form.description}
                   onChange={(e) =>
                     setForm((f) => ({ ...f, description: e.target.value }))
@@ -1035,7 +1035,8 @@ const Journals = ({
                   className="block text-sm font-medium mb-1"
                   htmlFor="journalDate"
                 >
-                  Date<span className="text-red-500">*</span>
+                  {t.date}
+                  <span className="text-red-500">*</span>
                 </label>
                 <input
                   id="journalDate"
@@ -1053,7 +1054,8 @@ const Journals = ({
                       className="block text-sm font-medium mb-1"
                       htmlFor="startTime"
                     >
-                      Start Time<span className="text-red-500">*</span>
+                      {t.startTime}
+                      <span className="text-red-500">*</span>
                     </label>
                     <input
                       id="startTime"
@@ -1071,7 +1073,8 @@ const Journals = ({
                       className="block text-sm font-medium mb-1"
                       htmlFor="endTime"
                     >
-                      End Time<span className="text-red-500">*</span>
+                      {t.endTime}
+                      <span className="text-red-500">*</span>
                     </label>
                     <input
                       id="endTime"
@@ -1092,13 +1095,13 @@ const Journals = ({
                   className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600 transition"
                   onClick={() => setShowCreateJournalModal(false)}
                 >
-                  Cancel
+                  {t.cancel}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 rounded bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition"
                 >
-                  Create
+                  {t.create}
                 </button>
               </div>
             </form>

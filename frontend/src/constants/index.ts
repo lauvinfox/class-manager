@@ -343,6 +343,10 @@ export const wordTranslations = (language: string) => {
     inviteAccepted: language === "id" ? "Undangan Diterima" : "Invite Accepted",
     inviteDenied: language === "id" ? "Undangan Ditolak" : "Invite Denied",
     grade: language === "id" ? "Nilai" : "Grade",
+    by: language === "id" ? "oleh" : "by",
+    journalDescription:
+      language === "id" ? "Deskripsi Jurnal" : "Journal Description",
+    duration: language === "id" ? "Durasi" : "Duration",
   };
 };
 

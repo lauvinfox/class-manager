@@ -248,7 +248,10 @@ const StatisticsTab = ({
                       setDropdownType("");
                     }}
                   >
-                    {mode.charAt(0).toUpperCase() + mode.slice(1)}
+                    {(() => {
+                      if (mode === "attendance") return t.attendance;
+                      if (mode === "grade") return t.grade;
+                    })()}
                   </button>
                 </li>
               ))}
@@ -286,7 +289,13 @@ const StatisticsTab = ({
                         setDropdownType("");
                       }}
                     >
-                      {type.charAt(0).toUpperCase() + type.slice(1)}
+                      {(() => {
+                        if (type === "homework") return t.homework;
+                        if (type === "quiz") return t.quiz;
+                        if (type === "exam") return t.exam;
+                        if (type === "project") return t.project;
+                        if (type === "finalExam") return t.finalExam;
+                      })()}
                     </button>
                   </li>
                 )
@@ -397,7 +406,10 @@ const StatisticsTab = ({
                       setDropdownType("");
                     }}
                   >
-                    {mode.charAt(0).toUpperCase() + mode.slice(1)}
+                    {(() => {
+                      if (mode === "attendance") return t.attendance;
+                      if (mode === "grade") return t.grade;
+                    })()}
                   </button>
                 </li>
               ))}
@@ -470,7 +482,13 @@ const StatisticsTab = ({
                         setDropdownType("");
                       }}
                     >
-                      {type.charAt(0).toUpperCase() + type.slice(1)}
+                      {(() => {
+                        if (type === "homework") return t.homework;
+                        if (type === "quiz") return t.quiz;
+                        if (type === "exam") return t.exam;
+                        if (type === "project") return t.project;
+                        if (type === "finalExam") return t.finalExam;
+                      })()}
                     </button>
                   </li>
                 )
