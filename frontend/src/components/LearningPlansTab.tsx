@@ -20,7 +20,15 @@ interface LearningPlan {
   level: "dasar" | "menengah" | "tinggi";
   duration: number;
   learningStyle: string;
-  learningPlan: string;
+  learningPlan:
+    | "visual"
+    | "auditory"
+    | "kinesthetic"
+    | "reading-writing"
+    | "collaborative"
+    | "independent"
+    | "problem-based"
+    | "inquiry-based";
   id: string;
 }
 
@@ -65,11 +73,19 @@ const LearningPlansTab = ({
       });
       return response.data;
     },
+    onSuccess: () => {
+      refetchLearningPlan();
+    },
   });
 
   // Create learning plan
   const { mutate: learningPlan, isPending: learningPlanPending } = useMutation({
-    mutationFn: async (formData: {
+    mutationFn: async ({
+      topic,
+      level,
+      duration,
+      learningStyle = "visual",
+    }: {
       topic: string;
       level: string;
       duration: number;
@@ -78,16 +94,17 @@ const LearningPlansTab = ({
       const response = await getLearningPlan({
         classId,
         subject: memberSubject,
-        topic: formData.topic,
-        level: formData.level,
-        duration: formData.duration,
-        learningStyle: formData.learningStyle,
+        topic: topic,
+        level: level,
+        duration: duration,
+        learningStyle: learningStyle,
       });
       return response.data;
     },
     onSuccess: (data) => {
       setLearningPlanText(data);
       setShowLearningPlanModal(true);
+      refetchLearningPlan();
     },
   });
 
@@ -95,7 +112,7 @@ const LearningPlansTab = ({
     topic: "",
     level: "dasar",
     duration: 0,
-    learningStyle: "",
+    learningStyle: "visual",
   });
 
   const { data: memberSubject } = useQuery({
@@ -195,8 +212,9 @@ const LearningPlansTab = ({
       {
         onSuccess: () => {
           setSelectedLearningPlan((prev) =>
-            prev ? { ...prev, learningPlan: learningPlanText } : prev
+            prev ? { ...prev, learningPlan: prev.learningPlan } : prev
           );
+          refetchLearningPlan();
           setIsEdit(false);
           setShowLearningPlanModal(false);
         },
@@ -502,33 +520,34 @@ const LearningPlansTab = ({
                   )}
                 </div>
               </div>
-              {classInfo?.role === "member" && isEdit ? (
-                <div className="mt-4 flex items-center gap-4">
-                  <button
-                    className="mt-3 ml-auto px-4 py-2 rounded-md bg-indigo-600 text-white font-semibold hover:bg-indigo-700 w-20 transition flex items-center justify-center"
-                    onClick={() =>
-                      handleUpdateLearningPlan(
-                        selectedLearningPlan.id,
-                        learningPlanText
-                      )
-                    }
-                  >
-                    {t.save}
-                  </button>
-                </div>
-              ) : (
-                <div className="mt-4 flex items-center gap-4">
-                  <button
-                    className="mt-3 ml-auto px-4 py-2 rounded-md bg-indigo-600 text-white font-semibold hover:bg-indigo-700 w-20 transition flex items-center justify-center"
-                    onClick={() => {
-                      setIsEdit(!isEdit);
-                      setLearningPlanText(selectedLearningPlan.learningPlan);
-                    }}
-                  >
-                    {t.edit}
-                  </button>
-                </div>
-              )}
+              {classInfo?.role === "member" &&
+                (isEdit ? (
+                  <div className="mt-4 flex items-center gap-4">
+                    <button
+                      className="mt-3 ml-auto px-4 py-2 rounded-md bg-indigo-600 text-white font-semibold hover:bg-indigo-700 w-20 transition flex items-center justify-center"
+                      onClick={() =>
+                        handleUpdateLearningPlan(
+                          selectedLearningPlan.id,
+                          learningPlanText
+                        )
+                      }
+                    >
+                      {t.save}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="mt-4 flex items-center gap-4">
+                    <button
+                      className="mt-3 ml-auto px-4 py-2 rounded-md bg-indigo-600 text-white font-semibold hover:bg-indigo-700 w-20 transition flex items-center justify-center"
+                      onClick={() => {
+                        setIsEdit(!isEdit);
+                        setLearningPlanText(selectedLearningPlan.learningPlan);
+                      }}
+                    >
+                      {t.edit}
+                    </button>
+                  </div>
+                ))}
             </div>
           </div>
         )}
@@ -547,17 +566,17 @@ const LearningPlansTab = ({
                 className="flex flex-col gap-1.5"
                 onSubmit={(e) => {
                   e.preventDefault();
+                  console.log(form);
                   if (
                     !form.topic ||
                     !form.level ||
                     !form.duration ||
                     !form.learningStyle
                   ) {
-                    alert(
-                      `Topic, Level, Duration, and Learning Style are required. ${form.topic} ${form.level} ${form.duration} ${form.learningStyle}`
-                    );
+                    alert(t.topicEtcRequired);
                     return;
                   }
+
                   learningPlan({
                     topic: form.topic,
                     level: form.level,
@@ -577,7 +596,7 @@ const LearningPlansTab = ({
                   </label>
                   <input
                     id="topic"
-                    className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 bg-primary text-font-primary"
                     placeholder={t.learningPlanTopic}
                     value={form.topic}
                     onChange={(e) =>
@@ -596,8 +615,8 @@ const LearningPlansTab = ({
                   </label>
                   <select
                     id="learningLevel"
-                    className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                    value={form.level || ""}
+                    className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 bg-primary text-font-primary"
+                    value={form.level}
                     onChange={(e) =>
                       setForm((f) => ({
                         ...f,
@@ -625,7 +644,7 @@ const LearningPlansTab = ({
                   <input
                     type="number"
                     id="duration"
-                    className="border rounded-lg px-3 py-2 w-full min-h-[30px] focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 bg-primary text-font-primary"
                     placeholder={t.durationInHour}
                     value={form.duration}
                     onChange={(e) =>
@@ -646,8 +665,9 @@ const LearningPlansTab = ({
                   </label>
                   <select
                     id="learningStyle"
-                    className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                    className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 bg-primary text-font-primary"
                     value={form.learningStyle}
+                    defaultValue={"visual"}
                     onChange={(e) =>
                       setForm((f) => ({
                         ...f,

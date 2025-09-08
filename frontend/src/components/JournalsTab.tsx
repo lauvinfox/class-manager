@@ -854,7 +854,7 @@ const Journals = ({
                   className="mt-8 px-4 py-2 rounded-md bg-red-700 text-white font-semibold hover:bg-red-700 transition"
                   onClick={() => setShowDeleteModal(true)}
                 >
-                  {t.deleteAssignment}
+                  {t.deleteJournal}
                 </button>
                 <button
                   className="mt-8 ml-auto px-4 py-2 rounded-md bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition"
@@ -1004,8 +1004,8 @@ const Journals = ({
                 </label>
                 <input
                   id="title"
-                  className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                  placeholder="Journal Title"
+                  className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 bg-primary text-font-primary"
+                  placeholder={t.journalTitle}
                   value={form.title}
                   onChange={(e) =>
                     setForm((f) => ({ ...f, title: e.target.value }))
@@ -1022,7 +1022,7 @@ const Journals = ({
                 </label>
                 <textarea
                   id="description"
-                  className="border rounded-lg px-3 py-2 w-full min-h-[60px] focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  className="border rounded-lg px-3 py-2 w-full min-h-[60px] focus:outline-none focus:ring-2 bg-primary text-font-primary"
                   placeholder={t.journalDescription}
                   value={form.description}
                   onChange={(e) =>
@@ -1041,7 +1041,7 @@ const Journals = ({
                 <input
                   id="journalDate"
                   type="date"
-                  className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 bg-primary text-font-primary"
                   value={form.journalDate}
                   onChange={(e) =>
                     setForm((f) => ({ ...f, journalDate: e.target.value }))
@@ -1060,7 +1060,7 @@ const Journals = ({
                     <input
                       id="startTime"
                       type="time"
-                      className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                      className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 bg-primary text-font-primary"
                       value={form.startTime}
                       onChange={(e) =>
                         setForm((f) => ({ ...f, startTime: e.target.value }))
@@ -1079,7 +1079,7 @@ const Journals = ({
                     <input
                       id="endTime"
                       type="time"
-                      className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                      className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 bg-primary text-font-primary"
                       value={form.endTime}
                       onChange={(e) =>
                         setForm((f) => ({ ...f, endTime: e.target.value }))

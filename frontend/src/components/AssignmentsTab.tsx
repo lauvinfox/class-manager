@@ -17,7 +17,6 @@ import { MdSort } from "react-icons/md";
 import { Assignment, ClassInfo } from "../types/types";
 import Spinner from "./Spinner";
 import { FaSortAlphaUp, FaSortAlphaDownAlt } from "react-icons/fa";
-import queryClient from "../config/queryClient";
 import { useLanguage } from "../contexts/LanguageContext";
 import { wordTranslations } from "../constants";
 
@@ -58,7 +57,7 @@ const AssignmentsTab = ({
   const t = wordTranslations(language);
 
   // Assignments
-  const { data: assignmentsData } = useQuery({
+  const { data: assignmentsData, refetch: refetchAssignments } = useQuery({
     queryKey: ["assignmentsClass"],
     queryFn: async () => {
       const res = await getAssignmentsByClass(classId as string);
@@ -166,9 +165,7 @@ const AssignmentsTab = ({
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["assignmentsClass"],
-      });
+      refetchAssignments();
     },
   });
 
@@ -264,9 +261,7 @@ const AssignmentsTab = ({
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["assignmentsClass"],
-      });
+      refetchAssignments();
     },
   });
 
@@ -995,7 +990,7 @@ const AssignmentsTab = ({
                                   {t.getAssistance}
                                 </button>
                                 {showAssistanceModal && (
-                                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/2.5">
+                                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/2.5 dark:border-primary">
                                     <div className="bg-white dark:bg-gray-900 rounded-lg p-6 w-[400px] relative ">
                                       <button
                                         className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 dark:hover:text-white text-xl"
@@ -1296,8 +1291,8 @@ const AssignmentsTab = ({
                 </label>
                 <input
                   id="title"
-                  className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                  placeholder="Assignment Title"
+                  className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 bg-primary text-font-primary"
+                  placeholder={t.assignmentTitle}
                   value={form.title}
                   onChange={(e) =>
                     setForm((f) => ({ ...f, title: e.target.value }))
@@ -1314,8 +1309,8 @@ const AssignmentsTab = ({
                 </label>
                 <textarea
                   id="description"
-                  className="border rounded-lg px-3 py-2 w-full min-h-[60px] focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                  placeholder="Assignment Description"
+                  className="border rounded-lg px-3 py-2 w-full min-h-[60px] focus:outline-none focus:ring-2 bg-primary text-font-primary"
+                  placeholder={t.assignmentDescription}
                   value={form.description}
                   onChange={(e) =>
                     setForm((f) => ({ ...f, description: e.target.value }))
@@ -1332,7 +1327,7 @@ const AssignmentsTab = ({
                 </label>
                 <select
                   id="assignmentType"
-                  className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 bg-primary text-font-primary"
                   value={form.assignmentType || ""}
                   onChange={(e) =>
                     setForm((f) => ({
@@ -1365,7 +1360,7 @@ const AssignmentsTab = ({
                 <input
                   id="assignmentDate"
                   type="date"
-                  className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 bg-primary text-font-primary"
                   value={form.assignmentDate}
                   onChange={(e) =>
                     setForm((f) => ({ ...f, assignmentDate: e.target.value }))

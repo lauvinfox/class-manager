@@ -361,7 +361,7 @@ const AssistancesTab = ({
                   <span className="font-semibold">Subject:</span>{" "}
                   {selectedAssistance.subject}
                 </div>
-                <div className="w-full break-words whitespace-pre-wrap max-h-86 overflow-y-auto p-2 bg-gray-100 rounded">
+                <div className="w-full break-words whitespace-pre-wrap max-h-86 overflow-y-auto p-2 rounded">
                   {isEdit ? (
                     <textarea
                       id="description"
@@ -388,33 +388,34 @@ const AssistancesTab = ({
                   )}
                 </div>
               </div>
-              {classInfo?.role === "member" && isEdit ? (
-                <div className="mt-4 flex items-center gap-4">
-                  <button
-                    className="mt-3 ml-auto px-4 py-2 rounded-md bg-indigo-600 text-white font-semibold hover:bg-indigo-700 w-20 transition flex items-center justify-center"
-                    onClick={() =>
-                      handleUpdateAssistance(
-                        selectedAssistance.id,
-                        assistanceText
-                      )
-                    }
-                  >
-                    {t.save}
-                  </button>
-                </div>
-              ) : (
-                <div className="mt-4 flex items-center gap-4">
-                  <button
-                    className="mt-3 ml-auto px-4 py-2 rounded-md bg-indigo-600 text-white font-semibold hover:bg-indigo-700 w-20 transition flex items-center justify-center"
-                    onClick={() => {
-                      setIsEdit(true);
-                      setAssistanceText(selectedAssistance.assistantResponse);
-                    }}
-                  >
-                    {t.edit}
-                  </button>
-                </div>
-              )}
+              {classInfo?.role === "member" &&
+                (isEdit ? (
+                  <div className="mt-4 flex items-center gap-4">
+                    <button
+                      className="mt-3 ml-auto px-4 py-2 rounded-md bg-indigo-600 text-white font-semibold hover:bg-indigo-700 w-20 transition flex items-center justify-center"
+                      onClick={() =>
+                        handleUpdateAssistance(
+                          selectedAssistance.id,
+                          assistanceText
+                        )
+                      }
+                    >
+                      {t.save}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="mt-4 flex items-center gap-4">
+                    <button
+                      className="mt-3 ml-auto px-4 py-2 rounded-md bg-indigo-600 text-white font-semibold hover:bg-indigo-700 w-20 transition flex items-center justify-center"
+                      onClick={() => {
+                        setIsEdit(true);
+                        setAssistanceText(selectedAssistance.assistantResponse);
+                      }}
+                    >
+                      {t.edit}
+                    </button>
+                  </div>
+                ))}
             </div>
           </div>
         )}

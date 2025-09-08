@@ -4,17 +4,24 @@ import { ProfilePic } from "./ProfilePic";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { useMutation } from "@tanstack/react-query";
 import { deleteClassByClassId } from "../lib/api";
+import { useLanguage } from "../contexts/LanguageContext";
+import { wordTranslations } from "../constants";
 
 export const ClassCard = ({
   title,
   classId,
   owned,
+  refetch,
 }: {
   title: string;
   owned?: boolean;
   classId: string;
+  refetch: () => void;
 }) => {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+
+  const t = wordTranslations(language);
 
   const [showDropdown, setShowDropdown] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -23,6 +30,9 @@ export const ClassCard = ({
     mutationFn: async () => {
       const res = await deleteClassByClassId(classId);
       return res.data;
+    },
+    onSuccess: () => {
+      refetch();
     },
   });
 
@@ -75,7 +85,7 @@ export const ClassCard = ({
                     setShowDropdown(false);
                   }}
                 >
-                  Delete Class
+                  {t.deleteClass}
                 </button>
               </div>
             )}
@@ -122,12 +132,11 @@ export const ClassCard = ({
                           className="text-base font-semibold text-gray-900"
                           id="modal-title"
                         >
-                          Delete Class
+                          {t.deleteClass}
                         </h3>
                         <div className="mt-2">
                           <p className="text-sm text-gray-500">
-                            Are you sure you want to delete this class? This
-                            action cannot be undone.
+                            {t.deleteClassConfirmation}
                           </p>
                         </div>
                       </div>
@@ -143,14 +152,14 @@ export const ClassCard = ({
                         // opsional: redirect atau refresh
                       }}
                     >
-                      Delete
+                      {t.delete}
                     </button>
                     <button
                       type="button"
                       className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50 sm:mt-0 sm:w-auto"
                       onClick={() => setShowDeleteModal(false)}
                     >
-                      Cancel
+                      {t.cancel}
                     </button>
                   </div>
                 </div>

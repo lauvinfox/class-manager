@@ -363,6 +363,23 @@ export const wordTranslations = (language: string) => {
       language === "id"
         ? "Pastikan bobot semua penugasan berjumlah 100%"
         : "Please make sure all weights add up to 100%",
+    topicEtcRequired:
+      language === "id"
+        ? "Topik, Tingkat, Durasi, dan Gaya Belajar wajib diisi"
+        : "Topic, Level, Duration, and Learning Style are required.",
+    ownedClass: language === "id" ? "Kelas Dimiliki" : "Owned Class",
+    failedToLoadClass:
+      language === "id" ? "Gagal memuat kelas." : "Failed to load classes.",
+    noClassFound:
+      language === "id" ? "Tidak ada kelas ditemukan." : "No classes found.",
+    joinedClass: language === "id" ? "Kelas Diikuti" : "Joined Class",
+    createClass: language === "id" ? "Buat Kelas" : "Create Class",
+    deleteClass: language === "id" ? "Hapus Kelas" : "Delete Class",
+    deleteClassConfirmation:
+      language === "id"
+        ? "Apakah Anda yakin ingin menghapus kelas ini? Tindakan ini tidak dapat dibatalkan."
+        : "Are you sure you want to delete this class? This action cannot be undone.",
+    journalTitle: language === "id" ? "Judul Jurnal" : "Journal Title",
   };
 };
 
