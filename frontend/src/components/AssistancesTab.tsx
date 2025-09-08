@@ -332,6 +332,7 @@ const AssistancesTab = ({
               ))}
           </>
         )}
+
         {showAssistanceModal && selectedAssistance && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
             <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 w-[960px] h-[560px] relative">
@@ -364,7 +365,7 @@ const AssistancesTab = ({
                   {isEdit ? (
                     <textarea
                       id="description"
-                      className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 w-full min-h-80 resize-none"
+                      className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 w-full min-h-80 resize-none dark:bg-gray-800"
                       value={assistanceText}
                       onChange={(e) => setAssistanceText(e.target.value)}
                     />
@@ -390,7 +391,7 @@ const AssistancesTab = ({
               {classInfo?.role === "member" && isEdit ? (
                 <div className="mt-4 flex items-center gap-4">
                   <button
-                    className="mt-3 ml-auto px-4 py-2 rounded-md bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition w-20"
+                    className="mt-3 ml-auto px-4 py-2 rounded-md bg-indigo-600 text-white font-semibold hover:bg-indigo-700 w-20 transition flex items-center justify-center"
                     onClick={() =>
                       handleUpdateAssistance(
                         selectedAssistance.id,
@@ -404,7 +405,7 @@ const AssistancesTab = ({
               ) : (
                 <div className="mt-4 flex items-center gap-4">
                   <button
-                    className="mt-3 ml-auto px-4 py-2 rounded-md bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition w-20"
+                    className="mt-3 ml-auto px-4 py-2 rounded-md bg-indigo-600 text-white font-semibold hover:bg-indigo-700 w-20 transition flex items-center justify-center"
                     onClick={() => {
                       setIsEdit(true);
                       setAssistanceText(selectedAssistance.assistantResponse);

@@ -347,6 +347,22 @@ export const wordTranslations = (language: string) => {
     journalDescription:
       language === "id" ? "Deskripsi Jurnal" : "Journal Description",
     duration: language === "id" ? "Durasi" : "Duration",
+    home: language === "id" ? "Beranda" : "Home",
+    notification: language === "id" ? "Notifikasi" : "Notification",
+    logout: language === "id" ? "Keluar" : "Logout",
+    signOut: language === "id" ? "Keluar" : "Sign Out",
+    logoutConfirmation:
+      language === "id"
+        ? "Apakah Anda yakin ingin keluar? Anda perlu masuk lagi untuk mengakses akun Anda."
+        : "Are you sure you want to sign out? You will need to log in again to access your account.",
+    haveBeenInvited:
+      language === "id"
+        ? "Anda telah diundang untuk menjadi instruktur di kelas"
+        : "You have been invited to be an instructor in class",
+    weightsMustBeHundred:
+      language === "id"
+        ? "Pastikan bobot semua penugasan berjumlah 100%"
+        : "Please make sure all weights add up to 100%",
   };
 };
 

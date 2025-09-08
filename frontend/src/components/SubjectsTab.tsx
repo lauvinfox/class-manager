@@ -12,7 +12,7 @@ import { wordTranslations } from "../constants";
 
 interface AssignmentWeights {
   subject: string;
-  assignmentWeight: {
+  weights: {
     homework: number;
     quiz: number;
     exam: number;
@@ -147,24 +147,26 @@ const SubjectsTab = ({
                           </h3>
                           <ul className="text-sm space-y-1">
                             <li>
-                              <span className="font-medium">Homework:</span>{" "}
-                              {subjectWeight.assignmentWeight?.homework}%
+                              <span className="font-medium">{t.homework}:</span>{" "}
+                              {subjectWeight.weights?.homework}%
                             </li>
                             <li>
-                              <span className="font-medium">Quiz:</span>{" "}
-                              {subjectWeight.assignmentWeight?.quiz}%
+                              <span className="font-medium">{t.quiz}:</span>{" "}
+                              {subjectWeight.weights?.quiz}%
                             </li>
                             <li>
-                              <span className="font-medium">Exam:</span>{" "}
-                              {subjectWeight.assignmentWeight?.exam}%
+                              <span className="font-medium">{t.exam}:</span>{" "}
+                              {subjectWeight.weights?.exam}%
                             </li>
                             <li>
-                              <span className="font-medium">Project:</span>{" "}
-                              {subjectWeight.assignmentWeight?.project}%
+                              <span className="font-medium">{t.project}:</span>{" "}
+                              {subjectWeight.weights?.project}%
                             </li>
                             <li>
-                              <span className="font-medium">Final Exam:</span>{" "}
-                              {subjectWeight.assignmentWeight?.finalExam}%
+                              <span className="font-medium">
+                                {t.finalExam}:
+                              </span>{" "}
+                              {subjectWeight.weights?.finalExam}%
                             </li>
                           </ul>
                         </div>
@@ -224,7 +226,7 @@ const SubjectsTab = ({
                   setShowUpdateWeight(true);
                 }}
               >
-                Edit
+                {t.edit}
               </button>
             </div>
           ) : (
@@ -250,6 +252,17 @@ const SubjectsTab = ({
               className="flex flex-col gap-1.5"
               onSubmit={(e) => {
                 e.preventDefault();
+                if (
+                  newAssignmentWeight.homework +
+                    newAssignmentWeight.exam +
+                    newAssignmentWeight.quiz +
+                    newAssignmentWeight.project +
+                    newAssignmentWeight.finalExam !==
+                  100
+                ) {
+                  alert("Please make sure all weights add up to 100%");
+                  return;
+                }
                 handleUpdateWeights({
                   classId,
                   subject: memberSubject,
@@ -259,7 +272,8 @@ const SubjectsTab = ({
             >
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  Homework<span className="text-red-500">*</span>
+                  {t.homework}
+                  <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="number"
@@ -278,7 +292,8 @@ const SubjectsTab = ({
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  Quiz<span className="text-red-500">*</span>
+                  {t.quiz}
+                  <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="number"
@@ -297,7 +312,8 @@ const SubjectsTab = ({
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  Exam<span className="text-red-500">*</span>
+                  {t.exam}
+                  <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="number"
@@ -316,7 +332,8 @@ const SubjectsTab = ({
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  Project<span className="text-red-500">*</span>
+                  {t.project}
+                  <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="number"
@@ -335,7 +352,8 @@ const SubjectsTab = ({
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  Final Exam<span className="text-red-500">*</span>
+                  {t.finalExam}
+                  <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="number"

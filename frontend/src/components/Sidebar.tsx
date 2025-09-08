@@ -17,6 +17,7 @@ import {
 } from "../lib/api";
 import { ProfilePic } from "./ProfilePic";
 import io from "socket.io-client";
+import { wordTranslations } from "../constants";
 
 // Ambil token dari localStorage
 const token = localStorage.getItem("accessToken");
@@ -26,6 +27,9 @@ const socket = io("http://localhost:3000", {
 
 export const Sidebar = () => {
   const { language } = useLanguage();
+
+  const t = wordTranslations(language);
+
   // Query user info
   const { data: user } = useQuery({
     queryKey: ["userInfo"],
@@ -96,12 +100,6 @@ export const Sidebar = () => {
     }
   };
 
-  // Option labels based on language
-  const optionLabels = {
-    Home: language === "id" ? "Beranda" : "Home",
-    Notification: language === "id" ? "Notifikasi" : "Notification",
-    Settings: language === "id" ? "Pengaturan" : "Settings",
-  };
   return (
     <nav
       className="sticky top-0 h-screen shrink-0 border-r border-slate-300 bg-primary p-2 dark:bg-gray-900 dark:border-gray-700"
@@ -113,7 +111,7 @@ export const Sidebar = () => {
           Icon={FiHome}
           href="/"
           title="Home"
-          label={optionLabels.Home}
+          label={t.home}
           selected={selected}
           setSelected={setSelected}
         />
@@ -121,7 +119,7 @@ export const Sidebar = () => {
           Icon={MdOutlineNotifications}
           href="/notifications"
           title="Notification"
-          label={optionLabels.Notification}
+          label={t.notification}
           selected={selected}
           setSelected={handleOptionClick}
           notifs={hasUnread}
@@ -130,7 +128,7 @@ export const Sidebar = () => {
           Icon={FiSettings}
           href="/settings"
           title="Settings"
-          label={optionLabels.Settings}
+          label={t.settings}
           selected={selected}
           setSelected={setSelected}
         />
@@ -151,6 +149,8 @@ interface User {
 const TitleSection = memo(({ user }: { user: User | undefined }) => {
   const navigate = useNavigate();
   const { language } = useLanguage();
+  const t = wordTranslations(language);
+
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showSignOutModal, setShowSignOutModal] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -224,13 +224,13 @@ const TitleSection = memo(({ user }: { user: User | undefined }) => {
               className="w-full px-4 py-2 text-left text-sm hover:bg-slate-100 dark:hover:bg-gray-800"
               onClick={() => navigate(`/profile/${user?.username}`)}
             >
-              {language === "id" ? "Profil" : "Profile"}
+              {t.profile}
             </button>
             <button
               className="w-full px-4 py-2 text-left text-sm hover:bg-slate-100 dark:hover:bg-gray-800"
               onClick={() => setShowSignOutModal(true)}
             >
-              {language === "id" ? "Keluar" : "Logout"}
+              {t.logout}
             </button>
           </motion.div>
         )}
@@ -276,13 +276,11 @@ const TitleSection = memo(({ user }: { user: User | undefined }) => {
                           className="text-base font-semibold text-gray-900"
                           id="modal-title"
                         >
-                          {language === "id" ? "Keluar" : "Sign out"}
+                          {t.logout}
                         </h3>
                         <div className="mt-2">
                           <p className="text-sm text-gray-500">
-                            {language === "id"
-                              ? "Apakah Anda yakin ingin keluar? Anda perlu masuk lagi untuk mengakses akun Anda."
-                              : "Are you sure you want to sign out? You will need to log in again to access your account."}
+                            {t.logoutConfirmation}
                           </p>
                         </div>
                       </div>
@@ -298,14 +296,14 @@ const TitleSection = memo(({ user }: { user: User | undefined }) => {
                         signOutMutate();
                       }}
                     >
-                      Sign out
+                      {t.signOut}
                     </button>
                     <button
                       type="button"
                       className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50 sm:mt-0 sm:w-auto"
                       onClick={() => setShowSignOutModal(false)}
                     >
-                      Cancel
+                      {t.cancel}
                     </button>
                   </div>
                 </div>

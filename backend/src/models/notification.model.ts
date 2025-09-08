@@ -8,6 +8,7 @@ interface INotification {
   type: "invite" | "reminder" | "info" | "other";
   status?: "accepted" | "denied" | "pending";
   classOwner?: string;
+  className?: string;
 }
 
 const NotificationSchema: Schema = new Schema<INotification>(
@@ -40,6 +41,7 @@ const NotificationSchema: Schema = new Schema<INotification>(
       default: "pending",
     },
     classOwner: { type: String, ref: "User" },
+    className: { type: String, ref: "Class" },
   },
   { timestamps: true }
 );

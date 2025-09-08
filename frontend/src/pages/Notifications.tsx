@@ -20,6 +20,7 @@ interface Notification {
   updatedAt: string;
   status: "accepted" | "denied" | "pending";
   classOwner?: string;
+  className?: string;
 }
 
 const Notifications = () => {
@@ -111,7 +112,9 @@ const Notifications = () => {
                   >
                     <div className="flex flex-col flex-1 min-w-0">
                       <span className="truncate">
-                        {notif.message} {`${t.by} ${notif.classOwner}`}
+                        {notif.type === "invite" &&
+                          `${t.haveBeenInvited} ${notif.className}`}{" "}
+                        {`${t.by} ${notif.classOwner}`}
                       </span>
                       <span className="text-xs text-gray-500 mt-1">
                         {notif.type} •{" "}

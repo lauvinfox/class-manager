@@ -332,6 +332,7 @@ export const inviteClassInstructor = async (
     inviteeIds,
     notificationType: "invite",
     message: `You have been invited to be an instructor in class "${classDoc.name}"`,
+    className: classDoc.name,
     classId: classDoc.classId,
     isRead: false,
     classOwner: classOwners?.username,

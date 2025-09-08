@@ -9,6 +9,7 @@ interface CreateNotificationParams {
   classId: string;
   isRead?: boolean;
   classOwner?: string;
+  className?: string;
 }
 
 export const createNotification = async ({
@@ -18,6 +19,7 @@ export const createNotification = async ({
   classId,
   isRead = false,
   classOwner,
+  className,
 }: CreateNotificationParams) => {
   const notification = await NotificationModel.create({
     userId,
@@ -26,6 +28,7 @@ export const createNotification = async ({
     classId,
     isRead,
     classOwner,
+    className,
   });
 
   io?.to(userId).emit("notification", notification);
@@ -40,6 +43,7 @@ export const createNotifications = async ({
   classId,
   isRead = false,
   classOwner,
+  className,
 }: {
   inviteeIds: string[];
   notificationType: string;
@@ -47,6 +51,7 @@ export const createNotifications = async ({
   classId: string;
   isRead: boolean;
   classOwner?: string;
+  className?: string;
 }) => {
   // Buat notifikasi ke setiap user yang diundang
   const notifications = inviteeIds.map((id) => ({
@@ -56,6 +61,7 @@ export const createNotifications = async ({
     classId: classId,
     isRead: isRead,
     classOwner: classOwner,
+    className: className,
   }));
 
   await NotificationModel.insertMany(notifications);

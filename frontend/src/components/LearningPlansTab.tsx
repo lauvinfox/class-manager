@@ -479,7 +479,7 @@ const LearningPlansTab = ({
                   {isEdit ? (
                     <textarea
                       id="description"
-                      className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 w-full min-h-80 resize-none dark:bg-gray-800 "
+                      className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 w-full min-h-80 resize-none dark:bg-gray-800"
                       value={learningPlanText}
                       onChange={(e) => setLearningPlanText(e.target.value)}
                     />
@@ -647,7 +647,7 @@ const LearningPlansTab = ({
                   <select
                     id="learningStyle"
                     className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                    value={form.learningStyle || ""}
+                    value={form.learningStyle}
                     onChange={(e) =>
                       setForm((f) => ({
                         ...f,
