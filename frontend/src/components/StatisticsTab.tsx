@@ -1091,8 +1091,18 @@ const StatisticsTab = ({
                           >
                             <div className="flex items-center justify-center">
                               {`${
-                                selectedAssignmentType.charAt(0).toUpperCase() +
-                                selectedAssignmentType.slice(1)
+                                selectedAssignmentType === ""
+                                  ? t.assignmentType
+                                  : selectedAssignmentType === "homework"
+                                  ? t.homework
+                                  : selectedAssignmentType === "exam"
+                                  ? t.exam
+                                  : selectedAssignmentType === "quiz"
+                                  ? t.quiz
+                                  : selectedAssignmentType === "project"
+                                  ? t.project
+                                  : t.finalExam +
+                                    selectedAssignmentType.slice(1)
                               } ${i + 1}`}
                               <CgArrowsExchangeV
                                 className={

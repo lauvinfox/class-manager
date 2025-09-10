@@ -24,6 +24,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<AuthContextType["user"]>(null);
+
   const navigate = useNavigate();
 
   useEffect(() => {

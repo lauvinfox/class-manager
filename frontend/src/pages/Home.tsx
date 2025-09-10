@@ -1,11 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Header from "../components/Header";
 import { Sidebar } from "../components/Sidebar";
 import { AuthProvider } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { createClass, getClasses } from "../lib/api";
+import {
+  createClass,
+  getClasses,
+  getUserPreferencesByUserId,
+} from "../lib/api";
 import { MdGroupAdd } from "react-icons/md";
 import { ClassCard } from "../components/ClassCard";
 import { FiChevronDown } from "react-icons/fi";
@@ -23,10 +27,30 @@ export interface ClassesData {
 }
 
 const HomePage = () => {
-  const { darkMode } = useTheme();
-  const { language } = useLanguage();
+  const { darkMode, toggleDarkMode } = useTheme();
 
+  const { language } = useLanguage();
   const t = wordTranslations(language);
+
+  const { data: userPreferences } = useQuery({
+    queryKey: ["userPreferences"],
+    queryFn: async () => {
+      const res = await getUserPreferencesByUserId();
+      return res.data;
+    },
+  });
+
+  // Sync darkMode with userPreferences.viewMode
+  useEffect(() => {
+    if (userPreferences?.viewMode) {
+      if (userPreferences.viewMode === "dark" && !darkMode) {
+        toggleDarkMode();
+      } else if (userPreferences.viewMode === "light" && darkMode) {
+        toggleDarkMode();
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userPreferences?.viewMode]);
 
   const [showModal, setShowModal] = useState(false);
 

@@ -1261,7 +1261,7 @@ const AssignmentsTab = ({
       {/* Assignment Advice */}
       {assignmentAdvicePending && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="flex items-center justify-center h-full w-full">
+          <div className="flex items-center justify-center h-full w-full left-1/2 transform -translate-x-1/2">
             <Spinner />
           </div>
         </div>
