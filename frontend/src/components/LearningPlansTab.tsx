@@ -444,7 +444,21 @@ const LearningPlansTab = ({
                     </div>
                     <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-300">
                       <div className="text-gray-600 dark:text-gray-400">
-                        {learningPlan.learningStyle}
+                        {learningPlan.learningStyle === "visual"
+                          ? t.visual
+                          : learningPlan.learningStyle === "auditory"
+                          ? t.auditory
+                          : learningPlan.learningStyle === "kinesthetic"
+                          ? t.kinesthetic
+                          : learningPlan.learningStyle === "reading-writing"
+                          ? t.readingWriting
+                          : learningPlan.learningStyle === "collaborative"
+                          ? t.collaborative
+                          : learningPlan.learningStyle === "independent"
+                          ? t.independent
+                          : learningPlan.learningStyle === "problem-based"
+                          ? t.problemBased
+                          : t.inquiryBased}
                       </div>
                       <div className="text-gray-600 dark:text-gray-400">
                         {learningPlan.duration} {t.hours}
@@ -477,7 +491,21 @@ const LearningPlansTab = ({
               <div className="mb-2 text-sm text-gray-600 dark:text-gray-400 flex flex-wrap gap-4">
                 <div>
                   <span className="font-semibold">{t.learningStyle}:</span>{" "}
-                  {selectedLearningPlan.learningStyle}
+                  {selectedLearningPlan.learningStyle === "visual"
+                    ? t.visual
+                    : selectedLearningPlan.learningStyle === "auditory"
+                    ? t.auditory
+                    : selectedLearningPlan.learningStyle === "kinesthetic"
+                    ? t.kinesthetic
+                    : selectedLearningPlan.learningStyle === "reading-writing"
+                    ? t.readingWriting
+                    : selectedLearningPlan.learningStyle === "collaborative"
+                    ? t.collaborative
+                    : selectedLearningPlan.learningStyle === "independent"
+                    ? t.independent
+                    : selectedLearningPlan.learningStyle === "problem-based"
+                    ? t.problemBased
+                    : t.inquiryBased}
                 </div>
                 <div>
                   <span className="font-semibold">{t.level}:</span>{" "}
