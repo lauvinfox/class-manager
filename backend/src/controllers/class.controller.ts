@@ -385,3 +385,39 @@ export const getStudentReportByDateRange: RequestHandler = catchError(
     });
   }
 );
+
+export const getFinalDotScores: RequestHandler = catchError(
+  async (req, res) => {
+    const { classId, studentId } = req.params;
+    const userId = req.userId as string;
+
+    const isInstructor = await ClassService.checkInstructor(classId, userId);
+    const isClassOwner = await ClassService.checkClassOwner(classId, userId);
+    appAssert(isInstructor || isClassOwner, FORBIDDEN, "Instructors Not Found");
+
+    const finalDotScores = await ClassService.getFinalScore(classId, studentId);
+
+    return res.json({
+      message: "Final dot scores retrieved successfully",
+      data: finalDotScores,
+    });
+  }
+);
+
+export const getAvgScores: RequestHandler = catchError(async (req, res) => {
+  const { classId, studentId } = req.params;
+  const userId = req.userId as string;
+  const isInstructor = await ClassService.checkInstructor(classId, userId);
+  const isClassOwner = await ClassService.checkClassOwner(classId, userId);
+  appAssert(isInstructor || isClassOwner, FORBIDDEN, "Instructors Not Found");
+
+  const avgScores = await ClassService.getAverageScorePerSubject(
+    classId,
+    studentId
+  );
+
+  return res.json({
+    message: "Average scores retrieved successfully",
+    data: avgScores,
+  });
+});

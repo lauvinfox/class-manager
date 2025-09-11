@@ -1032,16 +1032,20 @@ export const createStudentReport = async (
   const averageScores = await getAverageScorePerSubject(classId, studentId);
 
   // Gabungkan finalScores dan averageScores ke dalam satu array dengan struktur yang diinginkan
-  const grades = weights.map((w, idx) => {
+  const grades = weights.map((w) => {
     const subject = w.subject;
-    const avgScoreObj = averageScores[idx]?.[subject] || {
+    // Cari averageScores dan finalScores berdasarkan subject
+    const avgScoreObj = averageScores.find(
+      (obj) => obj[subject] !== undefined
+    )?.[subject] || {
       homework: 0,
       quiz: 0,
       exam: 0,
       project: 0,
       finalExam: 0,
     };
-    const finalScoreObj = finalScores[idx]?.[subject] ?? 0;
+    const finalScoreObj =
+      finalScores.find((obj) => obj[subject] !== undefined)?.[subject] ?? 0;
 
     return {
       subject,

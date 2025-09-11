@@ -79,4 +79,11 @@ router.post(
   ClassController.getStudentReportByDateRange
 );
 
+router.get(
+  "/:classId/final-score/:studentId",
+  ClassController.getFinalDotScores
+);
+
+router.get("/:classId/avg-score/:studentId", ClassController.getAvgScores);
+
 export default router;

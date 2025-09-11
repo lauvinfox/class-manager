@@ -589,6 +589,7 @@ const StudentsTab = ({
                                           });
                                         const rows =
                                           studentDataToPDFRows(studentData);
+                                        console.log(studentData);
                                         handlePreviewPDF({
                                           rows,
                                           studentData,
